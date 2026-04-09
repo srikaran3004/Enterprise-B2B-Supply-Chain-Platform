@@ -1,0 +1,8 @@
+namespace SupplyChain.Identity.Domain.Enums;
+
+public enum OtpPurpose
+{
+    DealerRegistration,
+    ForgotPassword,
+    DealerLogin
+}

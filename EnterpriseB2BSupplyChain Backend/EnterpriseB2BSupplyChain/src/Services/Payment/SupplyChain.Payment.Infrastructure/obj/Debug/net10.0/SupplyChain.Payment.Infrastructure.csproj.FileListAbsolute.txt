@@ -1,0 +1,76 @@
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\Lato-Black.ttf
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\Lato-BlackItalic.ttf
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\Lato-Bold.ttf
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\Lato-BoldItalic.ttf
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\Lato-ExtraBold.ttf
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\Lato-ExtraBoldItalic.ttf
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\Lato-ExtraLight.ttf
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\Lato-ExtraLightItalic.ttf
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\Lato-Italic.ttf
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\Lato-Light.ttf
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\Lato-LightItalic.ttf
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\Lato-Medium.ttf
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\Lato-MediumItalic.ttf
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\Lato-Regular.ttf
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\Lato-SemiBold.ttf
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\Lato-SemiBoldItalic.ttf
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\Lato-Thin.ttf
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\Lato-ThinItalic.ttf
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\OFL.txt
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\SupplyChain.Payment.Infrastructure.deps.json
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\SupplyChain.Payment.Infrastructure.runtimeconfig.json
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\SupplyChain.Payment.Infrastructure.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\SupplyChain.Payment.Infrastructure.pdb
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\SupplyChain.Payment.Application.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\SupplyChain.Payment.Domain.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\SupplyChain.Payment.Application.pdb
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\SupplyChain.Payment.Domain.pdb
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\obj\Debug\net10.0\SupplyChain.Payment.Infrastructure.csproj.AssemblyReference.cache
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\obj\Debug\net10.0\SupplyChain.Payment.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\obj\Debug\net10.0\SupplyChain.Payment.Infrastructure.AssemblyInfoInputs.cache
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\obj\Debug\net10.0\SupplyChain.Payment.Infrastructure.AssemblyInfo.cs
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\obj\Debug\net10.0\SupplyChain.Payment.Infrastructure.csproj.CoreCompileInputs.cache
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\obj\Debug\net10.0\SupplyCh.F0F7E35A.Up2Date
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\obj\Debug\net10.0\SupplyChain.Payment.Infrastructure.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\obj\Debug\net10.0\refint\SupplyChain.Payment.Infrastructure.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\obj\Debug\net10.0\SupplyChain.Payment.Infrastructure.pdb
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\obj\Debug\net10.0\SupplyChain.Payment.Infrastructure.genruntimeconfig.cache
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\obj\Debug\net10.0\ref\SupplyChain.Payment.Infrastructure.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\Lato-Black.ttf
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\Lato-BlackItalic.ttf
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\Lato-Bold.ttf
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\Lato-BoldItalic.ttf
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\Lato-ExtraBold.ttf
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\Lato-ExtraBoldItalic.ttf
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\Lato-ExtraLight.ttf
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\Lato-ExtraLightItalic.ttf
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\Lato-Italic.ttf
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\Lato-Light.ttf
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\Lato-LightItalic.ttf
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\Lato-Medium.ttf
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\Lato-MediumItalic.ttf
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\Lato-Regular.ttf
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\Lato-SemiBold.ttf
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\Lato-SemiBoldItalic.ttf
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\Lato-Thin.ttf
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\Lato-ThinItalic.ttf
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\LatoFont\OFL.txt
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\SupplyChain.Payment.Infrastructure.deps.json
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\SupplyChain.Payment.Infrastructure.runtimeconfig.json
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\SupplyChain.Payment.Infrastructure.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\SupplyChain.Payment.Infrastructure.pdb
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\SupplyChain.Payment.Application.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\SupplyChain.Payment.Domain.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\SupplyChain.Payment.Application.pdb
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\SupplyChain.Payment.Domain.pdb
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\obj\Debug\net10.0\SupplyChain.Payment.Infrastructure.csproj.AssemblyReference.cache
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\obj\Debug\net10.0\SupplyChain.Payment.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\obj\Debug\net10.0\SupplyChain.Payment.Infrastructure.AssemblyInfoInputs.cache
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\obj\Debug\net10.0\SupplyChain.Payment.Infrastructure.AssemblyInfo.cs
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\obj\Debug\net10.0\SupplyChain.Payment.Infrastructure.csproj.CoreCompileInputs.cache
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\obj\Debug\net10.0\SupplyCh.F0F7E35A.Up2Date
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\obj\Debug\net10.0\SupplyChain.Payment.Infrastructure.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\obj\Debug\net10.0\refint\SupplyChain.Payment.Infrastructure.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\obj\Debug\net10.0\SupplyChain.Payment.Infrastructure.pdb
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\obj\Debug\net10.0\SupplyChain.Payment.Infrastructure.genruntimeconfig.cache
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\obj\Debug\net10.0\ref\SupplyChain.Payment.Infrastructure.dll

@@ -1,0 +1,38 @@
+﻿using MediatR;
+using Microsoft.EntityFrameworkCore;
+using SupplyChain.Catalog.Domain.Entities;
+using SupplyChain.Catalog.Infrastructure.Persistence;
+
+namespace SupplyChain.Catalog.Application.Commands.ToggleFavorite;
+
+public class ToggleFavoriteCommandHandler : IRequestHandler<ToggleFavoriteCommand, bool>
+{
+    private readonly CatalogDbContext _context;
+
+    public ToggleFavoriteCommandHandler(CatalogDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<bool> Handle(ToggleFavoriteCommand command, CancellationToken ct)
+    {
+        var existing = await _context.Set<FavoriteProduct>()
+            .FirstOrDefaultAsync(f => f.DealerId == command.DealerId && f.ProductId == command.ProductId, ct);
+
+        if (existing != null)
+        {
+            // Remove from favorites
+            _context.Set<FavoriteProduct>().Remove(existing);
+            await _context.SaveChangesAsync(ct);
+            return false; // Not favorited anymore
+        }
+        else
+        {
+            // Add to favorites
+            var favorite = FavoriteProduct.Create(command.DealerId, command.ProductId);
+            await _context.Set<FavoriteProduct>().AddAsync(favorite, ct);
+            await _context.SaveChangesAsync(ct);
+            return true; // Now favorited
+        }
+    }
+}

@@ -1,0 +1,37 @@
+Using launch settings from src\Services\Identity\SupplyChain.Identity.API\Properties\launchSettings.json...
+Building...
+[15:17:37 INF] User profile is available. Using 'C:\Users\Srikaran\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+[15:17:39 INF] Now listening on: http://localhost:5002
+[15:17:39 INF] Application started. Press Ctrl+C to shut down.
+[15:17:39 INF] Hosting environment: Development
+[15:17:39 INF] Content root path: D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Identity\SupplyChain.Identity.API
+[15:17:48 INF] Request starting HTTP/1.1 POST http://localhost:5002/api/auth/register - application/json 423
+[15:17:48 INF] Executing endpoint 'SupplyChain.Identity.API.Controllers.AuthController.Register (SupplyChain.Identity.API)'
+[15:17:48 INF] Route matched with {action = "Register", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Register(SupplyChain.Identity.Application.Commands.RegisterDealer.RegisterDealerCommand, System.Threading.CancellationToken) on controller SupplyChain.Identity.API.Controllers.AuthController (SupplyChain.Identity.API).
+[15:17:49 WRN] You do not have a valid license key for the Lucky Penny software MediatR. This is allowed for development and testing scenarios. If you are running in production you are required to have a licensed version. Please visit https://luckypennysoftware.com to obtain a valid license.
+[15:17:49 INF] Handling RegisterDealerCommand
+[15:17:53 INF] Executed DbCommand (180ms) [Parameters=[@ToLowerInvariant='?' (Size = 256)], CommandType='Text', CommandTimeout='30']
+SELECT CASE
+    WHEN EXISTS (
+        SELECT 1
+        FROM [Users] AS [u]
+        WHERE [u].[Email] = @ToLowerInvariant) THEN CAST(1 AS bit)
+    ELSE CAST(0 AS bit)
+END
+[15:17:53 INF] Executed DbCommand (15ms) [Parameters=[@ToUpperInvariant='?' (Size = 20)], CommandType='Text', CommandTimeout='30']
+SELECT CASE
+    WHEN EXISTS (
+        SELECT 1
+        FROM [DealerProfiles] AS [d]
+        WHERE [d].[GstNumber] = @ToUpperInvariant) THEN CAST(1 AS bit)
+    ELSE CAST(0 AS bit)
+END
+[15:17:53 ERR] Error handling RegisterDealerCommand after 4193ms
+System.InvalidOperationException: GST number '27ABCDE1234F1Z5' is already registered.
+   at SupplyChain.Identity.Application.Commands.RegisterDealer.RegisterDealerCommandHandler.Handle(RegisterDealerCommand command, CancellationToken ct) in D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Identity\SupplyChain.Identity.Application\Commands\RegisterDealer\RegisterDealerCommandHandler.cs:line 25
+   at SupplyChain.Identity.Application.Behaviors.ValidationBehavior`2.Handle(TRequest request, RequestHandlerDelegate`1 next, CancellationToken ct) in D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Identity\SupplyChain.Identity.Application\Behaviors\ValidationBehavior.cs:line 32
+   at SupplyChain.Identity.Application.Behaviors.LoggingBehavior`2.Handle(TRequest request, RequestHandlerDelegate`1 next, CancellationToken ct) in D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Identity\SupplyChain.Identity.Application\Behaviors\LoggingBehavior.cs:line 25
+[15:17:53 INF] Executed action SupplyChain.Identity.API.Controllers.AuthController.Register (SupplyChain.Identity.API) in 4345.9194ms
+[15:17:53 INF] Executed endpoint 'SupplyChain.Identity.API.Controllers.AuthController.Register (SupplyChain.Identity.API)'
+[15:17:53 INF] HTTP POST /api/auth/register responded 409 in 4464.7874 ms
+[15:17:53 INF] Request finished HTTP/1.1 POST http://localhost:5002/api/auth/register - 409 null application/json 4524.3719ms

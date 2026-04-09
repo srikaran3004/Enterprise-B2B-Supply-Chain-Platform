@@ -1,0 +1,65 @@
+﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using SupplyChain.Identity.Application.Commands.ApproveDealer;
+using SupplyChain.Identity.Application.Commands.RejectDealer;
+using SupplyChain.Identity.Application.Queries.GetDealerList;
+using SupplyChain.Identity.Domain.Enums;
+
+namespace SupplyChain.Identity.API.Controllers;
+
+[ApiController]
+[Route("api/admin/dealers")]
+[Authorize(Roles = "Admin")]
+public class AdminDealerController : ControllerBase
+{
+    private readonly IMediator _mediator;
+
+    public AdminDealerController(IMediator mediator)
+        => _mediator = mediator;
+
+    /// <summary>Get all dealers, optionally filtered by status.</summary>
+    [HttpGet]
+    public async Task<IActionResult> GetDealers(
+        [FromQuery] string? status,
+        CancellationToken ct)
+    {
+        UserStatus? parsedStatus = null;
+        if (!string.IsNullOrWhiteSpace(status) && Enum.TryParse<UserStatus>(status, true, out var s))
+            parsedStatus = s;
+
+        var dealers = await _mediator.Send(new GetDealerListQuery(parsedStatus), ct);
+        return Ok(dealers);
+    }
+
+    /// <summary>Approve a pending dealer.</summary>
+    [HttpPut("{dealerId:guid}/approve")]
+    public async Task<IActionResult> Approve(Guid dealerId, CancellationToken ct)
+    {
+        // Get AdminId from JWT claims
+        var adminId = GetCurrentUserId();
+        await _mediator.Send(new ApproveDealerCommand(dealerId, adminId), ct);
+        return Ok(new { Message = "Dealer approved successfully." });
+    }
+
+    /// <summary>Reject a pending dealer with a reason.</summary>
+    [HttpPut("{dealerId:guid}/reject")]
+    public async Task<IActionResult> Reject(
+        Guid dealerId,
+        [FromBody] RejectRequest request,
+        CancellationToken ct)
+    {
+        var adminId = GetCurrentUserId();
+        await _mediator.Send(new RejectDealerCommand(dealerId, adminId, request.Reason), ct);
+        return Ok(new { Message = "Dealer rejected." });
+    }
+
+    private Guid GetCurrentUserId()
+    {
+        var sub = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+               ?? User.FindFirst("sub")?.Value;
+        return Guid.TryParse(sub, out var id) ? id : Guid.Empty;
+    }
+}
+
+public record RejectRequest(string Reason);

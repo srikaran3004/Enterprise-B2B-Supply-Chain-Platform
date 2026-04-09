@@ -1,0 +1,39 @@
+﻿using System.Text.Json;
+using MediatR;
+using SupplyChain.Order.Application.Abstractions;
+using SupplyChain.Order.Domain.Entities;
+
+namespace SupplyChain.Order.Application.Commands.MarkDelivered;
+
+public class MarkDeliveredCommandHandler : IRequestHandler<MarkDeliveredCommand>
+{
+    private readonly IOrderRepository  _orderRepository;
+    private readonly IOutboxRepository _outboxRepository;
+
+    public MarkDeliveredCommandHandler(IOrderRepository orderRepository, IOutboxRepository outboxRepository)
+    {
+        _orderRepository  = orderRepository;
+        _outboxRepository = outboxRepository;
+    }
+
+    public async Task Handle(MarkDeliveredCommand command, CancellationToken ct)
+    {
+        var order = await _orderRepository.GetByIdAsync(command.OrderId, ct)
+            ?? throw new KeyNotFoundException($"Order {command.OrderId} not found.");
+
+        order.MarkDelivered(command.ActorId);
+
+        // This event triggers invoice generation in Payment Service
+        var outbox = OutboxMessage.Create("OrderDelivered", JsonSerializer.Serialize(new
+        {
+            order.OrderId,
+            order.OrderNumber,
+            order.DealerId,
+            order.TotalAmount,
+            DeliveredAt = DateTime.UtcNow
+        }));
+
+        await _outboxRepository.AddAsync(outbox, ct);
+        await _orderRepository.SaveChangesAsync(ct);
+    }
+}

@@ -1,0 +1,30 @@
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Application\bin\Debug\net10.0\SupplyChain.Catalog.Application.deps.json
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Application\bin\Debug\net10.0\SupplyChain.Catalog.Application.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Application\bin\Debug\net10.0\SupplyChain.Catalog.Application.pdb
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Application\bin\Debug\net10.0\SupplyChain.Catalog.Domain.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Application\bin\Debug\net10.0\SupplyChain.Catalog.Domain.pdb
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Application\obj\Debug\net10.0\SupplyChain.Catalog.Application.csproj.AssemblyReference.cache
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Application\obj\Debug\net10.0\SupplyChain.Catalog.Application.GeneratedMSBuildEditorConfig.editorconfig
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Application\obj\Debug\net10.0\SupplyChain.Catalog.Application.AssemblyInfoInputs.cache
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Application\obj\Debug\net10.0\SupplyChain.Catalog.Application.AssemblyInfo.cs
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Application\obj\Debug\net10.0\SupplyChain.Catalog.Application.csproj.CoreCompileInputs.cache
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Application\obj\Debug\net10.0\SupplyCh.3C97BD77.Up2Date
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Application\obj\Debug\net10.0\SupplyChain.Catalog.Application.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Application\obj\Debug\net10.0\refint\SupplyChain.Catalog.Application.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Application\obj\Debug\net10.0\SupplyChain.Catalog.Application.pdb
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Application\obj\Debug\net10.0\ref\SupplyChain.Catalog.Application.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Application\bin\Debug\net10.0\SupplyChain.Catalog.Application.deps.json
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Application\bin\Debug\net10.0\SupplyChain.Catalog.Application.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Application\bin\Debug\net10.0\SupplyChain.Catalog.Application.pdb
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Application\bin\Debug\net10.0\SupplyChain.Catalog.Domain.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Application\bin\Debug\net10.0\SupplyChain.Catalog.Domain.pdb
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Application\obj\Debug\net10.0\SupplyChain.Catalog.Application.csproj.AssemblyReference.cache
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Application\obj\Debug\net10.0\SupplyChain.Catalog.Application.GeneratedMSBuildEditorConfig.editorconfig
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Application\obj\Debug\net10.0\SupplyChain.Catalog.Application.AssemblyInfoInputs.cache
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Application\obj\Debug\net10.0\SupplyChain.Catalog.Application.AssemblyInfo.cs
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Application\obj\Debug\net10.0\SupplyChain.Catalog.Application.csproj.CoreCompileInputs.cache
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Application\obj\Debug\net10.0\SupplyCh.3C97BD77.Up2Date
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Application\obj\Debug\net10.0\SupplyChain.Catalog.Application.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Application\obj\Debug\net10.0\refint\SupplyChain.Catalog.Application.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Application\obj\Debug\net10.0\SupplyChain.Catalog.Application.pdb
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Application\obj\Debug\net10.0\ref\SupplyChain.Catalog.Application.dll

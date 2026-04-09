@@ -1,0 +1,12 @@
+﻿namespace SupplyChain.Identity.Application.DTOs;
+
+public record AuthResultDto(
+    string? AccessToken,
+    int ExpiresInSeconds,
+    string? RefreshToken,
+    string Role,
+    string FullName,
+    Guid UserId,
+    bool RequiresOtp = false,
+    string? Message = null
+);

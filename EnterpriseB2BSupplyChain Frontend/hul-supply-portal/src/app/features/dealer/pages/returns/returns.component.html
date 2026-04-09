@@ -1,0 +1,127 @@
+<div class="returns-page">
+  <hul-page-header title="My Returns" subtitle="Track and manage your return requests"
+    [breadcrumbs]="[{label: 'Home', route: '/dealer/dashboard'}, {label: 'Returns'}]">
+  </hul-page-header>
+
+  <!-- Eligible Orders for Return -->
+  <hul-card *ngIf="myOrders.length > 0" style="margin-bottom: 20px;">
+    <div style="padding: 20px;">
+      <h3 style="margin: 0 0 16px; font-size: 16px; font-weight: 600; color: var(--text-primary);">Eligible Orders for Return</h3>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px;">
+        <div *ngFor="let order of myOrders" class="order-card" (click)="openRaiseReturnModal(order)">
+          <div class="order-card__header">
+            <span class="order-number">{{ order.orderNumber }}</span>
+            <span class="order-date">{{ order.placedAt | date:'mediumDate' }}</span>
+          </div>
+          <div class="order-card__body">
+            <span class="order-amount">₹{{ order.totalAmount?.toLocaleString('en-IN') }}</span>
+            <span class="order-items">{{ order.totalItems }} items</span>
+          </div>
+          <button class="return-btn">Request Return</button>
+        </div>
+      </div>
+    </div>
+  </hul-card>
+
+  <!-- Return Requests -->
+  <hul-card>
+    <div style="padding: 20px;">
+      <h3 style="margin: 0 0 16px; font-size: 16px; font-weight: 600; color: var(--text-primary);">My Return Requests</h3>
+      
+      <hul-skeleton *ngIf="loading" type="text" [count]="3"></hul-skeleton>
+
+      <div *ngIf="!loading && returns.length === 0" class="empty-state">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-tertiary)" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+        </svg>
+        <h4>No Returns Found</h4>
+        <p>You haven't requested any order returns yet.</p>
+      </div>
+
+      <div class="returns-list" *ngIf="!loading && returns.length > 0">
+        <div *ngFor="let ret of returns" class="return-item">
+          <div class="return-item__header">
+            <div>
+              <span class="return-order">Order: {{ ret.orderId.substring(0,8).toUpperCase() }}</span>
+              <span class="return-date">{{ ret.createdAt | date:'medium' }}</span>
+            </div>
+            <hul-status-badge [status]="ret.status"></hul-status-badge>
+          </div>
+          <div class="return-item__body">
+            <div class="return-reason">
+              <strong>Reason:</strong> {{ ret.reason }}
+            </div>
+            <div *ngIf="ret.photoUrl" class="return-image">
+              <img [src]="ret.photoUrl" alt="Return proof" (click)="openImage(ret.photoUrl)" />
+              <span class="image-hint">Click to enlarge</span>
+            </div>
+            <div *ngIf="ret.refundAmount" class="return-refund">
+              <strong>Refund Amount:</strong> <span class="refund-value">₹{{ ret.refundAmount.toLocaleString('en-IN') }}</span>
+            </div>
+            <div *ngIf="ret.adminNotes" class="admin-notes">
+              <strong>Admin Note:</strong> {{ ret.adminNotes }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </hul-card>
+
+  <!-- Raise Return Modal -->
+  <hul-modal *ngIf="showRaiseReturnModal" [open]="showRaiseReturnModal" title="Request Return" size="md" (close)="showRaiseReturnModal = false">
+    <div class="return-form" *ngIf="selectedOrder">
+      <div class="order-info">
+        <h4>Order Details</h4>
+        <div class="info-row">
+          <span>Order Number:</span>
+          <strong>{{ selectedOrder.orderNumber }}</strong>
+        </div>
+        <div class="info-row">
+          <span>Order Date:</span>
+          <strong>{{ selectedOrder.placedAt | date:'mediumDate' }}</strong>
+        </div>
+        <div class="info-row">
+          <span>Total Amount:</span>
+          <strong>₹{{ selectedOrder.totalAmount?.toLocaleString('en-IN') }}</strong>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Return Reason *</label>
+        <textarea [(ngModel)]="returnReason" rows="4" placeholder="Please describe the reason for return (e.g., damaged product, wrong item received, quality issues)" class="form-input"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Proof Image * (Required)</label>
+        <div class="file-upload">
+          <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" style="display: none;" />
+          <button *ngIf="!imagePreview" class="upload-btn" (click)="fileInput.click()" type="button">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <polyline points="21 15 16 10 5 21"/>
+            </svg>
+            Upload Image
+          </button>
+          <div *ngIf="imagePreview" class="image-preview">
+            <img [src]="imagePreview" alt="Preview" />
+            <button class="remove-btn" (click)="removeImage()" type="button">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <span class="help-text">Upload a clear image showing the issue (Max 5MB, JPG/PNG)</span>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn--ghost" (click)="showRaiseReturnModal = false" [disabled]="submittingReturn">Cancel</button>
+        <button class="btn btn--primary" (click)="submitReturn()" [disabled]="!returnReason.trim() || !selectedFile || submittingReturn">
+          {{ submittingReturn ? 'Submitting...' : 'Submit Return Request' }}
+        </button>
+      </div>
+    </div>
+  </hul-modal>
+</div>

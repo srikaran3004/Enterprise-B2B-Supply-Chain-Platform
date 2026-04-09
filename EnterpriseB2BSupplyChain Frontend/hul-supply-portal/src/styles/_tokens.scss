@@ -1,0 +1,89 @@
+:root {
+  /* Brand Colors */
+  --hul-primary:        #0369a1;
+  --hul-primary-hover:  #0284c7;
+  --hul-primary-light:  #e0f2fe;
+  --hul-accent:         #f59e0b;
+  --hul-accent-hover:   #d97706;
+  --hul-success:        #10b981;
+  --hul-warning:        #f59e0b;
+  --hul-danger:         #ef4444;
+  --hul-info:           #3b82f6;
+
+  /* Neutral Scale */
+  --hul-gray-50:        #f8fafc;
+  --hul-gray-100:       #f1f5f9;
+  --hul-gray-200:       #e2e8f0;
+  --hul-gray-300:       #cbd5e1;
+  --hul-gray-400:       #94a3b8;
+  --hul-gray-500:       #64748b;
+  --hul-gray-600:       #475569;
+  --hul-gray-700:       #334155;
+  --hul-gray-800:       #1e293b;
+  --hul-gray-900:       #0f172a;
+
+  /* Semantic Light Mode */
+  --bg-base:            #ffffff;
+  --bg-subtle:          #f8fafc;
+  --bg-muted:           #f1f5f9;
+  --bg-card:            #ffffff;
+  --bg-overlay:         rgba(15, 23, 42, 0.6);
+
+  --text-primary:       #0f172a;
+  --text-secondary:     #334155;
+  --text-tertiary:      #64748b;
+  --text-inverse:       #ffffff;
+  --text-disabled:      #cbd5e1;
+
+  --border-default:     #e2e8f0;
+  --border-strong:      #cbd5e1;
+  --border-focus:       #0369a1;
+
+  /* Typography */
+  --font-display:       'Space Grotesk', sans-serif;
+  --font-body:          'DM Sans', sans-serif;
+  --font-mono:          'JetBrains Mono', monospace;
+
+  /* Radius */
+  --radius-sm:          4px;
+  --radius-md:          8px;
+  --radius-lg:          12px;
+  --radius-xl:          16px;
+  --radius-2xl:         24px;
+  --radius-full:        9999px;
+
+  /* Shadows */
+  --shadow-xs:  0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-sm:  0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md:  0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg:  0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl:  0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-card: 0 0 0 1px var(--border-default), 0 2px 4px rgb(0 0 0 / 0.04);
+
+  /* Motion */
+  --ease-out:    cubic-bezier(0.0, 0.0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0.0, 0.2, 1);
+  --duration-fast:   150ms;
+  --duration-base:   200ms;
+  --duration-slow:   350ms;
+  --duration-slower: 500ms;
+}
+
+.dark {
+  --bg-base:        #0f172a;
+  --bg-subtle:      #1e293b;
+  --bg-muted:       #1e293b;
+  --bg-card:        #1e293b;
+  --bg-overlay:     rgba(0, 0, 0, 0.7);
+
+  --text-primary:   #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-tertiary:  #94a3b8;
+  --text-disabled:  #334155;
+
+  --border-default: #334155;
+  --border-strong:  #475569;
+  --border-focus:   #38bdf8;
+
+  --shadow-card: 0 0 0 1px var(--border-default), 0 2px 8px rgb(0 0 0 / 0.3);
+}

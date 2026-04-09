@@ -1,0 +1,11 @@
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.Domain\bin\Release\net10.0\SupplyChain.Notification.Domain.deps.json
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.Domain\bin\Release\net10.0\SupplyChain.Notification.Domain.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.Domain\bin\Release\net10.0\SupplyChain.Notification.Domain.pdb
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.Domain\obj\Release\net10.0\SupplyChain.Notification.Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.Domain\obj\Release\net10.0\SupplyChain.Notification.Domain.AssemblyInfoInputs.cache
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.Domain\obj\Release\net10.0\SupplyChain.Notification.Domain.AssemblyInfo.cs
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.Domain\obj\Release\net10.0\SupplyChain.Notification.Domain.csproj.CoreCompileInputs.cache
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.Domain\obj\Release\net10.0\SupplyChain.Notification.Domain.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.Domain\obj\Release\net10.0\refint\SupplyChain.Notification.Domain.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.Domain\obj\Release\net10.0\SupplyChain.Notification.Domain.pdb
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.Domain\obj\Release\net10.0\ref\SupplyChain.Notification.Domain.dll

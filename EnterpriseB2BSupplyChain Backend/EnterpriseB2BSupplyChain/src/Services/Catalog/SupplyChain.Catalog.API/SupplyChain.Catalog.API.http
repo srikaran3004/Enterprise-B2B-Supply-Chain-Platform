@@ -1,0 +1,6 @@
+@SupplyChain.Catalog.API_HostAddress = http://localhost:5073
+
+GET {{SupplyChain.Catalog.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

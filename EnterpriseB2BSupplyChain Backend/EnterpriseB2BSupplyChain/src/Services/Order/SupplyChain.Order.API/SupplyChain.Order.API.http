@@ -1,0 +1,6 @@
+@SupplyChain.Order.API_HostAddress = http://localhost:5120
+
+GET {{SupplyChain.Order.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

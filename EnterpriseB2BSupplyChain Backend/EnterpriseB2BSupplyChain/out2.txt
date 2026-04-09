@@ -1,0 +1,35 @@
+﻿  Determining projects to restore...
+  All projects are up-to-date for restore.
+  SupplyChain.Identity.Domain -> D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Identity\SupplyChain.Identity.Domain\bin\Debug\net10.0\SupplyChain.Identity.Domain.dll
+  SupplyChain.Logistics.Domain -> D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.Domain\bin\Debug\net10.0\SupplyChain.Logistics.Domain.dll
+  SupplyChain.Logistics.Application -> D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.Application\bin\Debug\net10.0\SupplyChain.Logistics.Application.dll
+  SupplyChain.Order.Domain -> D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Order\SupplyChain.Order.Domain\bin\Debug\net10.0\SupplyChain.Order.Domain.dll
+  SupplyChain.Catalog.Domain -> D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Domain\bin\Debug\net10.0\SupplyChain.Catalog.Domain.dll
+  SupplyChain.Notification.Domain -> D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.Domain\bin\Debug\net10.0\SupplyChain.Notification.Domain.dll
+  SupplyChain.Gateway -> D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\bin\Debug\net10.0\SupplyChain.Gateway.dll
+  SupplyChain.Payment.Domain -> D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Domain\bin\Debug\net10.0\SupplyChain.Payment.Domain.dll
+  SupplyChain.Catalog.Application -> D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Application\bin\Debug\net10.0\SupplyChain.Catalog.Application.dll
+  SupplyChain.Identity.Application -> D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Identity\SupplyChain.Identity.Application\bin\Debug\net10.0\SupplyChain.Identity.Application.dll
+  SupplyChain.Notification.Application -> D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.Application\bin\Debug\net10.0\SupplyChain.Notification.Application.dll
+  SupplyChain.Payment.Application -> D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Application\bin\Debug\net10.0\SupplyChain.Payment.Application.dll
+  SupplyChain.Logistics.Infrastructure -> D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.Infrastructure\bin\Debug\net10.0\SupplyChain.Logistics.Infrastructure.dll
+  SupplyChain.Payment.Infrastructure -> D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Debug\net10.0\SupplyChain.Payment.Infrastructure.dll
+  SupplyChain.Logistics.API -> D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.API\bin\Debug\net10.0\SupplyChain.Logistics.API.dll
+  SupplyChain.Catalog.Infrastructure -> D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Infrastructure\bin\Debug\net10.0\SupplyChain.Catalog.Infrastructure.dll
+  SupplyChain.Identity.Infrastructure -> D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Identity\SupplyChain.Identity.Infrastructure\bin\Debug\net10.0\SupplyChain.Identity.Infrastructure.dll
+  SupplyChain.Notification.Infrastructure -> D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.Infrastructure\bin\Debug\net10.0\SupplyChain.Notification.Infrastructure.dll
+  SupplyChain.Notification.API -> D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\bin\Debug\net10.0\SupplyChain.Notification.API.dll
+  SupplyChain.Catalog.API -> D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.API\bin\Debug\net10.0\SupplyChain.Catalog.API.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.API\Controllers\RazorpayController.cs(34,13): error CS0023: Operator '!' cannot be applied to operand of type 'RazorpayConfirmationResult' [D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.API\SupplyChain.Payment.API.csproj]
+  SupplyChain.Order.Application -> D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Order\SupplyChain.Order.Application\bin\Debug\net10.0\SupplyChain.Order.Application.dll
+  SupplyChain.Identity.API -> D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Identity\SupplyChain.Identity.API\bin\Debug\net10.0\SupplyChain.Identity.API.dll
+  SupplyChain.Order.Infrastructure -> D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Order\SupplyChain.Order.Infrastructure\bin\Debug\net10.0\SupplyChain.Order.Infrastructure.dll
+  SupplyChain.Order.API -> D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Order\SupplyChain.Order.API\bin\Debug\net10.0\SupplyChain.Order.API.dll
+
+Build FAILED.
+
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.API\Controllers\RazorpayController.cs(34,13): error CS0023: Operator '!' cannot be applied to operand of type 'RazorpayConfirmationResult' [D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.API\SupplyChain.Payment.API.csproj]
+    0 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:07.54

@@ -1,0 +1,17 @@
+Using launch settings from src\Gateway\SupplyChain.Gateway\Properties\launchSettings.json...
+Building...
+[15:17:19 INF] User profile is available. Using 'C:\Users\Srikaran\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+[15:17:19 INF] Now listening on: http://localhost:5000
+[15:17:19 INF] Application started. Press Ctrl+C to shut down.
+[15:17:19 INF] Hosting environment: Development
+[15:17:19 INF] Content root path: D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway
+[15:17:45 INF] Request starting HTTP/1.1 POST http://localhost:5000/api/auth/register - application/json 423
+[15:17:48 INF] RequestId: 0HNK9H9J7DV24:00000001, PreviousRequestId: -
+Rate limiting is disabled for route '/api/auth/{everything}' via the EnableRateLimiting option.
+[15:17:48 INF] RequestId: 0HNK9H9J7DV24:00000001, PreviousRequestId: -
+No authentication is required for the path '/api/auth/register' in the route /api/auth/{everything}.
+[15:17:53 WRN] RequestId: 0HNK9H9J7DV24:00000001, PreviousRequestId: -
+409 Conflict status code of request URI: http://localhost:5002/api/auth/register
+[15:17:53 INF] HTTP POST /api/auth/register responded 409 in 8240.9653 ms
+[15:17:53 INF] Request finished HTTP/1.1 POST http://localhost:5000/api/auth/register - 409 null application/json 8268.9812ms
+[15:17:53 INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: POST http://localhost:5000/api/auth/register, Response status code: 409

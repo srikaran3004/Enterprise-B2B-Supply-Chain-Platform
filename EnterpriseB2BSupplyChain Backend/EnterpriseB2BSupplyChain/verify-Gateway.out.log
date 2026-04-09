@@ -1,0 +1,7 @@
+Using launch settings from src\Gateway\SupplyChain.Gateway\Properties\launchSettings.json...
+Building...
+[15:02:12 INF] User profile is available. Using 'C:\Users\Srikaran\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+[15:02:13 INF] Now listening on: http://localhost:5000
+[15:02:13 INF] Application started. Press Ctrl+C to shut down.
+[15:02:13 INF] Hosting environment: Development
+[15:02:13 INF] Content root path: D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway

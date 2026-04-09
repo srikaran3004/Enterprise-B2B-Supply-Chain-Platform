@@ -1,0 +1,53 @@
+Using launch settings from src\Services\Order\SupplyChain.Order.API\Properties\launchSettings.json...
+[11:06:48 INF] Executed DbCommand (56ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT 1
+[11:06:48 INF] Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.
+[11:06:48 INF] Executed DbCommand (35ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+DECLARE @result int;
+EXEC @result = sp_getapplock @Resource = '__EFMigrationsLock', @LockOwner = 'Session', @LockMode = 'Exclusive';
+SELECT @result
+[11:06:49 INF] Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
+BEGIN
+    CREATE TABLE [__EFMigrationsHistory] (
+        [MigrationId] nvarchar(150) NOT NULL,
+        [ProductVersion] nvarchar(32) NOT NULL,
+        CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY ([MigrationId])
+    );
+END;
+[11:06:49 INF] Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT 1
+[11:06:49 INF] Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT OBJECT_ID(N'[__EFMigrationsHistory]');
+[11:06:49 INF] Executed DbCommand (11ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT [MigrationId], [ProductVersion]
+FROM [__EFMigrationsHistory]
+ORDER BY [MigrationId];
+[11:06:49 INF] No migrations were applied. The database is already up to date.
+[11:06:49 INF] Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+DECLARE @result int;
+EXEC @result = sp_releaseapplock @Resource = '__EFMigrationsLock', @LockOwner = 'Session';
+SELECT @result
+[11:06:49 INF] Start installing Hangfire SQL objects...
+[11:06:50 INF] Hangfire SQL objects installed.
+[11:06:50 INF] User profile is available. Using 'C:\Users\Srikaran\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+[11:06:51 INF] Now listening on: http://localhost:5006
+[11:06:51 INF] Starting Hangfire Server using job storage: 'SQL Server: ASUS-VIVOBOOK-1\SQLEXPRESS@OrderDB'
+[11:06:51 INF] Using the following options for SQL Server job storage: Queue poll interval: 00:00:00.
+[11:06:51 INF] Using the following options for Hangfire Server:
+    Worker count: 20
+    Listening queues: 'default'
+    Shutdown timeout: 00:00:15
+    Schedule polling interval: 00:00:15
+[11:06:51 INF] Application started. Press Ctrl+C to shut down.
+[11:06:51 INF] Hosting environment: Development
+[11:06:51 INF] Content root path: D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Order\SupplyChain.Order.API
+[11:06:51 INF] Server asus-vivobook-1:13124:b38014d7 successfully announced in 20.5414 ms
+[11:06:51 INF] Server asus-vivobook-1:13124:b38014d7 is starting the registered dispatchers: ServerWatchdog, ServerJobCancellationWatcher, SqlServerHeartbeatProcess, ExpirationManager, CountersAggregator, Worker, DelayedJobScheduler, RecurringJobScheduler...
+[11:06:51 INF] 1 servers were removed due to timeout
+[11:06:51 INF] Server asus-vivobook-1:13124:b38014d7 all the dispatchers started
+[11:06:52 INF] Executed DbCommand (6ms) [Parameters=[@p='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+SELECT TOP(@p) [o].[MessageId], [o].[CreatedAt], [o].[Error], [o].[EventType], [o].[Payload], [o].[PublishedAt], [o].[RetryCount], [o].[Status]
+FROM [OutboxMessages] AS [o]
+WHERE [o].[Status] = N'Pending'
+ORDER BY [o].[CreatedAt]

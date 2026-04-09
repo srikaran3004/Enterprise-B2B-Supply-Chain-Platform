@@ -1,0 +1,42 @@
+﻿node.exe : [1m[31m[31mX 
+[41;31m[[41;97mERROR[41;31m][0m 
+[1mTS2322: Type '"list"' is not 
+assignable to type '"table" | 
+"text" | "card" | "avatar" | 
+"product-card"'.[0m 
+[1m[35m[plugin 
+angular-compiler][0m
+At C:\nvm4w\nodejs\npx.ps1:16 char:5
++     & "$basedir/node$exe"  "$based
+ir/node_modules/npm/bin/npx-cli.js" 
+...
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotS  
+  pecified: ([1m[31m[31mX...r    
+-compiler][0m:String) [], Rem    
+oteException
+    + FullyQualifiedErrorId : Nati  
+  veCommandError
+ 
+
+    src/app/features/dealer/pages/re
+turns/returns.component.html:9:36:
+[37m      9 Γöé ...<hul-skeleton 
+*ngIf="loading" 
+[32mtype[37m="list" 
+[count]="3"></hul-skel...
+        Γò╡                         
+         [32m~~~~[0m
+
+  Error occurs in the template of 
+component ReturnsComponent.
+
+    src/app/features/dealer/pages/re
+turns/returns.component.ts:7:15:
+[37m      7 Γöé   templateUrl: 
+[32m'./returns.component.html'[37m
+        Γò╡                
+[32m~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m

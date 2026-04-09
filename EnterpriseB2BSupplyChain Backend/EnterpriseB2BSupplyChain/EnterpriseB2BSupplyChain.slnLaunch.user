@@ -1,0 +1,35 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "src\\Services\\Catalog\\SupplyChain.Catalog.API\\SupplyChain.Catalog.API.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "src\\Services\\Identity\\SupplyChain.Identity.API\\SupplyChain.Identity.API.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "src\\Services\\Logistics\\SupplyChain.Logistics.API\\SupplyChain.Logistics.API.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "src\\Services\\Notification\\SupplyChain.Notification.API\\SupplyChain.Notification.API.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "src\\Services\\Order\\SupplyChain.Order.API\\SupplyChain.Order.API.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "src\\Services\\Payment\\SupplyChain.Payment.API\\SupplyChain.Payment.API.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "src\\Gateway\\SupplyChain.Gateway\\SupplyChain.Gateway.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

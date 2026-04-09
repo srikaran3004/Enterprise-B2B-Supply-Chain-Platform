@@ -1,0 +1,85 @@
+{
+  "/api/auth": {
+    "target": "http://localhost:5002",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/api/admin": {
+    "target": "http://localhost:5002",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/api/super-admin": {
+    "target": "http://localhost:5002",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/api/users": {
+    "target": "http://localhost:5002",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/api/shipping-addresses": {
+    "target": "http://localhost:5002",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/profile-pictures": {
+    "target": "http://localhost:5002",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/api/products": {
+    "target": "http://localhost:5004",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/api/categories": {
+    "target": "http://localhost:5004",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/api/inventory": {
+    "target": "http://localhost:5004",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/api/orders": {
+    "target": "http://localhost:5006",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/api/returns": {
+    "target": "http://localhost:5006",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/api/logistics": {
+    "target": "http://localhost:5008",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/api/payment": {
+    "target": "http://localhost:5010",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/api/notifications": {
+    "target": "http://localhost:5012",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}

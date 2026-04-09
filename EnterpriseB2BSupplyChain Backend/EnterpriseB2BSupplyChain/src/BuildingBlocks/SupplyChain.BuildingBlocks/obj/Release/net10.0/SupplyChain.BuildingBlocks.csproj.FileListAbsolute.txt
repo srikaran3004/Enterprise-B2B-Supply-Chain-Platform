@@ -1,0 +1,12 @@
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\BuildingBlocks\SupplyChain.BuildingBlocks\obj\Release\net10.0\SupplyChain.BuildingBlocks.csproj.AssemblyReference.cache
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\BuildingBlocks\SupplyChain.BuildingBlocks\obj\Release\net10.0\SupplyChain.BuildingBlocks.GeneratedMSBuildEditorConfig.editorconfig
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\BuildingBlocks\SupplyChain.BuildingBlocks\obj\Release\net10.0\SupplyChain.BuildingBlocks.AssemblyInfoInputs.cache
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\BuildingBlocks\SupplyChain.BuildingBlocks\obj\Release\net10.0\SupplyChain.BuildingBlocks.AssemblyInfo.cs
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\BuildingBlocks\SupplyChain.BuildingBlocks\obj\Release\net10.0\SupplyChain.BuildingBlocks.csproj.CoreCompileInputs.cache
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\BuildingBlocks\SupplyChain.BuildingBlocks\bin\Release\net10.0\SupplyChain.BuildingBlocks.deps.json
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\BuildingBlocks\SupplyChain.BuildingBlocks\bin\Release\net10.0\SupplyChain.BuildingBlocks.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\BuildingBlocks\SupplyChain.BuildingBlocks\bin\Release\net10.0\SupplyChain.BuildingBlocks.pdb
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\BuildingBlocks\SupplyChain.BuildingBlocks\obj\Release\net10.0\SupplyChain.BuildingBlocks.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\BuildingBlocks\SupplyChain.BuildingBlocks\obj\Release\net10.0\refint\SupplyChain.BuildingBlocks.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\BuildingBlocks\SupplyChain.BuildingBlocks\obj\Release\net10.0\SupplyChain.BuildingBlocks.pdb
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\BuildingBlocks\SupplyChain.BuildingBlocks\obj\Release\net10.0\ref\SupplyChain.BuildingBlocks.dll

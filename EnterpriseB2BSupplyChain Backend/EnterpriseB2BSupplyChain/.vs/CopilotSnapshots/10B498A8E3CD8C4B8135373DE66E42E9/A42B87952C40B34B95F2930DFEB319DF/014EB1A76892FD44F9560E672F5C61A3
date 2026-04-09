@@ -1,0 +1,19 @@
+﻿using MediatR;
+using SupplyChain.Identity.Application.DTOs;
+
+namespace SupplyChain.Identity.Application.Commands.RegisterDealer;
+
+public record RegisterDealerCommand(
+    string Email,
+    string Password,
+    string FullName,
+    string? PhoneNumber,
+    string BusinessName,
+    string GstNumber,
+    string? TradeLicenseNumber,
+    string AddressLine1,
+    string City,
+    string State,
+    string PinCode,
+    bool IsInterstate
+) : IRequest<Guid>;

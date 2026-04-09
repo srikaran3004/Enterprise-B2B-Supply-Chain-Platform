@@ -1,0 +1,53 @@
+Using launch settings from src\Services\Logistics\SupplyChain.Logistics.API\Properties\launchSettings.json...
+Building...
+[12:28:43 INF] Executed DbCommand (34ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT 1
+[12:28:43 INF] Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.
+[12:28:43 INF] Executed DbCommand (33ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+DECLARE @result int;
+EXEC @result = sp_getapplock @Resource = '__EFMigrationsLock', @LockOwner = 'Session', @LockMode = 'Exclusive';
+SELECT @result
+[12:28:43 INF] Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
+BEGIN
+    CREATE TABLE [__EFMigrationsHistory] (
+        [MigrationId] nvarchar(150) NOT NULL,
+        [ProductVersion] nvarchar(32) NOT NULL,
+        CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY ([MigrationId])
+    );
+END;
+[12:28:43 INF] Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT 1
+[12:28:43 INF] Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT OBJECT_ID(N'[__EFMigrationsHistory]');
+[12:28:43 INF] Executed DbCommand (10ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT [MigrationId], [ProductVersion]
+FROM [__EFMigrationsHistory]
+ORDER BY [MigrationId];
+[12:28:43 INF] No migrations were applied. The database is already up to date.
+[12:28:43 INF] Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+DECLARE @result int;
+EXEC @result = sp_releaseapplock @Resource = '__EFMigrationsLock', @LockOwner = 'Session';
+SELECT @result
+[12:28:44 INF] Start installing Hangfire SQL objects...
+[12:28:45 INF] Hangfire SQL objects installed.
+[12:28:45 INF] User profile is available. Using 'C:\Users\Srikaran\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+[12:28:45 INF] Now listening on: http://localhost:5048
+[12:28:45 INF] Starting Hangfire Server using job storage: 'SQL Server: ASUS-VIVOBOOK-1\SQLEXPRESS@LogisticsDB'
+[12:28:45 INF] Using the following options for SQL Server job storage: Queue poll interval: 00:00:00.
+[12:28:45 INF] Using the following options for Hangfire Server:
+    Worker count: 20
+    Listening queues: 'default'
+    Shutdown timeout: 00:00:15
+    Schedule polling interval: 00:00:15
+[12:28:45 INF] Application started. Press Ctrl+C to shut down.
+[12:28:45 INF] Hosting environment: Development
+[12:28:45 INF] Content root path: D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.API
+[12:28:45 INF] Server asus-vivobook-1:17504:8cc89bde successfully announced in 13.0625 ms
+[12:28:45 INF] Server asus-vivobook-1:17504:8cc89bde is starting the registered dispatchers: ServerWatchdog, ServerJobCancellationWatcher, SqlServerHeartbeatProcess, ExpirationManager, CountersAggregator, Worker, DelayedJobScheduler, RecurringJobScheduler...
+[12:28:45 INF] Server asus-vivobook-1:17504:8cc89bde all the dispatchers started
+[12:28:57 INF] Request starting HTTP/1.1 GET http://localhost:5048/health - null null
+[12:28:58 INF] Executing endpoint 'Health checks'
+[12:28:58 INF] Executed endpoint 'Health checks'
+[12:28:58 INF] HTTP GET /health responded 200 in 35.7190 ms
+[12:28:58 INF] Request finished HTTP/1.1 GET http://localhost:5048/health - 200 null text/plain 65.5093ms

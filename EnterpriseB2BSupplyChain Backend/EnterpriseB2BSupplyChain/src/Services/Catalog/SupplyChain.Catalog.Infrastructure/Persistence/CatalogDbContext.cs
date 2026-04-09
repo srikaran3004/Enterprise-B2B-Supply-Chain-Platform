@@ -1,0 +1,21 @@
+using Microsoft.EntityFrameworkCore;
+using SupplyChain.Catalog.Domain.Entities;
+
+namespace SupplyChain.Catalog.Infrastructure.Persistence;
+
+public class CatalogDbContext : DbContext
+{
+    public CatalogDbContext(DbContextOptions<CatalogDbContext> options)
+        : base(options) { }
+
+    public DbSet<Product> Products => Set<Product>();
+    public DbSet<Category> Categories => Set<Category>();
+    public DbSet<StockSubscription> StockSubscriptions => Set<StockSubscription>();
+    public DbSet<FavoriteProduct> FavoriteProducts => Set<FavoriteProduct>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(CatalogDbContext).Assembly);
+        base.OnModelCreating(modelBuilder);
+    }
+}

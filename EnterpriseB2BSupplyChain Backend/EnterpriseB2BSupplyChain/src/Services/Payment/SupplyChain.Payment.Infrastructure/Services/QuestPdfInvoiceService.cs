@@ -1,0 +1,121 @@
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
+using SupplyChain.Payment.Application.Abstractions;
+using SupplyChain.Payment.Domain.Entities;
+
+namespace SupplyChain.Payment.Infrastructure.Services;
+
+public class QuestPdfInvoiceService : IInvoicePdfService
+{
+    private readonly string _outputFolder;
+
+    public QuestPdfInvoiceService()
+    {
+        _outputFolder = Path.Combine(Directory.GetCurrentDirectory(), "invoices");
+        Directory.CreateDirectory(_outputFolder);
+        QuestPDF.Settings.License = LicenseType.Community;
+    }
+
+    public Task<string> GenerateAsync(Invoice invoice, CancellationToken ct = default)
+    {
+        var filePath = Path.Combine(_outputFolder, $"{invoice.InvoiceNumber}.pdf");
+
+        Document.Create(container =>
+        {
+            container.Page(page =>
+            {
+                page.Size(PageSizes.A4);
+                page.Margin(40);
+                page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Arial"));
+
+                page.Header().Column(col =>
+                {
+                    col.Item().Row(row =>
+                    {
+                        row.RelativeItem().Column(c =>
+                        {
+                            c.Item().Text("UniDistrib — Wholesale Platform")
+                                .Bold().FontSize(16).FontColor("#1A2A4A");
+                            c.Item().Text("Tax Invoice").FontSize(12).FontColor("#2563EB");
+                        });
+                        row.ConstantItem(150).Column(c =>
+                        {
+                            c.Item().Text($"Invoice #: {invoice.InvoiceNumber}").Bold();
+                            c.Item().Text($"Date: {invoice.GeneratedAt:dd MMM yyyy}");
+                        });
+                    });
+                    col.Item().PaddingTop(8).LineHorizontal(1).LineColor("#2563EB");
+                });
+
+                page.Content().PaddingTop(16).Column(col =>
+                {
+                    col.Item().Text($"Order ID: {invoice.OrderId}").FontColor("#64748B");
+                    col.Item().Text($"GST Type: {invoice.GstType}  |  Payment Mode: {invoice.PaymentMode}")
+                        .FontColor("#64748B");
+                    col.Item().PaddingTop(12);
+
+                    col.Item().Table(table =>
+                    {
+                        table.ColumnsDefinition(cols =>
+                        {
+                            cols.RelativeColumn(3);
+                            cols.ConstantColumn(60);
+                            cols.ConstantColumn(60);
+                            cols.ConstantColumn(80);
+                            cols.ConstantColumn(80);
+                        });
+
+                        static IContainer HeaderCell(IContainer c) =>
+                            c.Background("#1A2A4A").Padding(5);
+
+                        table.Header(header =>
+                        {
+                            header.Cell().Element(HeaderCell)
+                                .Text("Product").Bold().FontColor(Colors.White);
+                            header.Cell().Element(HeaderCell)
+                                .Text("SKU").Bold().FontColor(Colors.White);
+                            header.Cell().Element(HeaderCell).AlignRight()
+                                .Text("Qty").Bold().FontColor(Colors.White);
+                            header.Cell().Element(HeaderCell).AlignRight()
+                                .Text("Unit Price").Bold().FontColor(Colors.White);
+                            header.Cell().Element(HeaderCell).AlignRight()
+                                .Text("Total").Bold().FontColor(Colors.White);
+                        });
+
+                        var odd = true;
+                        foreach (var line in invoice.Lines)
+                        {
+                            var bg = odd ? Colors.White : Colors.Blue.Lighten5;
+                            odd = !odd;
+
+                            IContainer RowCell(IContainer c) =>
+                                c.Background(bg).Padding(5);
+
+                            table.Cell().Element(RowCell).Text(line.ProductName);
+                            table.Cell().Element(RowCell).Text(line.SKU);
+                            table.Cell().Element(RowCell).AlignRight().Text(line.Quantity.ToString());
+                            table.Cell().Element(RowCell).AlignRight().Text($"₹{line.UnitPrice:N2}");
+                            table.Cell().Element(RowCell).AlignRight().Text($"₹{line.LineTotal:N2}");
+                        }
+                    });
+
+                    col.Item().PaddingTop(12).AlignRight().Column(totals =>
+                    {
+                        totals.Item().Text($"Subtotal:     ₹{invoice.Subtotal:N2}");
+                        totals.Item().Text($"{invoice.GstType} @{invoice.GstRate}%:   ₹{invoice.GstAmount:N2}");
+                        totals.Item().PaddingTop(4)
+                            .Text($"Grand Total:  ₹{invoice.GrandTotal:N2}")
+                            .Bold().FontSize(13).FontColor("#1A2A4A");
+                    });
+                });
+
+                page.Footer().AlignCenter()
+                    .Text("This is a computer-generated invoice. No signature required.")
+                    .FontSize(8).FontColor("#94A3B8");
+            });
+        }).GeneratePdf(filePath);
+
+        return Task.FromResult(filePath);
+    }
+}

@@ -1,0 +1,49 @@
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using SupplyChain.Notification.Application.Abstractions;
+
+namespace SupplyChain.Notification.API.Controllers;
+
+[ApiController]
+[Route("api/notifications")]
+[Authorize(Roles = "Admin")]
+public class NotificationsController : ControllerBase
+{
+    private readonly INotificationRepository _repository;
+
+    public NotificationsController(INotificationRepository repository)
+        => _repository = repository;
+
+    [HttpGet("templates")]
+    public async Task<IActionResult> GetTemplates(CancellationToken ct)
+    {
+        var templates = await _repository.GetAllTemplatesAsync(ct);
+        return Ok(templates.Select(t => new
+        {
+            t.TemplateId,
+            t.EventType,
+            t.Subject,
+            t.IsActive,
+            t.UpdatedAt
+        }));
+    }
+
+    [HttpPut("templates/{templateId:guid}")]
+    public async Task<IActionResult> UpdateTemplate(
+        Guid templateId,
+        [FromBody] UpdateTemplateRequest request,
+        CancellationToken ct)
+    {
+        var templates = await _repository.GetAllTemplatesAsync(ct);
+        var template  = templates.FirstOrDefault(t => t.TemplateId == templateId);
+
+        if (template is null)
+            return NotFound();
+
+        template.Update(request.Subject, request.HtmlBody);
+        await _repository.SaveChangesAsync(ct);
+        return Ok(new { Message = "Template updated successfully." });
+    }
+}
+
+public record UpdateTemplateRequest(string Subject, string HtmlBody);

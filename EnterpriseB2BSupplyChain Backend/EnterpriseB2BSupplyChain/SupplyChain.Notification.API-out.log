@@ -1,0 +1,588 @@
+Using launch settings from src\Services\Notification\SupplyChain.Notification.API\Properties\launchSettings.json...
+Building...
+[09:21:34 INF] Executed DbCommand (326ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT 1
+[09:21:34 INF] Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.
+[09:21:35 INF] Executed DbCommand (798ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+DECLARE @result int;
+EXEC @result = sp_getapplock @Resource = '__EFMigrationsLock', @LockOwner = 'Session', @LockMode = 'Exclusive';
+SELECT @result
+[09:21:35 INF] Executed DbCommand (59ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
+BEGIN
+    CREATE TABLE [__EFMigrationsHistory] (
+        [MigrationId] nvarchar(150) NOT NULL,
+        [ProductVersion] nvarchar(32) NOT NULL,
+        CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY ([MigrationId])
+    );
+END;
+[09:21:35 INF] Executed DbCommand (17ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT 1
+[09:21:35 INF] Executed DbCommand (118ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT OBJECT_ID(N'[__EFMigrationsHistory]');
+[09:21:36 INF] Executed DbCommand (942ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT [MigrationId], [ProductVersion]
+FROM [__EFMigrationsHistory]
+ORDER BY [MigrationId];
+[09:21:36 INF] No migrations were applied. The database is already up to date.
+[09:21:36 INF] Executed DbCommand (285ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+DECLARE @result int;
+EXEC @result = sp_releaseapplock @Resource = '__EFMigrationsLock', @LockOwner = 'Session';
+SELECT @result
+[09:21:38 INF] Executed DbCommand (564ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT [e].[TemplateId], [e].[EventType], [e].[HtmlBody], [e].[IsActive], [e].[Subject], [e].[UpdatedAt]
+FROM [EmailTemplates] AS [e]
+[09:21:38 INF] User profile is available. Using 'C:\Users\Srikaran\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+[09:21:39 INF] Now listening on: http://localhost:5012
+[09:21:39 INF] Application started. Press Ctrl+C to shut down.
+[09:21:39 INF] Hosting environment: Development
+[09:21:39 INF] Content root path: D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API
+[09:21:39 INF] Notification consumer started. Queue: notification.email.queue
+[09:25:08 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox - null null
+[09:25:10 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetInbox (SupplyChain.Notification.API)'
+[09:25:10 INF] Route matched with {action = "GetInbox", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetInbox(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[09:25:10 WRN] You do not have a valid license key for the Lucky Penny software MediatR. This is allowed for development and testing scenarios. If you are running in production you are required to have a licensed version. Please visit https://luckypennysoftware.com to obtain a valid license.
+[09:25:13 INF] Executed DbCommand (546ms) [Parameters=[@p='?' (DbType = Int32), @dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT TOP(@p) [n].[NotificationId], [n].[CreatedAt], [n].[DealerId], [n].[IsRead], [n].[Message], [n].[Title], [n].[Type]
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId
+ORDER BY [n].[CreatedAt] DESC
+[09:25:13 INF] Executing OkObjectResult, writing value of type 'System.Collections.Generic.List`1[[SupplyChain.Notification.Application.Queries.NotificationDto, SupplyChain.Notification.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+[09:25:13 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetInbox (SupplyChain.Notification.API) in 3322.417ms
+[09:25:13 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetInbox (SupplyChain.Notification.API)'
+[09:25:13 INF] HTTP GET /api/notifications/inbox responded 200 in 4511.2841 ms
+[09:25:14 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox - 200 null application/json; charset=utf-8 5251.1476ms
+[09:26:52 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox - null null
+[09:26:52 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetInbox (SupplyChain.Notification.API)'
+[09:26:52 INF] Route matched with {action = "GetInbox", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetInbox(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[09:26:52 INF] Executed DbCommand (35ms) [Parameters=[@p='?' (DbType = Int32), @dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT TOP(@p) [n].[NotificationId], [n].[CreatedAt], [n].[DealerId], [n].[IsRead], [n].[Message], [n].[Title], [n].[Type]
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId
+ORDER BY [n].[CreatedAt] DESC
+[09:26:52 INF] Executing OkObjectResult, writing value of type 'System.Collections.Generic.List`1[[SupplyChain.Notification.Application.Queries.NotificationDto, SupplyChain.Notification.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+[09:26:52 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetInbox (SupplyChain.Notification.API) in 486.0063ms
+[09:26:52 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetInbox (SupplyChain.Notification.API)'
+[09:26:52 INF] HTTP GET /api/notifications/inbox responded 200 in 518.4801 ms
+[09:26:52 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox - 200 null application/json; charset=utf-8 534.6162ms
+[09:27:22 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - null null
+[09:27:22 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:27:22 INF] Route matched with {action = "GetUnreadCount", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUnreadCount(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[09:27:22 INF] Executed DbCommand (8ms) [Parameters=[@dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId AND [n].[IsRead] = CAST(0 AS bit)
+[09:27:22 INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[09:27:22 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API) in 136.2884ms
+[09:27:22 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:27:22 INF] HTTP GET /api/notifications/inbox/unread-count responded 200 in 159.6571 ms
+[09:27:22 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - 200 null application/json; charset=utf-8 161.9404ms
+[09:27:52 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - null null
+[09:27:52 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:27:52 INF] Route matched with {action = "GetUnreadCount", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUnreadCount(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[09:27:52 INF] Executed DbCommand (33ms) [Parameters=[@dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId AND [n].[IsRead] = CAST(0 AS bit)
+[09:27:52 INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[09:27:52 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API) in 52.337ms
+[09:27:52 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:27:52 INF] HTTP GET /api/notifications/inbox/unread-count responded 200 in 58.2976 ms
+[09:27:52 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - 200 null application/json; charset=utf-8 62.0314ms
+[09:28:22 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - null null
+[09:28:22 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:28:22 INF] Route matched with {action = "GetUnreadCount", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUnreadCount(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[09:28:22 INF] Executed DbCommand (9ms) [Parameters=[@dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId AND [n].[IsRead] = CAST(0 AS bit)
+[09:28:22 INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[09:28:22 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API) in 41.2393ms
+[09:28:22 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:28:22 INF] HTTP GET /api/notifications/inbox/unread-count responded 200 in 52.6038 ms
+[09:28:22 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - 200 null application/json; charset=utf-8 55.9015ms
+[09:28:52 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - null null
+[09:28:52 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:28:52 INF] Route matched with {action = "GetUnreadCount", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUnreadCount(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[09:28:52 INF] Executed DbCommand (17ms) [Parameters=[@dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId AND [n].[IsRead] = CAST(0 AS bit)
+[09:28:52 INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[09:28:52 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API) in 25.1389ms
+[09:28:52 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:28:52 INF] HTTP GET /api/notifications/inbox/unread-count responded 200 in 32.5411 ms
+[09:28:52 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - 200 null application/json; charset=utf-8 44.6746ms
+[09:29:22 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - null null
+[09:29:22 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:29:22 INF] Route matched with {action = "GetUnreadCount", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUnreadCount(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[09:29:23 INF] Executed DbCommand (104ms) [Parameters=[@dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId AND [n].[IsRead] = CAST(0 AS bit)
+[09:29:23 INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[09:29:23 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API) in 313.7471ms
+[09:29:23 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:29:23 INF] HTTP GET /api/notifications/inbox/unread-count responded 200 in 410.1756 ms
+[09:29:23 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - 200 null application/json; charset=utf-8 414.6187ms
+[09:29:52 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - null null
+[09:29:52 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:29:52 INF] Route matched with {action = "GetUnreadCount", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUnreadCount(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[09:29:52 INF] Executed DbCommand (25ms) [Parameters=[@dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId AND [n].[IsRead] = CAST(0 AS bit)
+[09:29:52 INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[09:29:52 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API) in 66.4489ms
+[09:29:52 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:29:52 INF] HTTP GET /api/notifications/inbox/unread-count responded 200 in 83.9628 ms
+[09:29:52 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - 200 null application/json; charset=utf-8 110.5547ms
+[09:30:22 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - null null
+[09:30:22 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:30:22 INF] Route matched with {action = "GetUnreadCount", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUnreadCount(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[09:30:22 INF] Executed DbCommand (25ms) [Parameters=[@dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId AND [n].[IsRead] = CAST(0 AS bit)
+[09:30:22 INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[09:30:22 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API) in 41.4779ms
+[09:30:22 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:30:22 INF] HTTP GET /api/notifications/inbox/unread-count responded 200 in 48.4810 ms
+[09:30:22 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - 200 null application/json; charset=utf-8 50.2726ms
+[09:30:40 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox - null null
+[09:30:40 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetInbox (SupplyChain.Notification.API)'
+[09:30:40 INF] Route matched with {action = "GetInbox", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetInbox(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[09:30:40 INF] Executed DbCommand (27ms) [Parameters=[@p='?' (DbType = Int32), @dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT TOP(@p) [n].[NotificationId], [n].[CreatedAt], [n].[DealerId], [n].[IsRead], [n].[Message], [n].[Title], [n].[Type]
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId
+ORDER BY [n].[CreatedAt] DESC
+[09:30:40 INF] Executing OkObjectResult, writing value of type 'System.Collections.Generic.List`1[[SupplyChain.Notification.Application.Queries.NotificationDto, SupplyChain.Notification.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+[09:30:40 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetInbox (SupplyChain.Notification.API) in 52.556ms
+[09:30:40 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetInbox (SupplyChain.Notification.API)'
+[09:30:40 INF] HTTP GET /api/notifications/inbox responded 200 in 56.5788 ms
+[09:30:40 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox - 200 null application/json; charset=utf-8 58.1955ms
+[09:31:10 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - null null
+[09:31:10 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:31:10 INF] Route matched with {action = "GetUnreadCount", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUnreadCount(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[09:31:10 INF] Executed DbCommand (24ms) [Parameters=[@dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId AND [n].[IsRead] = CAST(0 AS bit)
+[09:31:10 INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[09:31:10 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API) in 31.5755ms
+[09:31:10 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:31:10 INF] HTTP GET /api/notifications/inbox/unread-count responded 200 in 40.4102 ms
+[09:31:10 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - 200 null application/json; charset=utf-8 42.4608ms
+[09:31:40 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - null null
+[09:31:40 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:31:40 INF] Route matched with {action = "GetUnreadCount", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUnreadCount(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[09:31:40 INF] Executed DbCommand (9ms) [Parameters=[@dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId AND [n].[IsRead] = CAST(0 AS bit)
+[09:31:40 INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[09:31:40 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API) in 22.1735ms
+[09:31:40 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:31:40 INF] HTTP GET /api/notifications/inbox/unread-count responded 200 in 28.6297 ms
+[09:31:40 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - 200 null application/json; charset=utf-8 35.2231ms
+[09:32:10 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - null null
+[09:32:10 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:32:10 INF] Route matched with {action = "GetUnreadCount", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUnreadCount(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[09:32:10 INF] Executed DbCommand (25ms) [Parameters=[@dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId AND [n].[IsRead] = CAST(0 AS bit)
+[09:32:10 INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[09:32:10 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API) in 38.3165ms
+[09:32:10 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:32:10 INF] HTTP GET /api/notifications/inbox/unread-count responded 200 in 47.7628 ms
+[09:32:10 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - 200 null application/json; charset=utf-8 51.4469ms
+[09:32:40 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - null null
+[09:32:40 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:32:40 INF] Route matched with {action = "GetUnreadCount", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUnreadCount(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[09:32:40 INF] Executed DbCommand (24ms) [Parameters=[@dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId AND [n].[IsRead] = CAST(0 AS bit)
+[09:32:40 INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[09:32:40 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API) in 45.5704ms
+[09:32:40 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:32:40 INF] HTTP GET /api/notifications/inbox/unread-count responded 200 in 56.5528 ms
+[09:32:40 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - 200 null application/json; charset=utf-8 58.9047ms
+[09:33:10 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - null null
+[09:33:10 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:33:10 INF] Route matched with {action = "GetUnreadCount", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUnreadCount(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[09:33:10 INF] Executed DbCommand (74ms) [Parameters=[@dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId AND [n].[IsRead] = CAST(0 AS bit)
+[09:33:10 INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[09:33:10 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API) in 86.273ms
+[09:33:10 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:33:10 INF] HTTP GET /api/notifications/inbox/unread-count responded 200 in 95.7000 ms
+[09:33:10 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - 200 null application/json; charset=utf-8 98.7187ms
+[09:33:21 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox - null null
+[09:33:21 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetInbox (SupplyChain.Notification.API)'
+[09:33:21 INF] Route matched with {action = "GetInbox", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetInbox(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[09:33:21 INF] Executed DbCommand (25ms) [Parameters=[@p='?' (DbType = Int32), @dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT TOP(@p) [n].[NotificationId], [n].[CreatedAt], [n].[DealerId], [n].[IsRead], [n].[Message], [n].[Title], [n].[Type]
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId
+ORDER BY [n].[CreatedAt] DESC
+[09:33:21 INF] Executing OkObjectResult, writing value of type 'System.Collections.Generic.List`1[[SupplyChain.Notification.Application.Queries.NotificationDto, SupplyChain.Notification.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+[09:33:21 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetInbox (SupplyChain.Notification.API) in 83.2889ms
+[09:33:21 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetInbox (SupplyChain.Notification.API)'
+[09:33:21 INF] HTTP GET /api/notifications/inbox responded 200 in 96.6431 ms
+[09:33:21 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox - 200 null application/json; charset=utf-8 99.4619ms
+[09:43:02 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox - null null
+[09:43:02 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetInbox (SupplyChain.Notification.API)'
+[09:43:02 INF] Route matched with {action = "GetInbox", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetInbox(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[09:43:06 INF] Executed DbCommand (288ms) [Parameters=[@p='?' (DbType = Int32), @dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT TOP(@p) [n].[NotificationId], [n].[CreatedAt], [n].[DealerId], [n].[IsRead], [n].[Message], [n].[Title], [n].[Type]
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId
+ORDER BY [n].[CreatedAt] DESC
+[09:43:06 INF] Executing OkObjectResult, writing value of type 'System.Collections.Generic.List`1[[SupplyChain.Notification.Application.Queries.NotificationDto, SupplyChain.Notification.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+[09:43:06 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetInbox (SupplyChain.Notification.API) in 3544.5499ms
+[09:43:06 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetInbox (SupplyChain.Notification.API)'
+[09:43:06 INF] HTTP GET /api/notifications/inbox responded 200 in 3773.8841 ms
+[09:43:06 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox - 200 null application/json; charset=utf-8 3962.1976ms
+[09:43:32 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - null null
+[09:43:32 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:43:32 INF] Route matched with {action = "GetUnreadCount", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUnreadCount(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[09:43:38 INF] Executed DbCommand (6,419ms) [Parameters=[@dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId AND [n].[IsRead] = CAST(0 AS bit)
+[09:43:38 INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[09:43:38 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API) in 6587.7135ms
+[09:43:38 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:43:38 INF] HTTP GET /api/notifications/inbox/unread-count responded 200 in 6647.7463 ms
+[09:43:38 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - 200 null application/json; charset=utf-8 6651.4822ms
+[09:44:02 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - null null
+[09:44:02 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:44:02 INF] Route matched with {action = "GetUnreadCount", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUnreadCount(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[09:44:02 INF] Executed DbCommand (41ms) [Parameters=[@dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId AND [n].[IsRead] = CAST(0 AS bit)
+[09:44:02 INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[09:44:02 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API) in 53.2085ms
+[09:44:02 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:44:02 INF] HTTP GET /api/notifications/inbox/unread-count responded 200 in 62.2951 ms
+[09:44:02 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - 200 null application/json; charset=utf-8 65.0087ms
+[09:44:31 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - null null
+[09:44:31 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:44:31 INF] Route matched with {action = "GetUnreadCount", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUnreadCount(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[09:44:32 INF] Executed DbCommand (63ms) [Parameters=[@dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId AND [n].[IsRead] = CAST(0 AS bit)
+[09:44:32 INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[09:44:32 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API) in 100.6689ms
+[09:44:32 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:44:32 INF] HTTP GET /api/notifications/inbox/unread-count responded 200 in 116.7630 ms
+[09:44:32 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - 200 null application/json; charset=utf-8 118.5087ms
+[09:44:35 INF] Executed DbCommand (89ms) [Parameters=[@eventType='?' (Size = 100)], CommandType='Text', CommandTimeout='30']
+SELECT TOP(1) [e].[TemplateId], [e].[EventType], [e].[HtmlBody], [e].[IsActive], [e].[Subject], [e].[UpdatedAt]
+FROM [EmailTemplates] AS [e]
+WHERE [e].[EventType] = @eventType AND [e].[IsActive] = CAST(1 AS bit)
+[09:44:46 ERR] Failed to send email for OrderPlaced to srikaran2230@gmail.com
+System.Net.Mail.SmtpException: The SMTP server requires a secure connection or the client was not authenticated. The server response was: 5.7.0 Authentication Required. For more information, go to
+   at System.Net.Mail.MailCommand.CheckResponse(SmtpStatusCode statusCode, String response)
+   at System.Net.Mail.MailCommand.<SendAsync>g__SendAndCheck|0_0[TIOAdapter](SmtpConnection conn, CancellationToken cancellationToken)
+   at System.Net.Mail.SmtpTransport.SendMailAsync[TIOAdapter](MailAddress sender, MailAddressCollection recipients, String deliveryNotify, Boolean allowUnicode, CancellationToken cancellationToken)
+   at System.Net.Mail.SmtpClient.SendAsyncInternal[TIOAdapter](MailMessage message, Boolean invokeSendCompleted, Object userToken, Boolean forceWrapExceptions, CancellationToken cancellationToken)
+   at System.Net.Mail.SmtpClient.<SendMailAsync>g__WaitAndRethrowIfNeeded|75_0(Task`1 task)
+   at SupplyChain.Notification.Infrastructure.Services.SmtpEmailSender.SendAsync(String toEmail, String subject, String htmlBody, CancellationToken ct) in D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.Infrastructure\Services\SmtpEmailSender.cs:line 37
+   at SupplyChain.Notification.Application.Services.EmailDispatchService.DispatchAsync(String eventType, String recipientEmail, Dictionary`2 templateData, CancellationToken ct) in D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.Application\Services\EmailDispatchService.cs:line 48
+[09:44:47 INF] Executed DbCommand (40ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = DateTime2), @p2='?' (Size = 4000), @p3='?' (Size = 100), @p4='?' (Size = 256), @p5='?' (DbType = DateTime2), @p6='?' (Size = 20), @p7='?' (Size = 300)], CommandType='Text', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+INSERT INTO [NotificationLogs] ([LogId], [CreatedAt], [ErrorMessage], [EventType], [RecipientEmail], [SentAt], [Status], [Subject])
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7);
+[09:44:47 INF] Executed DbCommand (15ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = DateTime2), @p2='?' (DbType = Guid), @p3='?' (DbType = Boolean), @p4='?' (Size = 2000), @p5='?' (Size = 200), @p6='?' (Size = 50)], CommandType='Text', CommandTimeout='30']
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
+INSERT INTO [NotificationInbox] ([NotificationId], [CreatedAt], [DealerId], [IsRead], [Message], [Title], [Type])
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6);
+[09:45:02 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - null null
+[09:45:02 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:45:02 INF] Route matched with {action = "GetUnreadCount", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUnreadCount(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[09:45:02 INF] Executed DbCommand (78ms) [Parameters=[@dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId AND [n].[IsRead] = CAST(0 AS bit)
+[09:45:02 INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[09:45:02 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API) in 96.4457ms
+[09:45:02 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:45:02 INF] HTTP GET /api/notifications/inbox/unread-count responded 200 in 121.6858 ms
+[09:45:02 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - 200 null application/json; charset=utf-8 136.5558ms
+[09:45:02 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox - null null
+[09:45:02 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetInbox (SupplyChain.Notification.API)'
+[09:45:02 INF] Route matched with {action = "GetInbox", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetInbox(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[09:45:02 INF] Executed DbCommand (37ms) [Parameters=[@p='?' (DbType = Int32), @dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT TOP(@p) [n].[NotificationId], [n].[CreatedAt], [n].[DealerId], [n].[IsRead], [n].[Message], [n].[Title], [n].[Type]
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId
+ORDER BY [n].[CreatedAt] DESC
+[09:45:02 INF] Executing OkObjectResult, writing value of type 'System.Collections.Generic.List`1[[SupplyChain.Notification.Application.Queries.NotificationDto, SupplyChain.Notification.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+[09:45:02 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetInbox (SupplyChain.Notification.API) in 63.0034ms
+[09:45:02 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetInbox (SupplyChain.Notification.API)'
+[09:45:02 INF] HTTP GET /api/notifications/inbox responded 200 in 71.6604 ms
+[09:45:02 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox - 200 null application/json; charset=utf-8 80.6236ms
+[09:45:32 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - null null
+[09:45:32 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:45:32 INF] Route matched with {action = "GetUnreadCount", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUnreadCount(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[09:45:32 INF] Executed DbCommand (185ms) [Parameters=[@dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId AND [n].[IsRead] = CAST(0 AS bit)
+[09:45:32 INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[09:45:32 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API) in 231.2663ms
+[09:45:32 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:45:32 INF] HTTP GET /api/notifications/inbox/unread-count responded 200 in 249.8778 ms
+[09:45:32 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - 200 null application/json; charset=utf-8 252.8564ms
+[09:46:02 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - null null
+[09:46:02 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:46:02 INF] Route matched with {action = "GetUnreadCount", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUnreadCount(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[09:46:02 INF] Executed DbCommand (27ms) [Parameters=[@dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId AND [n].[IsRead] = CAST(0 AS bit)
+[09:46:02 INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[09:46:02 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API) in 47.6807ms
+[09:46:02 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:46:02 INF] HTTP GET /api/notifications/inbox/unread-count responded 200 in 64.8704 ms
+[09:46:02 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - 200 null application/json; charset=utf-8 72.77ms
+[09:46:31 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - null null
+[09:46:31 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:46:31 INF] Route matched with {action = "GetUnreadCount", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUnreadCount(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[09:46:32 INF] Executed DbCommand (40ms) [Parameters=[@dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId AND [n].[IsRead] = CAST(0 AS bit)
+[09:46:32 INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[09:46:32 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API) in 66.6647ms
+[09:46:32 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:46:32 INF] HTTP GET /api/notifications/inbox/unread-count responded 200 in 82.3446 ms
+[09:46:32 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - 200 null application/json; charset=utf-8 90.5334ms
+[09:47:01 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - null null
+[09:47:01 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:47:01 INF] Route matched with {action = "GetUnreadCount", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUnreadCount(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[09:47:02 INF] Executed DbCommand (47ms) [Parameters=[@dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId AND [n].[IsRead] = CAST(0 AS bit)
+[09:47:02 INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[09:47:02 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API) in 96.0248ms
+[09:47:02 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:47:02 INF] HTTP GET /api/notifications/inbox/unread-count responded 200 in 126.8130 ms
+[09:47:02 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - 200 null application/json; charset=utf-8 138.7283ms
+[09:47:31 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - null null
+[09:47:31 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:47:31 INF] Route matched with {action = "GetUnreadCount", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUnreadCount(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[09:47:32 INF] Executed DbCommand (38ms) [Parameters=[@dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId AND [n].[IsRead] = CAST(0 AS bit)
+[09:47:32 INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[09:47:32 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API) in 96.2839ms
+[09:47:32 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:47:32 INF] HTTP GET /api/notifications/inbox/unread-count responded 200 in 142.8664 ms
+[09:47:32 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - 200 null application/json; charset=utf-8 149.0754ms
+[09:48:01 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - null null
+[09:48:01 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:48:01 INF] Route matched with {action = "GetUnreadCount", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUnreadCount(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[09:48:02 INF] Executed DbCommand (64ms) [Parameters=[@dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId AND [n].[IsRead] = CAST(0 AS bit)
+[09:48:02 INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[09:48:02 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API) in 87.4832ms
+[09:48:02 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[09:48:02 INF] HTTP GET /api/notifications/inbox/unread-count responded 200 in 96.3623 ms
+[09:48:02 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - 200 null application/json; charset=utf-8 107.6571ms
+[10:01:33 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox - null null
+[10:01:33 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetInbox (SupplyChain.Notification.API)'
+[10:01:33 INF] Route matched with {action = "GetInbox", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetInbox(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[10:01:36 INF] Executed DbCommand (104ms) [Parameters=[@p='?' (DbType = Int32), @dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT TOP(@p) [n].[NotificationId], [n].[CreatedAt], [n].[DealerId], [n].[IsRead], [n].[Message], [n].[Title], [n].[Type]
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId
+ORDER BY [n].[CreatedAt] DESC
+[10:01:36 INF] Executing OkObjectResult, writing value of type 'System.Collections.Generic.List`1[[SupplyChain.Notification.Application.Queries.NotificationDto, SupplyChain.Notification.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+[10:01:36 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetInbox (SupplyChain.Notification.API) in 2628.2223ms
+[10:01:36 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetInbox (SupplyChain.Notification.API)'
+[10:01:36 INF] HTTP GET /api/notifications/inbox responded 200 in 2768.9213 ms
+[10:01:36 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox - 200 null application/json; charset=utf-8 2812.9178ms
+[10:02:02 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - null null
+[10:02:02 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[10:02:02 INF] Route matched with {action = "GetUnreadCount", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUnreadCount(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[10:02:03 INF] Executed DbCommand (219ms) [Parameters=[@dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId AND [n].[IsRead] = CAST(0 AS bit)
+[10:02:03 INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[10:02:03 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API) in 322.7362ms
+[10:02:03 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[10:02:03 INF] HTTP GET /api/notifications/inbox/unread-count responded 200 in 339.9117 ms
+[10:02:03 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - 200 null application/json; charset=utf-8 342.52ms
+[10:02:32 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - null null
+[10:02:32 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[10:02:32 INF] Route matched with {action = "GetUnreadCount", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUnreadCount(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[10:02:32 INF] Executed DbCommand (22ms) [Parameters=[@dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId AND [n].[IsRead] = CAST(0 AS bit)
+[10:02:32 INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[10:02:32 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API) in 46.1478ms
+[10:02:32 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[10:02:32 INF] HTTP GET /api/notifications/inbox/unread-count responded 200 in 67.0063 ms
+[10:02:32 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - 200 null application/json; charset=utf-8 72.6426ms
+[10:03:02 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - null null
+[10:03:02 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[10:03:02 INF] Route matched with {action = "GetUnreadCount", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUnreadCount(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[10:03:02 INF] Executed DbCommand (9ms) [Parameters=[@dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId AND [n].[IsRead] = CAST(0 AS bit)
+[10:03:02 INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[10:03:02 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API) in 17.7026ms
+[10:03:02 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[10:03:02 INF] HTTP GET /api/notifications/inbox/unread-count responded 200 in 30.3725 ms
+[10:03:02 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - 200 null application/json; charset=utf-8 35.2145ms
+[10:03:36 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - null null
+[10:03:36 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[10:03:36 INF] Route matched with {action = "GetUnreadCount", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUnreadCount(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[10:03:36 INF] Executed DbCommand (19ms) [Parameters=[@dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId AND [n].[IsRead] = CAST(0 AS bit)
+[10:03:36 INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[10:03:36 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API) in 28.6218ms
+[10:03:36 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[10:03:36 INF] HTTP GET /api/notifications/inbox/unread-count responded 200 in 34.9266 ms
+[10:03:36 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - 200 null application/json; charset=utf-8 36.6784ms
+[10:04:06 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - null null
+[10:04:06 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[10:04:06 INF] Route matched with {action = "GetUnreadCount", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUnreadCount(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[10:04:07 INF] Executed DbCommand (89ms) [Parameters=[@dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId AND [n].[IsRead] = CAST(0 AS bit)
+[10:04:07 INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[10:04:07 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API) in 104.5344ms
+[10:04:07 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[10:04:07 INF] HTTP GET /api/notifications/inbox/unread-count responded 200 in 109.9915 ms
+[10:04:07 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - 200 null application/json; charset=utf-8 113.6091ms
+[10:04:37 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - null null
+[10:04:37 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[10:04:37 INF] Route matched with {action = "GetUnreadCount", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUnreadCount(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[10:04:38 INF] Executed DbCommand (726ms) [Parameters=[@dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId AND [n].[IsRead] = CAST(0 AS bit)
+[10:04:38 INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[10:04:38 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API) in 864.4674ms
+[10:04:38 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[10:04:38 INF] HTTP GET /api/notifications/inbox/unread-count responded 200 in 906.9537 ms
+[10:04:38 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - 200 null application/json; charset=utf-8 920.6742ms
+[10:05:29 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - null null
+[10:05:29 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[10:05:29 INF] Route matched with {action = "GetUnreadCount", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUnreadCount(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[10:05:30 INF] Executed DbCommand (696ms) [Parameters=[@dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId AND [n].[IsRead] = CAST(0 AS bit)
+[10:05:30 INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[10:05:30 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API) in 1002.2255ms
+[10:05:30 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[10:05:30 INF] HTTP GET /api/notifications/inbox/unread-count responded 200 in 1141.5679 ms
+[10:05:30 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - 200 null application/json; charset=utf-8 1166.5061ms
+[10:05:36 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - null null
+[10:05:36 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[10:05:36 INF] Route matched with {action = "GetUnreadCount", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUnreadCount(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[10:05:36 INF] Executed DbCommand (64ms) [Parameters=[@dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId AND [n].[IsRead] = CAST(0 AS bit)
+[10:05:36 INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[10:05:36 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API) in 78.4303ms
+[10:05:36 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[10:05:36 INF] HTTP GET /api/notifications/inbox/unread-count responded 200 in 92.9025 ms
+[10:05:36 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - 200 null application/json; charset=utf-8 101.5152ms
+[10:06:06 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - null null
+[10:06:06 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[10:06:06 INF] Route matched with {action = "GetUnreadCount", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUnreadCount(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[10:06:07 INF] Executed DbCommand (273ms) [Parameters=[@dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId AND [n].[IsRead] = CAST(0 AS bit)
+[10:06:07 INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[10:06:07 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API) in 366.712ms
+[10:06:07 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[10:06:07 INF] HTTP GET /api/notifications/inbox/unread-count responded 200 in 401.5205 ms
+[10:06:07 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - 200 null application/json; charset=utf-8 409.6482ms
+[10:06:36 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - null null
+[10:06:36 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[10:06:36 INF] Route matched with {action = "GetUnreadCount", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUnreadCount(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[10:06:36 INF] Executed DbCommand (38ms) [Parameters=[@dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId AND [n].[IsRead] = CAST(0 AS bit)
+[10:06:36 INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[10:06:36 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API) in 55.501ms
+[10:06:36 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[10:06:36 INF] HTTP GET /api/notifications/inbox/unread-count responded 200 in 65.8181 ms
+[10:06:36 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - 200 null application/json; charset=utf-8 70.8644ms
+[10:07:07 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - null null
+[10:07:07 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[10:07:07 INF] Route matched with {action = "GetUnreadCount", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUnreadCount(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[10:07:09 INF] Executed DbCommand (2,850ms) [Parameters=[@dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId AND [n].[IsRead] = CAST(0 AS bit)
+[10:07:09 INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[10:07:09 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API) in 2881.4569ms
+[10:07:09 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[10:07:09 INF] HTTP GET /api/notifications/inbox/unread-count responded 200 in 2907.6458 ms
+[10:07:09 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - 200 null application/json; charset=utf-8 2912.9823ms
+[10:07:37 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - null null
+[10:07:37 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[10:07:37 INF] Route matched with {action = "GetUnreadCount", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUnreadCount(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[10:07:37 INF] Executed DbCommand (103ms) [Parameters=[@dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId AND [n].[IsRead] = CAST(0 AS bit)
+[10:07:37 INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[10:07:37 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API) in 121.4297ms
+[10:07:37 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[10:07:37 INF] HTTP GET /api/notifications/inbox/unread-count responded 200 in 146.4055 ms
+[10:07:37 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - 200 null application/json; charset=utf-8 149.2128ms
+[10:08:07 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - null null
+[10:08:07 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[10:08:07 INF] Route matched with {action = "GetUnreadCount", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUnreadCount(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[10:08:07 INF] Executed DbCommand (243ms) [Parameters=[@dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId AND [n].[IsRead] = CAST(0 AS bit)
+[10:08:07 INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[10:08:07 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API) in 273.2968ms
+[10:08:07 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[10:08:07 INF] HTTP GET /api/notifications/inbox/unread-count responded 200 in 289.3860 ms
+[10:08:07 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - 200 null application/json; charset=utf-8 293.4555ms
+[10:08:36 INF] Request starting HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - null null
+[10:08:36 INF] Executing endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[10:08:36 INF] Route matched with {action = "GetUnreadCount", controller = "Notification"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUnreadCount(System.Threading.CancellationToken) on controller SupplyChain.Notification.API.Controllers.NotificationController (SupplyChain.Notification.API).
+[10:08:36 INF] Executed DbCommand (37ms) [Parameters=[@dealerId='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+SELECT COUNT(*)
+FROM [NotificationInbox] AS [n]
+WHERE [n].[DealerId] = @dealerId AND [n].[IsRead] = CAST(0 AS bit)
+[10:08:36 INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[10:08:36 INF] Executed action SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API) in 79.4296ms
+[10:08:36 INF] Executed endpoint 'SupplyChain.Notification.API.Controllers.NotificationController.GetUnreadCount (SupplyChain.Notification.API)'
+[10:08:36 INF] HTTP GET /api/notifications/inbox/unread-count responded 200 in 104.2821 ms
+[10:08:37 INF] Request finished HTTP/1.1 GET http://localhost:5012/api/notifications/inbox/unread-count - 200 null application/json; charset=utf-8 110.0266ms
+[10:10:46 WRN] As of "04/08/2026 04:40:46 +00:00", the heartbeat has been running for "00:00:01.2698238" which is longer than "00:00:01". This could be caused by thread pool starvation.

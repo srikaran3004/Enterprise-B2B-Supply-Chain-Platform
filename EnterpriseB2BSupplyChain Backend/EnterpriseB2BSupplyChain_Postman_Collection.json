@@ -1,0 +1,1436 @@
+{
+  "info": {
+    "name": "Enterprise B2B Supply Chain Platform",
+    "description": "Complete API collection for all 6 microservices. Update the JWT tokens after login before running protected endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "identity_url",     "value": "http://localhost:5002" },
+    { "key": "catalog_url",      "value": "http://localhost:5004" },
+    { "key": "order_url",        "value": "http://localhost:5006" },
+    { "key": "logistics_url",    "value": "http://localhost:5008" },
+    { "key": "payment_url",      "value": "http://localhost:5010" },
+    { "key": "notification_url", "value": "http://localhost:5012" },
+    { "key": "gateway_url",      "value": "http://localhost:5000" },
+    { "key": "admin_token",      "value": "PASTE_ADMIN_JWT_HERE" },
+    { "key": "dealer_token",     "value": "PASTE_DEALER_JWT_HERE" },
+    { "key": "dealer_id",        "value": "" },
+    { "key": "order_id",         "value": "" },
+    { "key": "product_id",       "value": "" },
+    { "key": "invoice_id",       "value": "" },
+    { "key": "shipment_id",      "value": "" },
+    { "key": "agent_id",         "value": "" },
+    { "key": "vehicle_id",       "value": "" },
+    { "key": "category_id",      "value": "" }
+  ],
+  "item": [
+
+    {
+      "name": "01 - Identity Service",
+      "item": [
+
+        {
+          "name": "Register Dealer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var res = pm.response.json();",
+                  "if (res.userId) {",
+                  "    pm.collectionVariables.set('dealer_id', res.userId);",
+                  "    console.log('Dealer registered. UserId saved:', res.userId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{identity_url}}/api/auth/register", "host": ["{{identity_url}}"], "path": ["api", "auth", "register"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"rajesh@kumardistributors.com\",\n  \"password\": \"Test@1234\",\n  \"fullName\": \"Rajesh Kumar\",\n  \"phoneNumber\": \"9876543210\",\n  \"businessName\": \"Kumar Distributors Pvt Ltd\",\n  \"gstNumber\": \"29AABCK1234F1Z5\",\n  \"tradeLicenseNumber\": \"TL-KA-2024-001\",\n  \"addressLine1\": \"123 MG Road\",\n  \"city\": \"Bangalore\",\n  \"state\": \"Karnataka\",\n  \"pinCode\": \"560001\",\n  \"isInterstate\": false\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Register Dealer 2",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{identity_url}}/api/auth/register", "host": ["{{identity_url}}"], "path": ["api", "auth", "register"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"priya@mumbaidistrib.com\",\n  \"password\": \"Test@1234\",\n  \"fullName\": \"Priya Sharma\",\n  \"phoneNumber\": \"9812345678\",\n  \"businessName\": \"Mumbai Distributors\",\n  \"gstNumber\": \"27AABCK9876F1Z2\",\n  \"addressLine1\": \"45 Linking Road\",\n  \"city\": \"Mumbai\",\n  \"state\": \"Maharashtra\",\n  \"pinCode\": \"400050\",\n  \"isInterstate\": true\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Login - Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var res = pm.response.json();",
+                  "if (res.accessToken) {",
+                  "    pm.collectionVariables.set('admin_token', res.accessToken);",
+                  "    console.log('Admin token saved.');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{identity_url}}/api/auth/login", "host": ["{{identity_url}}"], "path": ["api", "auth", "login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@unidistrib.com\",\n  \"password\": \"Admin@1234\"\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Login - Dealer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var res = pm.response.json();",
+                  "if (res.accessToken) {",
+                  "    pm.collectionVariables.set('dealer_token', res.accessToken);",
+                  "    console.log('Dealer token saved.');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{identity_url}}/api/auth/login", "host": ["{{identity_url}}"], "path": ["api", "auth", "login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"rajesh@kumardistributors.com\",\n  \"password\": \"Test@1234\"\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Login - Dealer 2 (Interstate)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{identity_url}}/api/auth/login", "host": ["{{identity_url}}"], "path": ["api", "auth", "login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"priya@mumbaidistrib.com\",\n  \"password\": \"Test@1234\"\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{identity_url}}/api/auth/forgot-password", "host": ["{{identity_url}}"], "path": ["api", "auth", "forgot-password"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"rajesh@kumardistributors.com\"\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{identity_url}}/api/auth/reset-password", "host": ["{{identity_url}}"], "path": ["api", "auth", "reset-password"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"rajesh@kumardistributors.com\",\n  \"otp\": \"123456\",\n  \"newPassword\": \"NewTest@1234\"\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Get Current User Profile",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dealer_token}}" }],
+            "url": { "raw": "{{identity_url}}/api/users/profile", "host": ["{{identity_url}}"], "path": ["api", "users", "profile"] }
+          }
+        },
+
+        {
+          "name": "Get All Dealers (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{identity_url}}/api/admin/dealers", "host": ["{{identity_url}}"], "path": ["api", "admin", "dealers"] }
+          }
+        },
+
+        {
+          "name": "Get Pending Dealers (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{identity_url}}/api/admin/dealers?status=Pending", "host": ["{{identity_url}}"], "path": ["api", "admin", "dealers"], "query": [{ "key": "status", "value": "Pending" }] }
+          }
+        },
+
+        {
+          "name": "Approve Dealer (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{identity_url}}/api/admin/dealers/{{dealer_id}}/approve", "host": ["{{identity_url}}"], "path": ["api", "admin", "dealers", "{{dealer_id}}", "approve"] }
+          }
+        },
+
+        {
+          "name": "Reject Dealer (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
+            ],
+            "url": { "raw": "{{identity_url}}/api/admin/dealers/{{dealer_id}}/reject", "host": ["{{identity_url}}"], "path": ["api", "admin", "dealers", "{{dealer_id}}", "reject"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Incomplete documentation provided.\"\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Identity Health Check",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{identity_url}}/health", "host": ["{{identity_url}}"], "path": ["health"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "02 - Catalog Service",
+      "item": [
+
+        {
+          "name": "Get All Categories",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var res = pm.response.json();",
+                  "if (res.length > 0) {",
+                  "    pm.collectionVariables.set('category_id', res[0].categoryId);",
+                  "    console.log('First category ID saved:', res[0].categoryId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dealer_token}}" }],
+            "url": { "raw": "{{catalog_url}}/api/categories", "host": ["{{catalog_url}}"], "path": ["api", "categories"] }
+          }
+        },
+
+        {
+          "name": "Create Category (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
+            ],
+            "url": { "raw": "{{catalog_url}}/api/categories", "host": ["{{catalog_url}}"], "path": ["api", "categories"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Baby Care\",\n  \"description\": \"Baby skincare and hygiene products\",\n  \"parentCategoryId\": null\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Get All Products",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var res = pm.response.json();",
+                  "if (res.length > 0) {",
+                  "    pm.collectionVariables.set('product_id', res[0].productId);",
+                  "    console.log('First product ID saved:', res[0].productId, '-', res[0].name);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dealer_token}}" }],
+            "url": { "raw": "{{catalog_url}}/api/products", "host": ["{{catalog_url}}"], "path": ["api", "products"] }
+          }
+        },
+
+        {
+          "name": "Get Products - In Stock Only",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dealer_token}}" }],
+            "url": { "raw": "{{catalog_url}}/api/products?inStockOnly=true", "host": ["{{catalog_url}}"], "path": ["api", "products"], "query": [{ "key": "inStockOnly", "value": "true" }] }
+          }
+        },
+
+        {
+          "name": "Get Products - Filter by Category",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dealer_token}}" }],
+            "url": { "raw": "{{catalog_url}}/api/products?categoryId={{category_id}}", "host": ["{{catalog_url}}"], "path": ["api", "products"], "query": [{ "key": "categoryId", "value": "{{category_id}}" }] }
+          }
+        },
+
+        {
+          "name": "Search Products - Dove",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dealer_token}}" }],
+            "url": { "raw": "{{catalog_url}}/api/products?searchTerm=dove", "host": ["{{catalog_url}}"], "path": ["api", "products"], "query": [{ "key": "searchTerm", "value": "dove" }] }
+          }
+        },
+
+        {
+          "name": "Search Products - Surf",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dealer_token}}" }],
+            "url": { "raw": "{{catalog_url}}/api/products?searchTerm=surf", "host": ["{{catalog_url}}"], "path": ["api", "products"], "query": [{ "key": "searchTerm", "value": "surf" }] }
+          }
+        },
+
+        {
+          "name": "Search Products - Horlicks",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dealer_token}}" }],
+            "url": { "raw": "{{catalog_url}}/api/products?searchTerm=horlicks", "host": ["{{catalog_url}}"], "path": ["api", "products"], "query": [{ "key": "searchTerm", "value": "horlicks" }] }
+          }
+        },
+
+        {
+          "name": "Get Product By ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dealer_token}}" }],
+            "url": { "raw": "{{catalog_url}}/api/products/{{product_id}}", "host": ["{{catalog_url}}"], "path": ["api", "products", "{{product_id}}"] }
+          }
+        },
+
+        {
+          "name": "Create Product (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
+            ],
+            "url": { "raw": "{{catalog_url}}/api/products", "host": ["{{catalog_url}}"], "path": ["api", "products"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sku\": \"DOV-MEN-WASH-200\",\n  \"name\": \"Dove Men+Care Face Wash 200ml\",\n  \"description\": \"Deep cleansing face wash for men\",\n  \"brand\": \"Dove Men+Care\",\n  \"categoryId\": \"{{category_id}}\",\n  \"unitPrice\": 199.00,\n  \"minOrderQuantity\": 12,\n  \"initialStock\": 300,\n  \"imageUrl\": null\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Update Product (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
+            ],
+            "url": { "raw": "{{catalog_url}}/api/products/{{product_id}}", "host": ["{{catalog_url}}"], "path": ["api", "products", "{{product_id}}"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Dove Original Beauty Cream Bar 100g (Updated)\",\n  \"description\": \"Updated description with 1/4 moisturising cream\",\n  \"brand\": \"Dove\",\n  \"unitPrice\": 62.00,\n  \"minOrderQuantity\": 48,\n  \"imageUrl\": null\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Deactivate Product (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{catalog_url}}/api/products/{{product_id}}", "host": ["{{catalog_url}}"], "path": ["api", "products", "{{product_id}}"] }
+          }
+        },
+
+        {
+          "name": "Restock Product (Admin/Warehouse)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
+            ],
+            "url": { "raw": "{{catalog_url}}/api/inventory/restock", "host": ["{{catalog_url}}"], "path": ["api", "inventory", "restock"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"{{product_id}}\",\n  \"quantity\": 500,\n  \"notes\": \"Regular restock from factory\"\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Subscribe to Product - Notify Me (Dealer)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dealer_token}}" }],
+            "url": { "raw": "{{catalog_url}}/api/products/{{product_id}}/notify-me", "host": ["{{catalog_url}}"], "path": ["api", "products", "{{product_id}}", "notify-me"] }
+          }
+        },
+
+        {
+          "name": "Unsubscribe from Product (Dealer)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dealer_token}}" }],
+            "url": { "raw": "{{catalog_url}}/api/products/{{product_id}}/notify-me", "host": ["{{catalog_url}}"], "path": ["api", "products", "{{product_id}}", "notify-me"] }
+          }
+        },
+
+        {
+          "name": "Get Stock Levels (Admin/Warehouse)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{catalog_url}}/api/inventory/stock-levels", "host": ["{{catalog_url}}"], "path": ["api", "inventory", "stock-levels"] }
+          }
+        },
+
+        {
+          "name": "Catalog Health Check",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{catalog_url}}/health", "host": ["{{catalog_url}}"], "path": ["health"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "03 - Order Service",
+      "item": [
+
+        {
+          "name": "Place Order - COD (Dealer)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var res = pm.response.json();",
+                  "if (res.orderId) {",
+                  "    pm.collectionVariables.set('order_id', res.orderId);",
+                  "    console.log('Order placed. OrderId saved:', res.orderId);",
+                  "    console.log('Order Number:', res.orderNumber);",
+                  "    console.log('Status:', res.status);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{dealer_token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
+            ],
+            "url": { "raw": "{{order_url}}/api/orders", "host": ["{{order_url}}"], "path": ["api", "orders"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dealerId\": \"00000000-0000-0000-0000-000000000000\",\n  \"lines\": [\n    {\n      \"productId\": \"{{product_id}}\",\n      \"productName\": \"Dove Original Beauty Cream Bar 100g\",\n      \"sku\": \"DOV-SOAP-BAR-100\",\n      \"unitPrice\": 58.00,\n      \"quantity\": 48\n    },\n    {\n      \"productId\": \"{{product_id}}\",\n      \"productName\": \"Surf Excel Quick Wash Detergent Powder 1kg\",\n      \"sku\": \"SURF-DET-1KG\",\n      \"unitPrice\": 185.00,\n      \"quantity\": 12\n    }\n  ],\n  \"paymentMode\": \"COD\",\n  \"notes\": \"Deliver to Bangalore warehouse before 5 PM\"\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Place Order - PrePaid (Dealer)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{dealer_token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
+            ],
+            "url": { "raw": "{{order_url}}/api/orders", "host": ["{{order_url}}"], "path": ["api", "orders"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dealerId\": \"00000000-0000-0000-0000-000000000000\",\n  \"lines\": [\n    {\n      \"productId\": \"{{product_id}}\",\n      \"productName\": \"Horlicks Health Drink 500g\",\n      \"sku\": \"HRL-DRINK-500\",\n      \"unitPrice\": 299.00,\n      \"quantity\": 24\n    }\n  ],\n  \"paymentMode\": \"PrePaid\",\n  \"notes\": \"Urgent order\"\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Get My Orders (Dealer)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dealer_token}}" }],
+            "url": { "raw": "{{order_url}}/api/orders/my", "host": ["{{order_url}}"], "path": ["api", "orders", "my"] }
+          }
+        },
+
+        {
+          "name": "Get My Orders - Filter by Status (Dealer)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dealer_token}}" }],
+            "url": { "raw": "{{order_url}}/api/orders/my?status=Placed", "host": ["{{order_url}}"], "path": ["api", "orders", "my"], "query": [{ "key": "status", "value": "Placed" }] }
+          }
+        },
+
+        {
+          "name": "Get All Orders (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{order_url}}/api/orders", "host": ["{{order_url}}"], "path": ["api", "orders"] }
+          }
+        },
+
+        {
+          "name": "Get All Orders - Processing (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{order_url}}/api/orders?status=Processing", "host": ["{{order_url}}"], "path": ["api", "orders"], "query": [{ "key": "status", "value": "Processing" }] }
+          }
+        },
+
+        {
+          "name": "Get Order By ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dealer_token}}" }],
+            "url": { "raw": "{{order_url}}/api/orders/{{order_id}}", "host": ["{{order_url}}"], "path": ["api", "orders", "{{order_id}}"] }
+          }
+        },
+
+        {
+          "name": "Approve Order - OnHold to Processing (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{order_url}}/api/orders/{{order_id}}/approve", "host": ["{{order_url}}"], "path": ["api", "orders", "{{order_id}}", "approve"] }
+          }
+        },
+
+        {
+          "name": "Cancel Order (Dealer)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{dealer_token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
+            ],
+            "url": { "raw": "{{order_url}}/api/orders/{{order_id}}/cancel", "host": ["{{order_url}}"], "path": ["api", "orders", "{{order_id}}", "cancel"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Changed my mind — reducing the quantity.\"\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Mark Ready for Dispatch (Warehouse)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{order_url}}/api/orders/{{order_id}}/ready-for-dispatch", "host": ["{{order_url}}"], "path": ["api", "orders", "{{order_id}}", "ready-for-dispatch"] }
+          }
+        },
+
+        {
+          "name": "Mark In Transit (Logistics/Agent)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{order_url}}/api/orders/{{order_id}}/in-transit", "host": ["{{order_url}}"], "path": ["api", "orders", "{{order_id}}", "in-transit"] }
+          }
+        },
+
+        {
+          "name": "Mark Delivered (Delivery Agent)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{order_url}}/api/orders/{{order_id}}/delivered", "host": ["{{order_url}}"], "path": ["api", "orders", "{{order_id}}", "delivered"] }
+          }
+        },
+
+        {
+          "name": "Raise Return Request (Dealer)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{dealer_token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
+            ],
+            "url": { "raw": "{{order_url}}/api/orders/{{order_id}}/returns", "host": ["{{order_url}}"], "path": ["api", "orders", "{{order_id}}", "returns"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Received damaged goods — 3 Dove soap bars cracked.\",\n  \"photoUrl\": null\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Order Service Health Check",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{order_url}}/health", "host": ["{{order_url}}"], "path": ["health"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "04 - Logistics Service",
+      "item": [
+
+        {
+          "name": "Create Delivery Agent (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var res = pm.response.json();",
+                  "if (res.agentId) {",
+                  "    pm.collectionVariables.set('agent_id', res.agentId);",
+                  "    console.log('Agent ID saved:', res.agentId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
+            ],
+            "url": { "raw": "{{logistics_url}}/api/logistics/agents", "host": ["{{logistics_url}}"], "path": ["api", "logistics", "agents"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"00000000-0000-0000-0000-000000000001\",\n  \"fullName\": \"Rajan Kumar\",\n  \"phone\": \"9988776655\",\n  \"licenseNumber\": \"KA-01-20210012345\"\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Create Delivery Agent 2 (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
+            ],
+            "url": { "raw": "{{logistics_url}}/api/logistics/agents", "host": ["{{logistics_url}}"], "path": ["api", "logistics", "agents"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"00000000-0000-0000-0000-000000000002\",\n  \"fullName\": \"Suresh Patel\",\n  \"phone\": \"9977665544\",\n  \"licenseNumber\": \"MH-02-20190054321\"\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Create Vehicle (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var res = pm.response.json();",
+                  "if (res.vehicleId) {",
+                  "    pm.collectionVariables.set('vehicle_id', res.vehicleId);",
+                  "    console.log('Vehicle ID saved:', res.vehicleId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
+            ],
+            "url": { "raw": "{{logistics_url}}/api/logistics/vehicles", "host": ["{{logistics_url}}"], "path": ["api", "logistics", "vehicles"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"registrationNo\": \"KA-01-AB-1234\",\n  \"vehicleType\": \"Truck\",\n  \"capacityKg\": 2000\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Create Vehicle 2 (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
+            ],
+            "url": { "raw": "{{logistics_url}}/api/logistics/vehicles", "host": ["{{logistics_url}}"], "path": ["api", "logistics", "vehicles"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"registrationNo\": \"MH-02-CD-5678\",\n  \"vehicleType\": \"Van\",\n  \"capacityKg\": 800\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Get Available Agents (Logistics Manager)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{logistics_url}}/api/logistics/agents/available", "host": ["{{logistics_url}}"], "path": ["api", "logistics", "agents", "available"] }
+          }
+        },
+
+        {
+          "name": "Get Pending Shipments (Logistics Manager)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{logistics_url}}/api/logistics/shipments/pending", "host": ["{{logistics_url}}"], "path": ["api", "logistics", "shipments", "pending"] }
+          }
+        },
+
+        {
+          "name": "Create Shipment for Order (Admin/Logistics)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var res = pm.response.json();",
+                  "if (res.shipmentId) {",
+                  "    pm.collectionVariables.set('shipment_id', res.shipmentId);",
+                  "    console.log('Shipment ID saved:', res.shipmentId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
+            ],
+            "url": { "raw": "{{logistics_url}}/api/logistics/shipments", "host": ["{{logistics_url}}"], "path": ["api", "logistics", "shipments"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"{{order_id}}\",\n  \"slaDeadlineUtc\": \"2025-12-31T18:00:00Z\"\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Assign Agent to Shipment (Logistics Manager)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
+            ],
+            "url": { "raw": "{{logistics_url}}/api/logistics/shipments/assign-agent", "host": ["{{logistics_url}}"], "path": ["api", "logistics", "shipments", "assign-agent"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"{{order_id}}\",\n  \"agentId\": \"{{agent_id}}\",\n  \"vehicleId\": \"{{vehicle_id}}\"\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Update Status - Picked Up (Delivery Agent)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
+            ],
+            "url": { "raw": "{{logistics_url}}/api/logistics/shipments/{{order_id}}/status", "host": ["{{logistics_url}}"], "path": ["api", "logistics", "shipments", "{{order_id}}", "status"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"PickedUp\",\n  \"latitude\": 12.9716,\n  \"longitude\": 77.5946,\n  \"notes\": \"Goods picked up from warehouse\"\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Update Status - In Transit (Delivery Agent)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
+            ],
+            "url": { "raw": "{{logistics_url}}/api/logistics/shipments/{{order_id}}/status", "host": ["{{logistics_url}}"], "path": ["api", "logistics", "shipments", "{{order_id}}", "status"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"InTransit\",\n  \"latitude\": 12.9856,\n  \"longitude\": 77.6078,\n  \"notes\": \"En route to delivery address\"\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Update Status - Out for Delivery (Delivery Agent)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
+            ],
+            "url": { "raw": "{{logistics_url}}/api/logistics/shipments/{{order_id}}/status", "host": ["{{logistics_url}}"], "path": ["api", "logistics", "shipments", "{{order_id}}", "status"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"OutForDelivery\",\n  \"latitude\": 12.9720,\n  \"longitude\": 77.5950,\n  \"notes\": \"Approaching delivery location\"\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Update Status - Delivered (Delivery Agent)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
+            ],
+            "url": { "raw": "{{logistics_url}}/api/logistics/shipments/{{order_id}}/status", "host": ["{{logistics_url}}"], "path": ["api", "logistics", "shipments", "{{order_id}}", "status"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Delivered\",\n  \"latitude\": 12.9716,\n  \"longitude\": 77.5946,\n  \"notes\": \"Delivered and received by dealer\"\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Get Live Tracking for Order (Dealer/Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dealer_token}}" }],
+            "url": { "raw": "{{logistics_url}}/api/logistics/tracking/{{order_id}}", "host": ["{{logistics_url}}"], "path": ["api", "logistics", "tracking", "{{order_id}}"] }
+          }
+        },
+
+        {
+          "name": "Get SLA At Risk Shipments (Admin/Logistics)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{logistics_url}}/api/logistics/sla/at-risk", "host": ["{{logistics_url}}"], "path": ["api", "logistics", "sla", "at-risk"] }
+          }
+        },
+
+        {
+          "name": "Logistics Health Check",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{logistics_url}}/health", "host": ["{{logistics_url}}"], "path": ["health"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "05 - Payment Service",
+      "item": [
+
+        {
+          "name": "Create Credit Account for Dealer (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{payment_url}}/api/payment/dealers/{{dealer_id}}/credit-account", "host": ["{{payment_url}}"], "path": ["api", "payment", "dealers", "{{dealer_id}}", "credit-account"] }
+          }
+        },
+
+        {
+          "name": "Check Credit for Dealer",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{payment_url}}/api/payment/dealers/{{dealer_id}}/credit-check?amount=50000", "host": ["{{payment_url}}"], "path": ["api", "payment", "dealers", "{{dealer_id}}", "credit-check"], "query": [{ "key": "amount", "value": "50000" }] }
+          }
+        },
+
+        {
+          "name": "Update Dealer Credit Limit (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
+            ],
+            "url": { "raw": "{{payment_url}}/api/payment/dealers/{{dealer_id}}/credit-limit", "host": ["{{payment_url}}"], "path": ["api", "payment", "dealers", "{{dealer_id}}", "credit-limit"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newLimit\": 1000000\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Generate Invoice for Delivered Order (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var res = pm.response.json();",
+                  "if (res.invoiceId) {",
+                  "    pm.collectionVariables.set('invoice_id', res.invoiceId);",
+                  "    console.log('Invoice ID saved:', res.invoiceId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
+            ],
+            "url": { "raw": "{{payment_url}}/api/payment/invoices/generate", "host": ["{{payment_url}}"], "path": ["api", "payment", "invoices", "generate"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"{{order_id}}\",\n  \"dealerId\": \"{{dealer_id}}\",\n  \"totalAmount\": 5004.00,\n  \"paymentMode\": \"COD\",\n  \"isInterstate\": false,\n  \"lines\": [\n    {\n      \"productId\": \"{{product_id}}\",\n      \"productName\": \"Dove Original Beauty Cream Bar 100g\",\n      \"sku\": \"DOV-SOAP-BAR-100\",\n      \"quantity\": 48,\n      \"unitPrice\": 58.00\n    },\n    {\n      \"productId\": \"{{product_id}}\",\n      \"productName\": \"Surf Excel Quick Wash Detergent Powder 1kg\",\n      \"sku\": \"SURF-DET-1KG\",\n      \"quantity\": 12,\n      \"unitPrice\": 185.00\n    }\n  ]\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Generate Invoice - Interstate GST (IGST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
+            ],
+            "url": { "raw": "{{payment_url}}/api/payment/invoices/generate", "host": ["{{payment_url}}"], "path": ["api", "payment", "invoices", "generate"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"{{order_id}}\",\n  \"dealerId\": \"{{dealer_id}}\",\n  \"totalAmount\": 7176.00,\n  \"paymentMode\": \"PrePaid\",\n  \"isInterstate\": true,\n  \"lines\": [\n    {\n      \"productId\": \"{{product_id}}\",\n      \"productName\": \"Horlicks Health Drink 500g\",\n      \"sku\": \"HRL-DRINK-500\",\n      \"quantity\": 24,\n      \"unitPrice\": 299.00\n    }\n  ]\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Get My Invoices (Dealer)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dealer_token}}" }],
+            "url": { "raw": "{{payment_url}}/api/payment/invoices", "host": ["{{payment_url}}"], "path": ["api", "payment", "invoices"] }
+          }
+        },
+
+        {
+          "name": "Get All Invoices (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{payment_url}}/api/payment/invoices", "host": ["{{payment_url}}"], "path": ["api", "payment", "invoices"] }
+          }
+        },
+
+        {
+          "name": "Get Invoice Detail by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dealer_token}}" }],
+            "url": { "raw": "{{payment_url}}/api/payment/invoices/{{invoice_id}}", "host": ["{{payment_url}}"], "path": ["api", "payment", "invoices", "{{invoice_id}}"] }
+          }
+        },
+
+        {
+          "name": "Download Invoice PDF",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dealer_token}}" }],
+            "url": { "raw": "{{payment_url}}/api/payment/invoices/{{invoice_id}}/download", "host": ["{{payment_url}}"], "path": ["api", "payment", "invoices", "{{invoice_id}}", "download"] }
+          }
+        },
+
+        {
+          "name": "Payment Health Check",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{payment_url}}/health", "host": ["{{payment_url}}"], "path": ["health"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "06 - Notification Service",
+      "item": [
+
+        {
+          "name": "Get All Email Templates (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{notification_url}}/api/notifications/templates", "host": ["{{notification_url}}"], "path": ["api", "notifications", "templates"] }
+          }
+        },
+
+        {
+          "name": "Update Email Template (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
+            ],
+            "url": { "raw": "{{notification_url}}/api/notifications/templates/TEMPLATE_ID_HERE", "host": ["{{notification_url}}"], "path": ["api", "notifications", "templates", "TEMPLATE_ID_HERE"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"subject\": \"Order Confirmed — {{ order_number }} — UniDistrib\",\n  \"htmlBody\": \"<h2>Order Confirmed!</h2><p>Dear {{ dealer_name }},</p><p>Your order <strong>{{ order_number }}</strong> has been placed successfully for ₹{{ total_amount }}.</p><p>Thank you for choosing UniDistrib.</p>\"\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Notification Health Check",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{notification_url}}/health", "host": ["{{notification_url}}"], "path": ["health"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "07 - Gateway Routes",
+      "item": [
+
+        {
+          "name": "Gateway - Login (via Gateway)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{gateway_url}}/api/auth/login", "host": ["{{gateway_url}}"], "path": ["api", "auth", "login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@unidistrib.com\",\n  \"password\": \"Admin@1234\"\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Gateway - Get All Products (via Gateway)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dealer_token}}" }],
+            "url": { "raw": "{{gateway_url}}/api/products", "host": ["{{gateway_url}}"], "path": ["api", "products"] }
+          }
+        },
+
+        {
+          "name": "Gateway - Get My Orders (via Gateway)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dealer_token}}" }],
+            "url": { "raw": "{{gateway_url}}/api/orders/my", "host": ["{{gateway_url}}"], "path": ["api", "orders", "my"] }
+          }
+        },
+
+        {
+          "name": "Gateway - Get Tracking (via Gateway)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dealer_token}}" }],
+            "url": { "raw": "{{gateway_url}}/api/logistics/tracking/{{order_id}}", "host": ["{{gateway_url}}"], "path": ["api", "logistics", "tracking", "{{order_id}}"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "08 - Health Checks - All Services",
+      "item": [
+
+        {
+          "name": "Identity Health",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{identity_url}}/health",     "host": ["{{identity_url}}"],     "path": ["health"] }
+          }
+        },
+        {
+          "name": "Catalog Health",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{catalog_url}}/health",      "host": ["{{catalog_url}}"],      "path": ["health"] }
+          }
+        },
+        {
+          "name": "Order Health",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{order_url}}/health",        "host": ["{{order_url}}"],        "path": ["health"] }
+          }
+        },
+        {
+          "name": "Logistics Health",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{logistics_url}}/health",    "host": ["{{logistics_url}}"],    "path": ["health"] }
+          }
+        },
+        {
+          "name": "Payment Health",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{payment_url}}/health",      "host": ["{{payment_url}}"],      "path": ["health"] }
+          }
+        },
+        {
+          "name": "Notification Health",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{notification_url}}/health", "host": ["{{notification_url}}"], "path": ["health"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "09 - Full E2E Workflow (Run in Order)",
+      "description": "Run these requests in sequence to test the complete order lifecycle from registration to invoice.",
+      "item": [
+
+        {
+          "name": "E2E Step 1 - Admin Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var res = pm.response.json();",
+                  "if (res.accessToken) pm.collectionVariables.set('admin_token', res.accessToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{identity_url}}/api/auth/login", "host": ["{{identity_url}}"], "path": ["api", "auth", "login"] },
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@unidistrib.com\",\n  \"password\": \"Admin@1234\"\n}" }
+          }
+        },
+
+        {
+          "name": "E2E Step 2 - Dealer Registration",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var res = pm.response.json();",
+                  "if (res.userId) pm.collectionVariables.set('dealer_id', res.userId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{identity_url}}/api/auth/register", "host": ["{{identity_url}}"], "path": ["api", "auth", "register"] },
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"e2e.dealer@test.com\",\n  \"password\": \"Test@1234\",\n  \"fullName\": \"E2E Test Dealer\",\n  \"phoneNumber\": \"9000000001\",\n  \"businessName\": \"E2E Test Distributors\",\n  \"gstNumber\": \"29XYZAB1234F1Z9\",\n  \"addressLine1\": \"1 Test Street\",\n  \"city\": \"Bangalore\",\n  \"state\": \"Karnataka\",\n  \"pinCode\": \"560001\",\n  \"isInterstate\": false\n}" }
+          }
+        },
+
+        {
+          "name": "E2E Step 3 - Admin Approves Dealer",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{identity_url}}/api/admin/dealers/{{dealer_id}}/approve", "host": ["{{identity_url}}"], "path": ["api", "admin", "dealers", "{{dealer_id}}", "approve"] }
+          }
+        },
+
+        {
+          "name": "E2E Step 4 - Dealer Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var res = pm.response.json();",
+                  "if (res.accessToken) pm.collectionVariables.set('dealer_token', res.accessToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{identity_url}}/api/auth/login", "host": ["{{identity_url}}"], "path": ["api", "auth", "login"] },
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"e2e.dealer@test.com\",\n  \"password\": \"Test@1234\"\n}" }
+          }
+        },
+
+        {
+          "name": "E2E Step 5 - Browse Catalog",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var res = pm.response.json();",
+                  "if (res.length > 0) pm.collectionVariables.set('product_id', res[0].productId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dealer_token}}" }],
+            "url": { "raw": "{{catalog_url}}/api/products?inStockOnly=true", "host": ["{{catalog_url}}"], "path": ["api", "products"], "query": [{ "key": "inStockOnly", "value": "true" }] }
+          }
+        },
+
+        {
+          "name": "E2E Step 6 - Place Order",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var res = pm.response.json();",
+                  "if (res.orderId) {",
+                  "    pm.collectionVariables.set('order_id', res.orderId);",
+                  "    console.log('Order:', res.orderNumber, '| Status:', res.status);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{dealer_token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
+            ],
+            "url": { "raw": "{{order_url}}/api/orders", "host": ["{{order_url}}"], "path": ["api", "orders"] },
+            "body": { "mode": "raw", "raw": "{\n  \"dealerId\": \"00000000-0000-0000-0000-000000000000\",\n  \"lines\": [\n    {\n      \"productId\": \"{{product_id}}\",\n      \"productName\": \"Dove Original Beauty Cream Bar 100g\",\n      \"sku\": \"DOV-SOAP-BAR-100\",\n      \"unitPrice\": 58.00,\n      \"quantity\": 48\n    }\n  ],\n  \"paymentMode\": \"COD\",\n  \"notes\": \"E2E Test Order\"\n}" }
+          }
+        },
+
+        {
+          "name": "E2E Step 7 - Admin Approves Order",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{order_url}}/api/orders/{{order_id}}/approve", "host": ["{{order_url}}"], "path": ["api", "orders", "{{order_id}}", "approve"] }
+          }
+        },
+
+        {
+          "name": "E2E Step 8 - Create Agent",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var res = pm.response.json();",
+                  "if (res.agentId) pm.collectionVariables.set('agent_id', res.agentId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
+            ],
+            "url": { "raw": "{{logistics_url}}/api/logistics/agents", "host": ["{{logistics_url}}"], "path": ["api", "logistics", "agents"] },
+            "body": { "mode": "raw", "raw": "{\n  \"userId\": \"00000000-0000-0000-0000-000000000099\",\n  \"fullName\": \"E2E Delivery Agent\",\n  \"phone\": \"9000099999\",\n  \"licenseNumber\": \"KA-99-E2E-0001\"\n}" }
+          }
+        },
+
+        {
+          "name": "E2E Step 9 - Create Vehicle",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var res = pm.response.json();",
+                  "if (res.vehicleId) pm.collectionVariables.set('vehicle_id', res.vehicleId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
+            ],
+            "url": { "raw": "{{logistics_url}}/api/logistics/vehicles", "host": ["{{logistics_url}}"], "path": ["api", "logistics", "vehicles"] },
+            "body": { "mode": "raw", "raw": "{\n  \"registrationNo\": \"KA-E2E-9999\",\n  \"vehicleType\": \"Van\",\n  \"capacityKg\": 1000\n}" }
+          }
+        },
+
+        {
+          "name": "E2E Step 10 - Mark Ready for Dispatch",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{order_url}}/api/orders/{{order_id}}/ready-for-dispatch", "host": ["{{order_url}}"], "path": ["api", "orders", "{{order_id}}", "ready-for-dispatch"] }
+          }
+        },
+
+        {
+          "name": "E2E Step 11 - Create Shipment",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
+            ],
+            "url": { "raw": "{{logistics_url}}/api/logistics/shipments", "host": ["{{logistics_url}}"], "path": ["api", "logistics", "shipments"] },
+            "body": { "mode": "raw", "raw": "{\n  \"orderId\": \"{{order_id}}\",\n  \"slaDeadlineUtc\": \"2025-12-31T18:00:00Z\"\n}" }
+          }
+        },
+
+        {
+          "name": "E2E Step 12 - Assign Agent",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
+            ],
+            "url": { "raw": "{{logistics_url}}/api/logistics/shipments/assign-agent", "host": ["{{logistics_url}}"], "path": ["api", "logistics", "shipments", "assign-agent"] },
+            "body": { "mode": "raw", "raw": "{\n  \"orderId\": \"{{order_id}}\",\n  \"agentId\": \"{{agent_id}}\",\n  \"vehicleId\": \"{{vehicle_id}}\"\n}" }
+          }
+        },
+
+        {
+          "name": "E2E Step 13 - Mark In Transit",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{order_url}}/api/orders/{{order_id}}/in-transit", "host": ["{{order_url}}"], "path": ["api", "orders", "{{order_id}}", "in-transit"] }
+          }
+        },
+
+        {
+          "name": "E2E Step 14 - Update GPS Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
+            ],
+            "url": { "raw": "{{logistics_url}}/api/logistics/shipments/{{order_id}}/status", "host": ["{{logistics_url}}"], "path": ["api", "logistics", "shipments", "{{order_id}}", "status"] },
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"InTransit\",\n  \"latitude\": 12.9716,\n  \"longitude\": 77.5946,\n  \"notes\": \"On the way\"\n}" }
+          }
+        },
+
+        {
+          "name": "E2E Step 15 - Check Live Tracking",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dealer_token}}" }],
+            "url": { "raw": "{{logistics_url}}/api/logistics/tracking/{{order_id}}", "host": ["{{logistics_url}}"], "path": ["api", "logistics", "tracking", "{{order_id}}"] }
+          }
+        },
+
+        {
+          "name": "E2E Step 16 - Mark Delivered",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{order_url}}/api/orders/{{order_id}}/delivered", "host": ["{{order_url}}"], "path": ["api", "orders", "{{order_id}}", "delivered"] }
+          }
+        },
+
+        {
+          "name": "E2E Step 17 - Generate Invoice",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var res = pm.response.json();",
+                  "if (res.invoiceId) {",
+                  "    pm.collectionVariables.set('invoice_id', res.invoiceId);",
+                  "    console.log('Invoice generated:', res.invoiceId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type",   "value": "application/json" }
+            ],
+            "url": { "raw": "{{payment_url}}/api/payment/invoices/generate", "host": ["{{payment_url}}"], "path": ["api", "payment", "invoices", "generate"] },
+            "body": { "mode": "raw", "raw": "{\n  \"orderId\": \"{{order_id}}\",\n  \"dealerId\": \"{{dealer_id}}\",\n  \"totalAmount\": 2784.00,\n  \"paymentMode\": \"COD\",\n  \"isInterstate\": false,\n  \"lines\": [\n    {\n      \"productId\": \"{{product_id}}\",\n      \"productName\": \"Dove Original Beauty Cream Bar 100g\",\n      \"sku\": \"DOV-SOAP-BAR-100\",\n      \"quantity\": 48,\n      \"unitPrice\": 58.00\n    }\n  ]\n}" }
+          }
+        },
+
+        {
+          "name": "E2E Step 18 - Download Invoice PDF",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dealer_token}}" }],
+            "url": { "raw": "{{payment_url}}/api/payment/invoices/{{invoice_id}}/download", "host": ["{{payment_url}}"], "path": ["api", "payment", "invoices", "{{invoice_id}}", "download"] }
+          }
+        },
+
+        {
+          "name": "E2E Step 19 - Verify Final Order Status",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dealer_token}}" }],
+            "url": { "raw": "{{order_url}}/api/orders/{{order_id}}", "host": ["{{order_url}}"], "path": ["api", "orders", "{{order_id}}"] }
+          }
+        }
+      ]
+    }
+
+  ]
+}

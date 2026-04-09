@@ -1,0 +1,21 @@
+﻿{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=ASUS-VIVOBOOK-1\\SQLEXPRESS;Database=InventoryDB;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=True;"
+  },
+  "Jwt": {
+    "Secret": "UniSupply@SecretKey#2025$Platform!Enterprise",
+    "Issuer": "UniSupplyPlatform",
+    "Audience": "UniSupplyAPI",
+    "ExpiryMinutes": "15"
+  },
+  "Redis": {
+    "ConnectionString": "localhost:6379"
+  }
+}

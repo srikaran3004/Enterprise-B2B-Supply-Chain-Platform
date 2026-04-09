@@ -1,0 +1,81 @@
+﻿using System.Text.Json;
+using MediatR;
+using SupplyChain.Order.Application.Abstractions;
+using SupplyChain.Order.Domain.Entities;
+
+namespace SupplyChain.Order.Application.Commands.PlaceOrder;
+
+public class PlaceOrderCommandHandler : IRequestHandler<PlaceOrderCommand, PlaceOrderResult>
+{
+    private readonly IOrderRepository      _orderRepository;
+    private readonly IOutboxRepository     _outboxRepository;
+    private readonly IPaymentServiceClient _paymentClient;
+
+    public PlaceOrderCommandHandler(
+        IOrderRepository      orderRepository,
+        IOutboxRepository     outboxRepository,
+        IPaymentServiceClient paymentClient)
+    {
+        _orderRepository  = orderRepository;
+        _outboxRepository = outboxRepository;
+        _paymentClient    = paymentClient;
+    }
+
+    public async Task<PlaceOrderResult> Handle(PlaceOrderCommand command, CancellationToken ct)
+    {
+        // Calculate total first for credit check
+        var totalAmount = command.Lines.Sum(l => l.UnitPrice * l.Quantity);
+
+        // Credit check against Payment Service
+        var creditCheck = await _paymentClient.CheckCreditAsync(command.DealerId, totalAmount, ct);
+
+        // Generate a new OrderId upfront so Lines can reference it
+        var orderId     = Guid.NewGuid();
+        var orderNumber = await _orderRepository.GenerateOrderNumberAsync(ct);
+
+        // Build OrderLines with snapshot pricing
+        var lines = command.Lines.Select(l => OrderLine.Create(
+            orderId:     orderId,
+            productId:   l.ProductId,
+            productName: l.ProductName,
+            sku:         l.SKU,
+            unitPrice:   l.UnitPrice,
+            quantity:    l.Quantity
+        )).ToList();
+
+        // Create the Order aggregate
+        var order = Domain.Entities.Order.Create(
+            orderId:     orderId,
+            dealerId:    command.DealerId,
+            orderNumber: orderNumber,
+            paymentMode: command.PaymentMode,
+            lines:       lines,
+            notes:       command.Notes
+        );
+
+        // If credit check fails — put order on hold immediately
+        if (!creditCheck.Approved)
+            order.PlaceOnHold($"Order exceeds available credit. Available: ₹{creditCheck.AvailableCredit:N2}");
+
+        await _orderRepository.AddAsync(order, ct);
+
+        // Write Outbox event in same logical save — both persist together
+        var eventPayload = JsonSerializer.Serialize(new
+        {
+            OrderId     = order.OrderId,
+            OrderNumber = order.OrderNumber,
+            DealerId    = order.DealerId,
+            TotalAmount = order.TotalAmount,
+            Status      = order.Status.ToString(),
+            PlacedAt    = order.PlacedAt
+        });
+
+        var eventType = creditCheck.Approved ? "OrderPlaced" : "AdminApprovalRequired";
+        var outbox    = OutboxMessage.Create(eventType, eventPayload);
+
+        await _outboxRepository.AddAsync(outbox, ct);
+        await _orderRepository.SaveChangesAsync(ct);
+
+        return new PlaceOrderResult(order.OrderId, order.OrderNumber, order.Status.ToString());
+    }
+}

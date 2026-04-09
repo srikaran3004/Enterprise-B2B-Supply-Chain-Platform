@@ -1,0 +1,30 @@
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Application\bin\Debug\net10.0\SupplyChain.Payment.Application.deps.json
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Application\bin\Debug\net10.0\SupplyChain.Payment.Application.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Application\bin\Debug\net10.0\SupplyChain.Payment.Application.pdb
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Application\bin\Debug\net10.0\SupplyChain.Payment.Domain.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Application\bin\Debug\net10.0\SupplyChain.Payment.Domain.pdb
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Application\obj\Debug\net10.0\SupplyChain.Payment.Application.csproj.AssemblyReference.cache
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Application\obj\Debug\net10.0\SupplyChain.Payment.Application.GeneratedMSBuildEditorConfig.editorconfig
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Application\obj\Debug\net10.0\SupplyChain.Payment.Application.AssemblyInfoInputs.cache
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Application\obj\Debug\net10.0\SupplyChain.Payment.Application.AssemblyInfo.cs
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Application\obj\Debug\net10.0\SupplyChain.Payment.Application.csproj.CoreCompileInputs.cache
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Application\obj\Debug\net10.0\SupplyCh.9E55C66B.Up2Date
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Application\obj\Debug\net10.0\SupplyChain.Payment.Application.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Application\obj\Debug\net10.0\refint\SupplyChain.Payment.Application.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Application\obj\Debug\net10.0\SupplyChain.Payment.Application.pdb
+D:\Early Sprint\EnterpriseB2BSupplyChain\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Application\obj\Debug\net10.0\ref\SupplyChain.Payment.Application.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Application\bin\Debug\net10.0\SupplyChain.Payment.Application.deps.json
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Application\bin\Debug\net10.0\SupplyChain.Payment.Application.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Application\bin\Debug\net10.0\SupplyChain.Payment.Application.pdb
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Application\bin\Debug\net10.0\SupplyChain.Payment.Domain.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Application\bin\Debug\net10.0\SupplyChain.Payment.Domain.pdb
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Application\obj\Debug\net10.0\SupplyChain.Payment.Application.csproj.AssemblyReference.cache
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Application\obj\Debug\net10.0\SupplyChain.Payment.Application.GeneratedMSBuildEditorConfig.editorconfig
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Application\obj\Debug\net10.0\SupplyChain.Payment.Application.AssemblyInfoInputs.cache
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Application\obj\Debug\net10.0\SupplyChain.Payment.Application.AssemblyInfo.cs
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Application\obj\Debug\net10.0\SupplyChain.Payment.Application.csproj.CoreCompileInputs.cache
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Application\obj\Debug\net10.0\SupplyCh.9E55C66B.Up2Date
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Application\obj\Debug\net10.0\SupplyChain.Payment.Application.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Application\obj\Debug\net10.0\refint\SupplyChain.Payment.Application.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Application\obj\Debug\net10.0\SupplyChain.Payment.Application.pdb
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Application\obj\Debug\net10.0\ref\SupplyChain.Payment.Application.dll
