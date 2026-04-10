@@ -1,4 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
+import { map } from 'rxjs';
 import { ReturnsService, ReturnRequest } from '../../../../core/services/returns.service';
 import { ZoneHttpService } from '../../../../core/services/zone-http.service';
 import { ToastService } from '../../../../shared/ui/toast/toast.service';
@@ -53,7 +54,7 @@ import { API_ENDPOINTS } from '../../../../shared/constants/api-endpoints';
           <div class="return-item__header">
             <div>
               <span class="return-order">Order: {{ ret.orderId.substring(0,8).toUpperCase() }}</span>
-              <span class="return-date">{{ ret.createdAt | date:'medium' }}</span>
+              <span class="return-date">{{ ret.requestedAt | date:'medium' }}</span>
             </div>
             <hul-status-badge [status]="ret.status"></hul-status-badge>
           </div>
@@ -190,7 +191,7 @@ export class ReturnsComponent implements OnInit {
   private returnsService = inject(ReturnsService);
   private http = inject(ZoneHttpService);
   private toast = inject(ToastService);
-  
+
   returns: ReturnRequest[] = [];
   loading = true;
   myOrders: any[] = [];
@@ -216,6 +217,7 @@ export class ReturnsComponent implements OnInit {
       next: (data) => {
         this.returns = data;
         this.loading = false;
+        this.loadMyOrders();
       },
       error: (err) => {
         console.error(err);
@@ -229,10 +231,17 @@ export class ReturnsComponent implements OnInit {
     this.http.get<any>(API_ENDPOINTS.orders.myOrders() + '?pageSize=100').subscribe({
       next: (response: any) => {
         const allOrders = response.items || response.Items || [];
-        // Only show delivered orders that don't have returns
-        this.myOrders = allOrders.filter((o: any) => 
-          o.status === 'Delivered' && 
-          !this.returns.some(r => r.orderId === o.orderId)
+
+        if (!Array.isArray(allOrders) || allOrders.length === 0) {
+          this.myOrders = [];
+          this.loadingOrders = false;
+          return;
+        }
+
+        // Eligibility is based on order-service truth so UI and backend rules stay consistent.
+        this.myOrders = allOrders.filter((order: any) =>
+          order?.status === 'Delivered' &&
+          !this.returns.some(r => r.orderId === order.orderId)
         );
         this.loadingOrders = false;
       },
@@ -254,21 +263,21 @@ export class ReturnsComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       const file = input.files[0];
-      
+
       // Validate file type
       if (!file.type.startsWith('image/')) {
         this.toast.error('Please select an image file');
         return;
       }
-      
+
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         this.toast.error('Image size must be less than 5MB');
         return;
       }
-      
+
       this.selectedFile = file;
-      
+
       // Create preview
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -295,7 +304,7 @@ export class ReturnsComponent implements OnInit {
       // Upload image first
       const formData = new FormData();
       formData.append('file', this.selectedFile);
-      
+
       const uploadResponse = await this.http.post<{ url: string }>(
         API_ENDPOINTS.orders.uploadReturnImage(),
         formData
@@ -304,17 +313,17 @@ export class ReturnsComponent implements OnInit {
       const photoUrl = uploadResponse?.url || '';
 
       // Submit return request
-      await this.http.post(
-        API_ENDPOINTS.returns.raiseReturn(this.selectedOrder.orderId),
-        { reason: this.returnReason, photoUrl }
-      ).toPromise();
+      await this.returnsService
+        .raiseReturn(this.selectedOrder.orderId, this.returnReason, photoUrl)
+        .toPromise();
 
       this.toast.success('Return request submitted successfully');
       this.showRaiseReturnModal = false;
       this.loadReturns();
       this.loadMyOrders();
     } catch (error: any) {
-      this.toast.error(error.error?.error || 'Failed to submit return request');
+      const message = error?.error?.error || error?.error?.message || 'Failed to submit return request';
+      this.toast.error(message);
     } finally {
       this.submittingReturn = false;
     }
@@ -332,4 +341,5 @@ export class ReturnsComponent implements OnInit {
   openImage(url: string) {
     window.open(url, '_blank');
   }
+
 }

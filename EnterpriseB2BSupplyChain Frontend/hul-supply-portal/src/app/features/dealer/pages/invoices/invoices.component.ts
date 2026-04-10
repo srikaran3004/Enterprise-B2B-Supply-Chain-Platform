@@ -91,22 +91,31 @@ export class InvoicesComponent implements OnInit {
   invoices: any[] = [];
   loading = true;
 
-  constructor(private http: ZoneHttpService) {}
+  constructor(private http: ZoneHttpService) { }
 
   ngOnInit() {
-    this.http.get<any[]>(API_ENDPOINTS.payment.invoices()).subscribe({
-      next: (data) => { this.invoices = data; this.loading = false; },
+    this.http.get<any>(API_ENDPOINTS.payment.invoices()).subscribe({
+      next: (data) => {
+        const payload = data?.items || data?.Items || data || [];
+        this.invoices = Array.isArray(payload) ? payload : [];
+        this.loading = false;
+      },
       error: () => { this.loading = false; }
     });
   }
 
   download(inv: any): void {
-    this.http.get<Blob>(API_ENDPOINTS.payment.downloadInvoice(inv.invoiceId), { responseType: 'blob' })
+    const invoiceId = inv.invoiceId || inv.InvoiceId || inv.id || inv.Id;
+    if (!invoiceId) {
+      return;
+    }
+
+    this.http.get<Blob>(API_ENDPOINTS.payment.downloadInvoice(invoiceId), { responseType: 'blob' })
       .subscribe(blob => {
         const url = URL.createObjectURL(blob as Blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${inv.invoiceNumber}.pdf`;
+        a.download = `${inv.invoiceNumber || inv.InvoiceNumber || 'invoice'}.pdf`;
         a.click();
         URL.revokeObjectURL(url);
       });

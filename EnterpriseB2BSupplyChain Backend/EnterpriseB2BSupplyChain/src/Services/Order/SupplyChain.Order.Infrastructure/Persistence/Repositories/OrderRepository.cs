@@ -16,6 +16,7 @@ public class OrderRepository : IOrderRepository
             .Include(o => o.Lines)
             .Include(o => o.StatusHistory)
             .Include(o => o.ReturnRequest)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(o => o.OrderId == orderId, ct);
 
     public async Task<Domain.Entities.Order?> GetByOrderNumberAsync(string orderNumber, CancellationToken ct = default)

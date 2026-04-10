@@ -77,7 +77,7 @@ import { ToastService } from '../../../../shared/ui/toast/toast.service';
             </div>
             <div class="detail-row">
               <label>Requested</label>
-              <span>{{ selectedReturn.createdAt | date:'medium' }}</span>
+              <span>{{ selectedReturn.requestedAt | date:'medium' }}</span>
             </div>
           </div>
           
@@ -137,7 +137,7 @@ import { ToastService } from '../../../../shared/ui/toast/toast.service';
 export class AdminReturnsComponent implements OnInit {
   private returnsService = inject(ReturnsService);
   private toastService = inject(ToastService);
-  
+
   returns: ReturnRequest[] = [];
   loading = true;
 
@@ -154,7 +154,7 @@ export class AdminReturnsComponent implements OnInit {
     { key: 'orderNumber', label: 'Order #', type: 'text' },
     { key: 'reason', label: 'Reason', type: 'text' },
     { key: 'status', label: 'Status', type: 'badge', badgeMap: { 'Pending': 'warning', 'Approved': 'success', 'Rejected': 'danger' } },
-    { key: 'createdAt', label: 'Requested', type: 'date' },
+    { key: 'requestedAt', label: 'Requested', type: 'date' },
     { key: 'actions', label: 'Actions', type: 'actions-menu' },
   ];
 
@@ -185,7 +185,7 @@ export class AdminReturnsComponent implements OnInit {
 
   onRowAction(event: { action: string; row: ReturnRequest }) {
     this.selectedReturn = event.row;
-    
+
     if (event.action === 'view') {
       this.showViewModal = true;
     } else if (event.action === 'approve') {
@@ -199,7 +199,7 @@ export class AdminReturnsComponent implements OnInit {
 
   confirmApprove() {
     if (!this.selectedReturn) return;
-    
+
     this.returnsService.approveReturn(
       this.selectedReturn.returnId,
       this.resolutionNotes || 'Approved by admin'
@@ -217,7 +217,7 @@ export class AdminReturnsComponent implements OnInit {
 
   confirmReject() {
     if (!this.selectedReturn || !this.rejectionNotes.trim()) return;
-    
+
     this.returnsService.rejectReturn(
       this.selectedReturn.returnId,
       this.rejectionNotes

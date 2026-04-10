@@ -367,7 +367,7 @@ export class DashboardComponent implements OnInit {
     this.store.select(selectOrders).subscribe(orders => {
       this.recentOrders = orders.slice(0, 5);
       this.totalOrders = orders.length;
-      this.activeOrders = orders.filter(o => o.status === 'InTransit' || o.status === 'Processing').length;
+      this.activeOrders = orders.filter(o => o.status === 'InTransit' || o.status === 'OutForDelivery' || o.status === 'Processing').length;
       this.totalSpent = orders.reduce((sum: number, o: any) => sum + (o.totalAmount || 0), 0);
     });
 
