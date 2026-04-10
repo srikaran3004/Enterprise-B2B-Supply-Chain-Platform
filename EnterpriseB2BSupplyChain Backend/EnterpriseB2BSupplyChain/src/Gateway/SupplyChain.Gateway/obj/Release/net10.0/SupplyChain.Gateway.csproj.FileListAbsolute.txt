@@ -57,3 +57,11 @@ D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Ga
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\obj\Release\net10.0\SupplyChain.Gateway.pdb
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\obj\Release\net10.0\SupplyChain.Gateway.genruntimeconfig.cache
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\obj\Release\net10.0\ref\SupplyChain.Gateway.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\obj\Release\net10.0\SupplyChain.Gateway.sourcelink.json
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\bin\Release\net10.0\SupplyChain.SharedInfrastructure.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\bin\Release\net10.0\SupplyChain.SharedInfrastructure.pdb
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\bin\Release\net10.0\Microsoft.Extensions.Http.Polly.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\bin\Release\net10.0\Ocelot.Provider.Polly.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\bin\Release\net10.0\Polly.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\bin\Release\net10.0\Polly.Core.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\bin\Release\net10.0\Polly.Extensions.Http.dll

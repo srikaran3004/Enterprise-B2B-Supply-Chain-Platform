@@ -12,6 +12,7 @@ public class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
         builder.HasIndex(i => i.InvoiceNumber).IsUnique();
         builder.HasIndex(i => i.OrderId).IsUnique();
         builder.HasIndex(i => i.IdempotencyKey).IsUnique();
+        builder.HasIndex(i => i.DealerId);
 
         builder.Property(i => i.InvoiceNumber).IsRequired().HasMaxLength(30);
         builder.Property(i => i.IdempotencyKey).IsRequired().HasMaxLength(100);

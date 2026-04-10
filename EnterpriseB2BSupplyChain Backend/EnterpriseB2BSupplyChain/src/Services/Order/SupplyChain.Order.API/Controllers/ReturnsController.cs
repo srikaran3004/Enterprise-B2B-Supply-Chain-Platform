@@ -55,13 +55,19 @@ public class ReturnsController : ControllerBase
     {
         var sub = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
                ?? User.FindFirst("sub")?.Value;
-        return Guid.TryParse(sub, out var id) ? id : Guid.Empty;
+        if (Guid.TryParse(sub, out var id))
+            return id;
+
+        throw new UnauthorizedAccessException("Authenticated user id claim is missing or invalid.");
     }
 
     private Guid GetDealerId()
     {
         var claim = User.FindFirst("dealerId")?.Value;
-        return Guid.TryParse(claim, out var id) ? id : Guid.Empty;
+        if (Guid.TryParse(claim, out var id))
+            return id;
+
+        throw new UnauthorizedAccessException("Dealer token does not contain a valid dealerId claim.");
     }
 }
 

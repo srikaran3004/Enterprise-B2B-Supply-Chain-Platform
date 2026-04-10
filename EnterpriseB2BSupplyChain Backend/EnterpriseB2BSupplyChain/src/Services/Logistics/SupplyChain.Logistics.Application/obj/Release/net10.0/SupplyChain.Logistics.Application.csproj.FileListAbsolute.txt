@@ -13,3 +13,4 @@ D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Se
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.Application\obj\Release\net10.0\refint\SupplyChain.Logistics.Application.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.Application\obj\Release\net10.0\SupplyChain.Logistics.Application.pdb
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.Application\obj\Release\net10.0\ref\SupplyChain.Logistics.Application.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.Application\obj\Release\net10.0\SupplyChain.Logistics.Application.sourcelink.json

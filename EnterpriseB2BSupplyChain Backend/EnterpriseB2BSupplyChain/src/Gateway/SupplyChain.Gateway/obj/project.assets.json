@@ -129,6 +129,23 @@
           }
         }
       },
+      "Microsoft.Extensions.Http.Polly/10.0.5": {
+        "type": "package",
+        "dependencies": {
+          "Polly": "7.2.4",
+          "Polly.Extensions.Http": "3.0.0"
+        },
+        "compile": {
+          "lib/netstandard2.0/Microsoft.Extensions.Http.Polly.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/netstandard2.0/Microsoft.Extensions.Http.Polly.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "Microsoft.IdentityModel.Abstractions/8.0.1": {
         "type": "package",
         "compile": {
@@ -272,20 +289,82 @@
           }
         }
       },
-      "Serilog/4.3.0": {
+      "Ocelot.Provider.Polly/24.1.0": {
         "type": "package",
+        "dependencies": {
+          "Ocelot": "24.1.0",
+          "Polly": "8.6.5"
+        },
         "compile": {
-          "lib/net9.0/Serilog.dll": {
+          "lib/net9.0/Ocelot.Provider.Polly.dll": {
             "related": ".xml"
           }
         },
         "runtime": {
-          "lib/net9.0/Serilog.dll": {
+          "lib/net9.0/Ocelot.Provider.Polly.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Polly/8.6.5": {
+        "type": "package",
+        "dependencies": {
+          "Polly.Core": "8.6.5"
+        },
+        "compile": {
+          "lib/net6.0/Polly.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/Polly.dll": {
+            "related": ".pdb;.xml"
+          }
+        }
+      },
+      "Polly.Core/8.6.5": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/Polly.Core.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Polly.Core.dll": {
+            "related": ".pdb;.xml"
+          }
+        }
+      },
+      "Polly.Extensions.Http/3.0.0": {
+        "type": "package",
+        "dependencies": {
+          "Polly": "7.1.0"
+        },
+        "compile": {
+          "lib/netstandard2.0/Polly.Extensions.Http.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/netstandard2.0/Polly.Extensions.Http.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Serilog/4.3.1": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Serilog.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Serilog.dll": {
             "related": ".xml"
           }
         },
         "build": {
-          "build/_._": {}
+          "buildTransitive/Serilog.targets": {}
         }
       },
       "Serilog.AspNetCore/10.0.0": {
@@ -443,6 +522,26 @@
             "related": ".xml"
           }
         }
+      },
+      "SupplyChain.SharedInfrastructure/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "FluentValidation": "11.11.0",
+          "Microsoft.Extensions.Http.Polly": "10.0.5",
+          "Serilog": "4.3.1",
+          "Serilog.AspNetCore": "10.0.0",
+          "Serilog.Sinks.File": "7.0.0"
+        },
+        "compile": {
+          "bin/placeholder/SupplyChain.SharedInfrastructure.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/SupplyChain.SharedInfrastructure.dll": {}
+        },
+        "frameworkReferences": [
+          "Microsoft.AspNetCore.App"
+        ]
       }
     }
   },
@@ -604,6 +703,22 @@
         "lib/netstandard2.0/Microsoft.Extensions.DiagnosticAdapter.xml",
         "microsoft.extensions.diagnosticadapter.3.1.32.nupkg.sha512",
         "microsoft.extensions.diagnosticadapter.nuspec"
+      ]
+    },
+    "Microsoft.Extensions.Http.Polly/10.0.5": {
+      "sha512": "4VcH+2eVBQw3MtRpo02nrhv/nU54tL/pkcRF0fSSwD+8MoxgE1EjylPKbSIqHEK7iiB17I0iB37Ao8y+q1sV8g==",
+      "type": "package",
+      "path": "microsoft.extensions.http.polly/10.0.5",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "PACKAGE.md",
+        "THIRD-PARTY-NOTICES.TXT",
+        "lib/netstandard2.0/Microsoft.Extensions.Http.Polly.dll",
+        "lib/netstandard2.0/Microsoft.Extensions.Http.Polly.xml",
+        "microsoft.extensions.http.polly.10.0.5.nupkg.sha512",
+        "microsoft.extensions.http.polly.nuspec"
       ]
     },
     "Microsoft.IdentityModel.Abstractions/8.0.1": {
@@ -813,16 +928,106 @@
         "ocelot_icon.png"
       ]
     },
-    "Serilog/4.3.0": {
-      "sha512": "+cDryFR0GRhsGOnZSKwaDzRRl4MupvJ42FhCE4zhQRVanX0Jpg6WuCBk59OVhVDPmab1bB+nRykAnykYELA9qQ==",
+    "Ocelot.Provider.Polly/24.1.0": {
+      "sha512": "WBLPNs1T+7gLD9x1u8RP/ZyVB0y9Gvp7V4BozRLe4plQ/qGMYgO8xdLighZ1cRAKx2e0pDmTPK/EnXaB21Lfow==",
       "type": "package",
-      "path": "serilog/4.3.0",
+      "path": "ocelot.provider.polly/24.1.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE.md",
+        "lib/net8.0/Ocelot.Provider.Polly.dll",
+        "lib/net8.0/Ocelot.Provider.Polly.xml",
+        "lib/net9.0/Ocelot.Provider.Polly.dll",
+        "lib/net9.0/Ocelot.Provider.Polly.xml",
+        "ocelot.provider.polly.24.1.0.nupkg.sha512",
+        "ocelot.provider.polly.nuspec",
+        "ocelot_icon.png"
+      ]
+    },
+    "Polly/8.6.5": {
+      "sha512": "VqtW2ZE/ALvQMAH1cQY3qZ2cF2OXa3oe/HKMdOv6Q02HCoEW0rsFNfcBONXlHBe1TnjWW1vdRxBEkPeq0/2FHA==",
+      "type": "package",
+      "path": "polly/8.6.5",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE",
+        "lib/net462/Polly.dll",
+        "lib/net462/Polly.pdb",
+        "lib/net462/Polly.xml",
+        "lib/net472/Polly.dll",
+        "lib/net472/Polly.pdb",
+        "lib/net472/Polly.xml",
+        "lib/net6.0/Polly.dll",
+        "lib/net6.0/Polly.pdb",
+        "lib/net6.0/Polly.xml",
+        "lib/netstandard2.0/Polly.dll",
+        "lib/netstandard2.0/Polly.pdb",
+        "lib/netstandard2.0/Polly.xml",
+        "package-icon.png",
+        "package-readme.md",
+        "polly.8.6.5.nupkg.sha512",
+        "polly.nuspec"
+      ]
+    },
+    "Polly.Core/8.6.5": {
+      "sha512": "t+sUVrIwvo7UmsgHGgOG9F0GDZSRIm47u2ylH17Gvcv1q5hNEwgD5GoBlFyc0kh/pebmPyrAgvGsR/65ZBaXlg==",
+      "type": "package",
+      "path": "polly.core/8.6.5",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE",
+        "lib/net462/Polly.Core.dll",
+        "lib/net462/Polly.Core.pdb",
+        "lib/net462/Polly.Core.xml",
+        "lib/net472/Polly.Core.dll",
+        "lib/net472/Polly.Core.pdb",
+        "lib/net472/Polly.Core.xml",
+        "lib/net6.0/Polly.Core.dll",
+        "lib/net6.0/Polly.Core.pdb",
+        "lib/net6.0/Polly.Core.xml",
+        "lib/net8.0/Polly.Core.dll",
+        "lib/net8.0/Polly.Core.pdb",
+        "lib/net8.0/Polly.Core.xml",
+        "lib/netstandard2.0/Polly.Core.dll",
+        "lib/netstandard2.0/Polly.Core.pdb",
+        "lib/netstandard2.0/Polly.Core.xml",
+        "package-icon.png",
+        "package-readme.md",
+        "polly.core.8.6.5.nupkg.sha512",
+        "polly.core.nuspec"
+      ]
+    },
+    "Polly.Extensions.Http/3.0.0": {
+      "sha512": "drrG+hB3pYFY7w1c3BD+lSGYvH2oIclH8GRSehgfyP5kjnFnHKQuuBhuHLv+PWyFuaTDyk/vfRpnxOzd11+J8g==",
+      "type": "package",
+      "path": "polly.extensions.http/3.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/netstandard1.1/Polly.Extensions.Http.dll",
+        "lib/netstandard1.1/Polly.Extensions.Http.xml",
+        "lib/netstandard2.0/Polly.Extensions.Http.dll",
+        "lib/netstandard2.0/Polly.Extensions.Http.xml",
+        "polly.extensions.http.3.0.0.nupkg.sha512",
+        "polly.extensions.http.nuspec"
+      ]
+    },
+    "Serilog/4.3.1": {
+      "sha512": "savYe7h5yRlkqBVOwP8cIRDOdqKiPmYCU4W87JH38sBmcKD5EBoXvQIw6bNEvZ/pTe1gsiye3VFCzBsoppGkXQ==",
+      "type": "package",
+      "path": "serilog/4.3.1",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "README.md",
         "build/Serilog.targets",
+        "buildTransitive/Serilog.targets",
         "icon.png",
+        "lib/net10.0/Serilog.dll",
+        "lib/net10.0/Serilog.xml",
         "lib/net462/Serilog.dll",
         "lib/net462/Serilog.xml",
         "lib/net471/Serilog.dll",
@@ -835,7 +1040,7 @@
         "lib/net9.0/Serilog.xml",
         "lib/netstandard2.0/Serilog.dll",
         "lib/netstandard2.0/Serilog.xml",
-        "serilog.4.3.0.nupkg.sha512",
+        "serilog.4.3.1.nupkg.sha512",
         "serilog.nuspec"
       ]
     },
@@ -1053,13 +1258,20 @@
         "system.identitymodel.tokens.jwt.8.0.1.nupkg.sha512",
         "system.identitymodel.tokens.jwt.nuspec"
       ]
+    },
+    "SupplyChain.SharedInfrastructure/1.0.0": {
+      "type": "project",
+      "path": "../../SharedInfrastructure/SupplyChain.SharedInfrastructure/SupplyChain.SharedInfrastructure.csproj",
+      "msbuildProject": "../../SharedInfrastructure/SupplyChain.SharedInfrastructure/SupplyChain.SharedInfrastructure.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net10.0": [
       "Microsoft.AspNetCore.Authentication.JwtBearer >= 10.0.5",
       "Ocelot >= 24.1.0",
-      "Serilog.AspNetCore >= 10.0.0"
+      "Ocelot.Provider.Polly >= 24.1.0",
+      "Serilog.AspNetCore >= 10.0.0",
+      "SupplyChain.SharedInfrastructure >= 1.0.0"
     ]
   },
   "packageFolders": {
@@ -1093,7 +1305,11 @@
       "frameworks": {
         "net10.0": {
           "targetAlias": "net10.0",
-          "projectReferences": {}
+          "projectReferences": {
+            "D:\\Early Sprint\\EnterpriseB2BSupplyChain Backend\\EnterpriseB2BSupplyChain\\src\\SharedInfrastructure\\SupplyChain.SharedInfrastructure\\SupplyChain.SharedInfrastructure.csproj": {
+              "projectPath": "D:\\Early Sprint\\EnterpriseB2BSupplyChain Backend\\EnterpriseB2BSupplyChain\\src\\SharedInfrastructure\\SupplyChain.SharedInfrastructure\\SupplyChain.SharedInfrastructure.csproj"
+            }
+          }
         }
       },
       "warningProperties": {
@@ -1117,6 +1333,10 @@
             "version": "[10.0.5, )"
           },
           "Ocelot": {
+            "target": "Package",
+            "version": "[24.1.0, )"
+          },
+          "Ocelot.Provider.Polly": {
             "target": "Package",
             "version": "[24.1.0, )"
           },

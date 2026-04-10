@@ -30,6 +30,7 @@ D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Se
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Identity\SupplyChain.Identity.Infrastructure\obj\Debug\net10.0\SupplyChain.Identity.Infrastructure.AssemblyInfoInputs.cache
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Identity\SupplyChain.Identity.Infrastructure\obj\Debug\net10.0\SupplyChain.Identity.Infrastructure.AssemblyInfo.cs
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Identity\SupplyChain.Identity.Infrastructure\obj\Debug\net10.0\SupplyChain.Identity.Infrastructure.csproj.CoreCompileInputs.cache
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Identity\SupplyChain.Identity.Infrastructure\obj\Debug\net10.0\SupplyChain.Identity.Infrastructure.sourcelink.json
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Identity\SupplyChain.Identity.Infrastructure\obj\Debug\net10.0\SupplyCh.E3073D48.Up2Date
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Identity\SupplyChain.Identity.Infrastructure\obj\Debug\net10.0\SupplyChain.Identity.Infrastructure.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Identity\SupplyChain.Identity.Infrastructure\obj\Debug\net10.0\refint\SupplyChain.Identity.Infrastructure.dll

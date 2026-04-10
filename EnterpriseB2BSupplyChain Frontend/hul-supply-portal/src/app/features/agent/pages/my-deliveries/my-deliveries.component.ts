@@ -203,7 +203,7 @@ import { ToastService } from '../../../../shared/ui/toast/toast.service';
               <input *ngIf="s._updateStatus && s._updateStatus !== 'VehicleBreakdown'"
                 type="text" class="dc-input"
                 [(ngModel)]="s._place"
-                placeholder="Current location / place name (e.g. Pune Bypass, Nashik Highway)" />
+                placeholder="Current location (optional, e.g. Pune Bypass, Nashik Highway)" />
 
               <!-- Breakdown inputs -->
               <div *ngIf="s._updateStatus === 'VehicleBreakdown'" class="dc-breakdown-form">
@@ -219,7 +219,7 @@ import { ToastService } from '../../../../shared/ui/toast/toast.service';
                   [class.dc-btn--primary]="s._updateStatus !== 'Delivered' && s._updateStatus !== 'VehicleBreakdown'"
                   [class.dc-btn--deliver]="s._updateStatus === 'Delivered'"
                   [class.dc-btn--danger]="s._updateStatus === 'VehicleBreakdown'"
-                  [disabled]="updatingId === s.shipmentId || (!s._place && s._updateStatus !== 'Delivered')"
+                  [disabled]="!canSubmitUpdate(s)"
                   (click)="submitUpdate(s)">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" *ngIf="s._updateStatus === 'Delivered'"><polyline points="20 6 9 17 4 12"/></svg>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" *ngIf="s._updateStatus === 'VehicleBreakdown'"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
@@ -451,7 +451,11 @@ export class MyDeliveriesComponent implements OnInit {
 
   quickUpdate(d: any, status: string): void {
     this.updatingId = d.shipmentId;
-    this.http.put(API_ENDPOINTS.logistics.updateShipmentStatus(d.orderId), { status }).subscribe({
+    this.http.put(API_ENDPOINTS.logistics.updateShipmentStatus(d.orderId), {
+      status,
+      place: d.shippingCity || d.shippingState || null,
+      notes: 'Goods picked up from warehouse'
+    }).subscribe({
       next: () => { this.toast.success('Pickup confirmed!'); this.updatingId = null; this.load(); },
       error: err => { this.toast.error(err.error?.error || 'Update failed'); this.updatingId = null; }
     });
@@ -484,7 +488,7 @@ export class MyDeliveriesComponent implements OnInit {
 
   submitUpdate(d: any): void {
     const status = d._updateStatus;
-    if (!status) return;
+    if (!status || !this.canSubmitUpdate(d)) return;
 
     const statusMap: Record<string, string> = {
       Started:          'InTransit',
@@ -502,12 +506,16 @@ export class MyDeliveriesComponent implements OnInit {
       Started: 'Journey started', Reached: 'Reached destination',
       Delayed: 'Delay reported', OutForDelivery: 'Out for delivery'
     };
-    const notes = d._notes || (status !== 'Other' && status !== 'Delivered' ? (labelMap[status] || status) : null) || null;
+    const typedNotes = (d._notes || '').trim();
+    const notes = typedNotes
+      || (status !== 'Other' && status !== 'Delivered' ? (labelMap[status] || status) : null)
+      || null;
+    const place = this.resolvePlace(d);
 
     this.http.put(API_ENDPOINTS.logistics.updateShipmentStatus(d.orderId), {
       status: apiStatus,
       notes,
-      place: d._place || null,
+      place,
     }).subscribe({
       next: () => {
         const msgs: Record<string, string> = {
@@ -531,6 +539,24 @@ export class MyDeliveriesComponent implements OnInit {
 
   getRecentHistory(d: any): any[] {
     return (d.trackingHistory || []).slice(-3);
+  }
+
+  canSubmitUpdate(d: any): boolean {
+    if (!d?._updateStatus) return false;
+    if (this.updatingId === d.shipmentId) return false;
+
+    if (d._updateStatus === 'VehicleBreakdown') {
+      return !!(d._place || '').trim();
+    }
+
+    return true;
+  }
+
+  private resolvePlace(d: any): string | null {
+    const typedPlace = (d._place || '').trim();
+    if (typedPlace) return typedPlace;
+
+    return d.shippingCity || d.shippingState || null;
   }
 
   getStatusLabel(status: string): string {

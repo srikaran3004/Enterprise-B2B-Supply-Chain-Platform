@@ -206,6 +206,10 @@ namespace SupplyChain.Identity.Infrastructure.Migrations
 
                     b.HasIndex("DealerId");
 
+                    b.HasIndex("DealerId", "IsDefault")
+                        .IsUnique()
+                        .HasFilter("[IsDefault] = 1");
+
                     b.ToTable("ShippingAddresses", (string)null);
                 });
 

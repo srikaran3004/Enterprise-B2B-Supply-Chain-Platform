@@ -75,6 +75,7 @@ D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Ga
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\bin\Debug\net10.0\Microsoft.AspNetCore.Mvc.NewtonsoftJson.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\bin\Debug\net10.0\Microsoft.Extensions.DependencyModel.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\bin\Debug\net10.0\Microsoft.Extensions.DiagnosticAdapter.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\bin\Debug\net10.0\Microsoft.Extensions.Http.Polly.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\bin\Debug\net10.0\Microsoft.IdentityModel.Abstractions.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\bin\Debug\net10.0\Microsoft.IdentityModel.JsonWebTokens.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\bin\Debug\net10.0\Microsoft.IdentityModel.Logging.dll
@@ -84,6 +85,10 @@ D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Ga
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\bin\Debug\net10.0\Newtonsoft.Json.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\bin\Debug\net10.0\Newtonsoft.Json.Bson.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\bin\Debug\net10.0\Ocelot.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\bin\Debug\net10.0\Ocelot.Provider.Polly.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\bin\Debug\net10.0\Polly.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\bin\Debug\net10.0\Polly.Core.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\bin\Debug\net10.0\Polly.Extensions.Http.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\bin\Debug\net10.0\Serilog.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\bin\Debug\net10.0\Serilog.AspNetCore.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\bin\Debug\net10.0\Serilog.Extensions.Hosting.dll
@@ -94,6 +99,8 @@ D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Ga
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\bin\Debug\net10.0\Serilog.Sinks.Debug.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\bin\Debug\net10.0\Serilog.Sinks.File.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\bin\Debug\net10.0\System.IdentityModel.Tokens.Jwt.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\bin\Debug\net10.0\SupplyChain.SharedInfrastructure.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\bin\Debug\net10.0\SupplyChain.SharedInfrastructure.pdb
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\obj\Debug\net10.0\SupplyChain.Gateway.csproj.AssemblyReference.cache
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\obj\Debug\net10.0\rpswa.dswa.cache.json
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\obj\Debug\net10.0\SupplyChain.Gateway.GeneratedMSBuildEditorConfig.editorconfig
@@ -102,6 +109,7 @@ D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Ga
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\obj\Debug\net10.0\SupplyChain.Gateway.csproj.CoreCompileInputs.cache
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\obj\Debug\net10.0\SupplyChain.Gateway.MvcApplicationPartsAssemblyInfo.cs
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\obj\Debug\net10.0\SupplyChain.Gateway.MvcApplicationPartsAssemblyInfo.cache
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\obj\Debug\net10.0\SupplyChain.Gateway.sourcelink.json
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\obj\Debug\net10.0\rjimswa.dswa.cache.json
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\obj\Debug\net10.0\rjsmrazor.dswa.cache.json
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\obj\Debug\net10.0\rjsmcshtml.dswa.cache.json
@@ -111,6 +119,7 @@ D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Ga
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\obj\Debug\net10.0\staticwebassets.development.json
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\obj\Debug\net10.0\staticwebassets.build.endpoints.json
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\obj\Debug\net10.0\swae.build.ex.cache
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\obj\Debug\net10.0\staticwebassets.upToDateCheck.txt
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\obj\Debug\net10.0\SupplyCh.EAE716AD.Up2Date
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\obj\Debug\net10.0\SupplyChain.Gateway.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Gateway\SupplyChain.Gateway\obj\Debug\net10.0\refint\SupplyChain.Gateway.dll

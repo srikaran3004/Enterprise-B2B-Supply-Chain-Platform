@@ -1,5 +1,5 @@
 try {
-    $connString = 'Server=.\SQLEXPRESS;Database=LogisticsDB;Integrated Security=True;TrustServerCertificate=True'
+    $connString = 'Server=.\SQLEXPRESS;Database=HUL_LogisticsDb;Integrated Security=True;TrustServerCertificate=True'
     $conn = [System.Data.SqlClient.SqlConnection]::new($connString)
     $conn.Open()
     $cmd = $conn.CreateCommand()

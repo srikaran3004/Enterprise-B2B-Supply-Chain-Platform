@@ -8,6 +8,8 @@ public interface IOrderServiceClient
     /// so the Logistics portal can assign an agent without manual admin approval.
     /// </summary>
     Task<bool> AdvanceToReadyForDispatchAsync(Guid orderId, CancellationToken ct);
+    Task<bool> MarkInTransitAsync(Guid orderId, CancellationToken ct);
+    Task<bool> MarkDeliveredAsync(Guid orderId, CancellationToken ct);
 }
 
 public record OrderNotificationDetailsDto(

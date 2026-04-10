@@ -1,20 +1,32 @@
-using System.Text;
+﻿using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
+using Ocelot.Provider.Polly;
 using Serilog;
+using SupplyChain.SharedInfrastructure.Extensions;
+using SupplyChain.SharedInfrastructure.Observability;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Host.UseSerilog((ctx, cfg) =>
-    cfg.ReadFrom.Configuration(ctx.Configuration).WriteTo.Console());
+builder.Host.UseSharedSerilog("gateway-service");
 
 builder.Configuration
     .AddJsonFile("ocelot.json", optional: false, reloadOnChange: true)
     .AddEnvironmentVariables();
 
-var jwtSecret = "UniSupply@SecretKey#2025$Platform!Enterprise";
+builder.Services.AddSharedInfrastructure();
+
+var jwtSecret = builder.Configuration["Jwt:Secret"];
+if (string.IsNullOrWhiteSpace(jwtSecret))
+{
+    throw new InvalidOperationException("Gateway JWT secret is not configured. Set Jwt:Secret.");
+}
+
+var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "UniSupplyPlatform";
+var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "UniSupplyAPI";
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer("Bearer", options =>
     {
@@ -24,8 +36,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience         = true,
             ValidateLifetime         = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer              = "UniSupplyPlatform",
-            ValidAudience            = "UniSupplyAPI",
+            ValidIssuer              = jwtIssuer,
+            ValidAudience            = jwtAudience,
             IssuerSigningKey         = new SymmetricSecurityKey(
                                            Encoding.UTF8.GetBytes(jwtSecret)),
             ClockSkew = TimeSpan.Zero
@@ -40,12 +52,16 @@ builder.Services.AddCors(opt =>
          .AllowAnyHeader()
          .AllowAnyMethod()));
 
-builder.Services.AddOcelot(builder.Configuration);
+builder.Services.AddOcelot(builder.Configuration)
+    .AddPolly();
 
 var app = builder.Build();
+app.UseSharedInfrastructure();
 app.UseCors("AllowAngular");
 app.UseSerilogRequestLogging();
 app.UseAuthentication();
 app.UseAuthorization();
 await app.UseOcelot();
 app.Run();
+
+

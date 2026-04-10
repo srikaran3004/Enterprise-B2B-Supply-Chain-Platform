@@ -76,6 +76,7 @@ public class AssignAgentCommandHandler : IRequestHandler<AssignAgentCommand, Ass
             DealerId:            orderDetails?.DealerId ?? Guid.Empty,
             DealerEmail:         dealerContact?.Email ?? string.Empty,
             AgentId:             agent.AgentId,
+            AgentUserId:         agent.UserId,
             AgentName:           agent.FullName,
             AgentPhone:          agent.Phone,
             VehicleNo:           vehicle.RegistrationNo,

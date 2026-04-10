@@ -4,6 +4,7 @@ namespace SupplyChain.Logistics.Application.Commands.RateShipment;
 
 public record RateShipmentCommand(
     Guid   ShipmentId,
+    Guid   DealerId,
     int    Rating,
     string? Feedback
 ) : IRequest<RateShipmentResult>;

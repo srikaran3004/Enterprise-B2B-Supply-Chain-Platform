@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SupplyChain.Notification.Application.Abstractions;
+using SupplyChain.Notification.Infrastructure.Jobs;
 using SupplyChain.Notification.Infrastructure.Persistence;
 using SupplyChain.Notification.Infrastructure.Persistence.Repositories;
 using SupplyChain.Notification.Infrastructure.Services;
@@ -23,6 +24,7 @@ public static class DependencyInjection
         services.AddScoped<INotificationInboxRepository, NotificationInboxRepository>();
         services.AddScoped<IEmailSender, SmtpEmailSender>();
         services.AddHostedService<RabbitMqNotificationConsumer>();
+        services.AddHostedService<NotificationLogCleanupBackgroundService>();
 
         return services;
     }

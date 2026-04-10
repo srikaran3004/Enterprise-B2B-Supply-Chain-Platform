@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ZoneHttpService } from '../../../../core/services/zone-http.service';
 import { API_ENDPOINTS } from '../../../../shared/constants/api-endpoints';
@@ -82,18 +82,18 @@ interface OrderStage {
         </div>
 
         <!-- ===== ACTIVITY LOG ===== -->
-        <div class="od-card" *ngIf="order.statusHistory?.length > 0">
+        <div class="od-card" *ngIf="activityEvents.length > 0">
           <div class="od-card-title">Activity Log</div>
           <div class="activity-log">
-            <div *ngFor="let ev of order.statusHistory; let last = last" class="al-event">
+            <div *ngFor="let ev of activityEvents; let last = last" class="al-event">
               <div class="al-left">
                 <div class="al-dot" [class.al-dot--last]="last"></div>
                 <div class="al-line" *ngIf="!last"></div>
               </div>
               <div class="al-body">
-                <span class="al-status">{{ formatStatus(ev.toStatus || ev.status) }}</span>
-                <span class="al-time">{{ ev.changedAt | date:'dd MMM yyyy, h:mm a' }}</span>
-                <span *ngIf="ev.notes || ev.note" class="al-note">{{ ev.notes || ev.note }}</span>
+                <span class="al-status">{{ formatStatus(ev.status) }}</span>
+                <span class="al-time">{{ ev.timestamp | date:'dd MMM yyyy, h:mm a' }}</span>
+                <span *ngIf="ev.note" class="al-note">{{ ev.note }}</span>
               </div>
             </div>
           </div>
@@ -142,7 +142,7 @@ interface OrderStage {
           <div *ngIf="tracking">
 
             <!-- Vehicle Breakdown Alert -->
-            <div *ngIf="tracking.status === 'VehicleBreakdown'" class="od-breakdown-alert">
+            <div *ngIf="tracking.currentStatus === 'VehicleBreakdown'" class="od-breakdown-alert">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
                 <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
@@ -151,7 +151,7 @@ interface OrderStage {
             </div>
 
             <!-- SLA Risk Alert -->
-            <div *ngIf="tracking.slaAtRisk && tracking.status !== 'Delivered'" class="od-sla-alert">
+            <div *ngIf="tracking.slaAtRisk && tracking.currentStatus !== 'Delivered'" class="od-sla-alert">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
               </svg>
@@ -180,9 +180,9 @@ interface OrderStage {
             </div>
 
             <!-- Location history -->
-            <div *ngIf="tracking.trackingHistory?.length > 0" class="od-tracking-history">
+            <div *ngIf="tracking.history?.length > 0" class="od-tracking-history">
               <div class="od-th-title">Location History</div>
-              <div *ngFor="let ev of tracking.trackingHistory; let last = last" class="od-th-event"
+              <div *ngFor="let ev of tracking.history; let last = last" class="od-th-event"
                    [class.od-th-event--breakdown]="ev.status === 'VehicleBreakdown'">
                 <div class="od-th-left">
                   <div class="od-th-dot" [class.od-th-dot--green]="ev.status === 'Delivered'" [class.od-th-dot--orange]="ev.status === 'VehicleBreakdown'"></div>
@@ -207,7 +207,7 @@ interface OrderStage {
             </div>
 
             <!-- Rate delivery (delivered + not yet rated) -->
-            <div *ngIf="tracking.status === 'Delivered' && !tracking.customerRating && !ratingSubmitted" class="od-rate-section">
+            <div *ngIf="tracking.currentStatus === 'Delivered' && !tracking.customerRating && !ratingSubmitted" class="od-rate-section">
               <div class="od-rate-title">How was your delivery experience?</div>
               <div class="od-rate-stars">
                 <button *ngFor="let i of [1,2,3,4,5]" class="od-star-btn"
@@ -452,14 +452,17 @@ interface OrderStage {
     }
   `]
 })
-export class OrderDetailComponent implements OnInit {
+export class OrderDetailComponent implements OnInit, OnDestroy {
   loading = true;
   order: any = null;
   tracking: any = null;
+  activityEvents: Array<{ status: string; timestamp: string; note?: string | null }> = [];
   ratingValue = 0;
   ratingFeedback = '';
   ratingSubmitting = false;
   ratingSubmitted = false;
+  private orderId: string | null = null;
+  private refreshHandle: ReturnType<typeof setInterval> | null = null;
 
   readonly orderStages: OrderStage[] = [
     { key: 'Placed',            label: 'Order Placed',         icon: '📋' },
@@ -486,29 +489,108 @@ export class OrderDetailComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const orderId = this.route.snapshot.paramMap.get('orderId');
-    if (orderId) {
-      this.loadOrder(orderId);
+    this.orderId = this.route.snapshot.paramMap.get('orderId');
+    if (this.orderId) {
+      this.loadOrder(this.orderId);
+      this.startAutoRefresh();
     }
   }
 
-  loadOrder(orderId: string): void {
-    this.loading = true;
+  ngOnDestroy(): void {
+    if (this.refreshHandle) {
+      clearInterval(this.refreshHandle);
+      this.refreshHandle = null;
+    }
+  }
+
+  private startAutoRefresh(): void {
+    if (this.refreshHandle) {
+      clearInterval(this.refreshHandle);
+    }
+
+    this.refreshHandle = setInterval(() => {
+      if (!this.orderId) return;
+      this.loadOrder(this.orderId, true);
+    }, 15000);
+  }
+
+  loadOrder(orderId: string, silent = false): void {
+    if (!silent) {
+      this.loading = true;
+    }
+
     this.http.get<any>(API_ENDPOINTS.orders.orderById(orderId)).subscribe({
       next: o => {
         this.order = o;
-        this.loading = false;
+        if (!silent) {
+          this.loading = false;
+        }
         this.loadTracking(orderId);
       },
-      error: () => { this.loading = false; }
+      error: () => {
+        if (!silent) {
+          this.loading = false;
+        }
+      }
     });
   }
 
   loadTracking(orderId: string): void {
     this.http.get<any>(API_ENDPOINTS.logistics.tracking(orderId)).subscribe({
-      next: t => { this.tracking = t || null; },
-      error: () => { this.tracking = null; }
+      next: t => {
+        this.tracking = this.normalizeTracking(t);
+        this.rebuildActivityEvents();
+      },
+      error: () => {
+        this.tracking = null;
+        this.rebuildActivityEvents();
+      }
     });
+  }
+
+  private normalizeTracking(raw: any): any {
+    if (!raw) return null;
+
+    const history = Array.isArray(raw.history)
+      ? raw.history
+      : Array.isArray(raw.trackingHistory) ? raw.trackingHistory : [];
+
+    const currentStatus = raw.currentStatus || raw.status || null;
+
+    return {
+      ...raw,
+      currentStatus,
+      status: currentStatus,
+      history,
+      trackingHistory: history
+    };
+  }
+
+  private rebuildActivityEvents(): void {
+    const orderEvents = (this.order?.statusHistory || []).map((ev: any) => ({
+      status: ev.toStatus || ev.status,
+      timestamp: ev.changedAt || ev.timestamp,
+      note: ev.notes || ev.note || null
+    }));
+
+    const trackingEvents = (this.tracking?.history || []).map((ev: any) => ({
+      status: ev.status,
+      timestamp: ev.recordedAt,
+      note: ev.notes || null
+    }));
+
+    const combined = [...orderEvents, ...trackingEvents]
+      .filter(ev => !!ev.status && !!ev.timestamp)
+      .sort((a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+    this.activityEvents = combined.filter((ev, idx, arr) =>
+      arr.findIndex(x =>
+        x.status === ev.status &&
+        x.timestamp === ev.timestamp &&
+        (x.note || '') === (ev.note || '')
+      ) === idx
+    );
   }
 
   goBack(): void {
@@ -522,9 +604,14 @@ export class OrderDetailComponent implements OnInit {
     const orderStatus = this.order.status;
 
     // Map agent-assigned / in-transit / out-for-delivery from tracking
-    if (this.tracking) {
-      if (this.tracking.status === 'Delivered') return this.stageOrder.indexOf('Delivered');
-      if (this.tracking.status === 'OutForDelivery') return this.stageOrder.indexOf('OutForDelivery');
+    const trackingStatus = this.tracking?.currentStatus || this.tracking?.status;
+    if (trackingStatus) {
+      if (trackingStatus === 'Delivered') return this.stageOrder.indexOf('Delivered');
+      if (trackingStatus === 'OutForDelivery') return this.stageOrder.indexOf('OutForDelivery');
+      if (trackingStatus === 'AgentAssigned') return this.stageOrder.indexOf('AgentAssigned');
+      if (trackingStatus === 'PickedUp' || trackingStatus === 'InTransit' || trackingStatus === 'VehicleBreakdown') {
+        return this.stageOrder.indexOf('InTransit');
+      }
     }
 
     // Map order status
@@ -533,7 +620,7 @@ export class OrderDetailComponent implements OnInit {
       case 'InTransit':        return this.stageOrder.indexOf('InTransit');
       case 'ReadyForDispatch': {
         // Check if agent is assigned
-        if (this.tracking && this.tracking.agentId) return this.stageOrder.indexOf('AgentAssigned');
+        if (this.tracking && this.tracking.agentName) return this.stageOrder.indexOf('AgentAssigned');
         return this.stageOrder.indexOf('ReadyForDispatch');
       }
       case 'Processing':       return this.stageOrder.indexOf('Processing');
@@ -559,21 +646,31 @@ export class OrderDetailComponent implements OnInit {
   }
 
   getStageDate(key: string): string | null {
-    if (!this.order?.statusHistory) return null;
+    if (!this.order?.statusHistory && !this.tracking?.history) return null;
     const map: Record<string, string[]> = {
       'Placed':           ['Placed'],
       'OnHold':           ['OnHold'],
       'Processing':       ['Processing'],
       'ReadyForDispatch': ['ReadyForDispatch'],
       'InTransit':        ['InTransit'],
+      'OutForDelivery':   ['OutForDelivery'],
       'Delivered':        ['Delivered'],
     };
     const statuses = map[key] || [key];
-    for (const ev of this.order.statusHistory) {
+    for (const ev of (this.order?.statusHistory || [])) {
       const evStatus = ev.toStatus || ev.status;
       if (statuses.includes(evStatus)) return ev.changedAt || ev.timestamp;
     }
-    if (key === 'AgentAssigned' && this.tracking?.createdAt) return this.tracking.createdAt;
+
+    for (const ev of (this.tracking?.history || [])) {
+      if (statuses.includes(ev.status)) return ev.recordedAt;
+    }
+
+    if (key === 'AgentAssigned') {
+      const assigned = (this.tracking?.history || []).find((ev: any) => ev.status === 'AgentAssigned');
+      if (assigned) return assigned.recordedAt;
+    }
+
     return null;
   }
 

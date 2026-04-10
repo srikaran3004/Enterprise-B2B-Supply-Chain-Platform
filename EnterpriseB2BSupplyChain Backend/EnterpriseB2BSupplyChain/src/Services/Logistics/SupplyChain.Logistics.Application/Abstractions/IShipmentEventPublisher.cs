@@ -6,11 +6,16 @@ public record ShipmentStatusEvent(
     string  OrderNumber,
     Guid    DealerId,
     string  DealerEmail,
+    string  DealerName,
     Guid    AgentId,
+    Guid    AgentUserId,
     string  AgentName,
     string  AgentPhone,
+    string? VehicleRegistrationNo,
+    string? VehicleType,
     string  EventType,
     string  Status,
+    DateTime UpdatedAt,
     string? Place     = null,
     string? Notes     = null
 );

@@ -14,6 +14,22 @@ public class AgentRepository : IAgentRepository
     public async Task<DeliveryAgent?> GetByIdAsync(Guid agentId, CancellationToken ct = default)
         => await _context.DeliveryAgents.FirstOrDefaultAsync(a => a.AgentId == agentId, ct);
 
+    public async Task<DeliveryAgent?> GetByUserIdAsync(Guid userId, CancellationToken ct = default)
+        => await _context.DeliveryAgents.FirstOrDefaultAsync(a => a.UserId == userId, ct);
+
+    public async Task<DeliveryAgent?> GetByFullNameAsync(string fullName, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(fullName))
+            return null;
+
+        var normalized = fullName.Trim().ToLowerInvariant();
+        return await _context.DeliveryAgents
+            .FirstOrDefaultAsync(a => a.FullName.ToLower() == normalized, ct);
+    }
+
+    public async Task<bool> ExistsByUserIdAsync(Guid userId, CancellationToken ct = default)
+        => await _context.DeliveryAgents.AnyAsync(a => a.UserId == userId, ct);
+
     public async Task<List<DeliveryAgent>> GetAllAsync(CancellationToken ct = default)
         => await _context.DeliveryAgents.OrderBy(a => a.ServiceRegion).ThenBy(a => a.FullName).ToListAsync(ct);
 
@@ -83,5 +99,27 @@ public class AgentRepository : IAgentRepository
         => await _context.Vehicles.AddAsync(vehicle, ct);
 
     public async Task SaveChangesAsync(CancellationToken ct = default)
-        => await _context.SaveChangesAsync(ct);
+    {
+        const int maxAttempts = 2;
+
+        for (var attempt = 1; attempt <= maxAttempts; attempt++)
+        {
+            try
+            {
+                await _context.SaveChangesAsync(ct);
+                return;
+            }
+            catch (DbUpdateConcurrencyException ex) when (attempt < maxAttempts)
+            {
+                foreach (var entry in ex.Entries)
+                {
+                    var dbValues = await entry.GetDatabaseValuesAsync(ct);
+                    if (dbValues is null)
+                        throw;
+
+                    entry.OriginalValues.SetValues(dbValues);
+                }
+            }
+        }
+    }
 }

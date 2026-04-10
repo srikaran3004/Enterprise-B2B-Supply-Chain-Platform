@@ -21,6 +21,9 @@ public class RaiseReturnCommandHandler : IRequestHandler<RaiseReturnCommand>
         var order = await _orderRepository.GetByIdAsync(command.OrderId, ct)
             ?? throw new KeyNotFoundException($"Order {command.OrderId} not found.");
 
+        if (order.DealerId != command.DealerId)
+            throw new UnauthorizedAccessException("You can only raise returns for your own orders.");
+
         order.RaiseReturnRequest(command.DealerId, command.Reason, command.PhotoUrl);
 
         var outbox = OutboxMessage.Create("ReturnRequested", JsonSerializer.Serialize(new

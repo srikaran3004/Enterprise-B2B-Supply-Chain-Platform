@@ -1,5 +1,5 @@
-using System.Net.Http.Json;
 using SupplyChain.Logistics.Application.Abstractions;
+using SupplyChain.SharedInfrastructure.Results;
 
 namespace SupplyChain.Logistics.Infrastructure.Services;
 
@@ -18,7 +18,7 @@ public class OrderServiceClient : IOrderServiceClient
             if (!response.IsSuccessStatusCode)
                 return null;
 
-            return await response.Content.ReadFromJsonAsync<OrderNotificationDetailsDto>(cancellationToken: ct);
+            return await ApiResponseReader.ReadDataAsync<OrderNotificationDetailsDto>(response.Content, ct);
         }
         catch
         {
@@ -32,6 +32,34 @@ public class OrderServiceClient : IOrderServiceClient
         {
             var response = await _httpClient.PutAsync(
                 $"/api/internal/orders/{orderId}/advance-to-dispatch", null, ct);
+            return response.IsSuccessStatusCode;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public async Task<bool> MarkInTransitAsync(Guid orderId, CancellationToken ct)
+    {
+        try
+        {
+            var response = await _httpClient.PutAsync(
+                $"/api/internal/orders/{orderId}/mark-in-transit", null, ct);
+            return response.IsSuccessStatusCode;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public async Task<bool> MarkDeliveredAsync(Guid orderId, CancellationToken ct)
+    {
+        try
+        {
+            var response = await _httpClient.PutAsync(
+                $"/api/internal/orders/{orderId}/mark-delivered", null, ct);
             return response.IsSuccessStatusCode;
         }
         catch

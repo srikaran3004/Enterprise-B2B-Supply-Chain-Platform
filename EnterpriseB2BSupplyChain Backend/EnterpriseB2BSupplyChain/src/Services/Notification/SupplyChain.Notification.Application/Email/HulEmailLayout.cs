@@ -1,18 +1,10 @@
 namespace SupplyChain.Notification.Application.Email;
 
 /// <summary>
-/// Industry-standard HTML email layout for the HUL Supply Chain Platform.
-///
-/// All emails sent from the Notification service should be wrapped in <see cref="Wrap"/>
-/// so they share a consistent header, footer, branding, and dark/light-friendly styles.
-///
-/// The HTML uses inline styles only (NO &lt;style&gt; blocks) because Gmail, Outlook
-/// and most enterprise email clients strip or ignore embedded stylesheets. The layout
-/// is fully responsive (max-width 600px, table-based skeleton).
+/// Shared HUL-branded HTML email primitives for Notification templates.
 /// </summary>
 public static class HulEmailLayout
 {
-    // ─── HUL Brand Palette ────────────────────────────────────────────────
     public const string Primary       = "#0369a1";
     public const string PrimaryDark   = "#075985";
     public const string Accent        = "#f59e0b";
@@ -26,9 +18,6 @@ public static class HulEmailLayout
     public const string BgCard        = "#ffffff";
     public const string Border        = "#e2e8f0";
 
-    /// <summary>
-    /// Wraps body HTML in the standard HUL email skeleton (header + footer + outer table).
-    /// </summary>
     public static string Wrap(
         string  title,
         string  bodyHtml,
@@ -36,7 +25,7 @@ public static class HulEmailLayout
         string? accentColor = null)
     {
         var headerColor   = accentColor ?? Primary;
-        var preheaderText = preheader   ?? title;
+        var preheaderText = preheader ?? title;
 
         return $$"""
             <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -121,10 +110,18 @@ public static class HulEmailLayout
     }
 
     public static string Greeting(string name)
-        => $"""<p style="margin:0 0 20px 0;font-size:16px;color:{TextPrimary};font-weight:600;">Hello, {name},</p>""";
+        => $"""<p style="margin:0 0 20px 0;font-size:16px;color:{TextPrimary};font-weight:600;">Hello, {Escape(name)},</p>""";
 
     public static string Paragraph(string text)
         => $"""<p style="margin:0 0 16px 0;font-size:15px;line-height:1.65;color:{TextSecondary};">{text}</p>""";
+
+    public static string CodeCallout(string code, string label = "Verification Code")
+        => $$"""
+            <div style="margin:24px 0;padding:24px;background-color:#f0f9ff;border:2px dashed {{Primary}};border-radius:12px;text-align:center;">
+              <div style="font-size:11px;font-weight:700;color:{{Primary}};letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;">{{Escape(label)}}</div>
+              <div style="font-size:34px;font-weight:700;color:{{TextPrimary}};letter-spacing:8px;font-family:'Courier New',Consolas,monospace;">{{Escape(code)}}</div>
+            </div>
+            """;
 
     public static string InfoBox(string title, string content, string color = "info")
     {
@@ -133,11 +130,12 @@ public static class HulEmailLayout
             "success" => ("#ecfdf5", "#a7f3d0", "#065f46"),
             "warning" => ("#fff7ed", "#fed7aa", "#9a3412"),
             "danger"  => ("#fef2f2", "#fca5a5", "#991b1b"),
-            _         => ("#f0f9ff", "#bae6fd", "#0c4a6e"),
+            _          => ("#f0f9ff", "#bae6fd", "#0c4a6e"),
         };
+
         return $$"""
             <div style="margin:20px 0;padding:18px 20px;background-color:{{bg}};border:1px solid {{border}};border-left:4px solid {{border}};border-radius:8px;">
-              <div style="font-size:13px;font-weight:700;color:{{text}};text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">{{title}}</div>
+              <div style="font-size:13px;font-weight:700;color:{{text}};text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">{{Escape(title)}}</div>
               <div style="font-size:14px;color:{{text}};line-height:1.55;">{{content}}</div>
             </div>
             """;
@@ -150,7 +148,7 @@ public static class HulEmailLayout
             <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="margin:24px 0;">
               <tr>
                 <td align="center" style="border-radius:8px;background-color:{{btnColor}};">
-                  <a href="{{href}}" target="_blank" style="display:inline-block;padding:13px 32px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:8px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">{{label}}</a>
+                  <a href="{{Escape(href)}}" target="_blank" style="display:inline-block;padding:13px 32px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:8px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">{{Escape(label)}}</a>
                 </td>
               </tr>
             </table>
@@ -164,4 +162,15 @@ public static class HulEmailLayout
               <strong style="color:{TextPrimary};">HUL Supply Chain Team</strong>
             </div>
             """;
+
+    public static string Escape(string? input)
+    {
+        if (string.IsNullOrEmpty(input)) return string.Empty;
+        return input
+            .Replace("&", "&amp;")
+            .Replace("<", "&lt;")
+            .Replace(">", "&gt;")
+            .Replace("\"", "&quot;")
+            .Replace("'", "&#39;");
+    }
 }

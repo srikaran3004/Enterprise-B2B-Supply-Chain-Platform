@@ -37,6 +37,9 @@ public class ShippingAddressConfiguration : IEntityTypeConfiguration<ShippingAdd
             .HasMaxLength(20);
 
         builder.HasIndex(s => s.DealerId);
+        builder.HasIndex(s => new { s.DealerId, s.IsDefault })
+            .HasFilter("[IsDefault] = 1")
+            .IsUnique();
 
         builder.ToTable("ShippingAddresses");
     }

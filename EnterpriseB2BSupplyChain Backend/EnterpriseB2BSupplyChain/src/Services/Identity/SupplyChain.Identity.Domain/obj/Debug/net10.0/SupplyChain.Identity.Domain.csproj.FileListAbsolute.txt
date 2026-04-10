@@ -16,6 +16,7 @@ D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Se
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Identity\SupplyChain.Identity.Domain\obj\Debug\net10.0\SupplyChain.Identity.Domain.AssemblyInfoInputs.cache
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Identity\SupplyChain.Identity.Domain\obj\Debug\net10.0\SupplyChain.Identity.Domain.AssemblyInfo.cs
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Identity\SupplyChain.Identity.Domain\obj\Debug\net10.0\SupplyChain.Identity.Domain.csproj.CoreCompileInputs.cache
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Identity\SupplyChain.Identity.Domain\obj\Debug\net10.0\SupplyChain.Identity.Domain.sourcelink.json
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Identity\SupplyChain.Identity.Domain\obj\Debug\net10.0\SupplyChain.Identity.Domain.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Identity\SupplyChain.Identity.Domain\obj\Debug\net10.0\refint\SupplyChain.Identity.Domain.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Identity\SupplyChain.Identity.Domain\obj\Debug\net10.0\SupplyChain.Identity.Domain.pdb

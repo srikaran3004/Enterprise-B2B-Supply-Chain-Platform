@@ -1,6 +1,7 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SupplyChain.SharedInfrastructure.Security;
 using SupplyChain.Payment.Application.Abstractions;
 using SupplyChain.Payment.Application.Commands.CreateCreditAccount;
 using SupplyChain.Payment.Application.Commands.GenerateInvoice;
@@ -30,6 +31,20 @@ public class PaymentController : ControllerBase
     [HttpGet("dealers/{dealerId:guid}/credit-check")]
     [Authorize(Roles = "Admin,SuperAdmin,Dealer")]
     public async Task<IActionResult> CheckCredit(
+        Guid dealerId,
+        [FromQuery] decimal amount,
+        CancellationToken ct)
+    {
+        if (User.IsInRole("Dealer") && dealerId != GetDealerId())
+            return Forbid();
+
+        var result = await _mediator.Send(new CheckCreditQuery(dealerId, amount), ct);
+        return Ok(result);
+    }
+
+    [HttpGet("internal/dealers/{dealerId:guid}/credit-check")]
+    [Authorize(Policy = InternalAuthDefaults.InternalPolicy)]
+    public async Task<IActionResult> CheckCreditInternal(
         Guid dealerId,
         [FromQuery] decimal amount,
         CancellationToken ct)
@@ -105,15 +120,7 @@ public class PaymentController : ControllerBase
     [Authorize(Roles = "Dealer,Admin,SuperAdmin")]
     public async Task<IActionResult> GetInvoices(CancellationToken ct)
     {
-        var role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
-        var isDealer = role == "Dealer";
-        Guid? dealerId = null;
-
-        if (isDealer)
-        {
-            var claim = User.FindFirst("dealerId")?.Value;
-            if (Guid.TryParse(claim, out var id)) dealerId = id;
-        }
+        Guid? dealerId = User.IsInRole("Dealer") ? GetDealerId() : null;
 
         var invoices = await _mediator.Send(new GetInvoicesQuery(dealerId), ct);
         return Ok(invoices);
@@ -124,6 +131,10 @@ public class PaymentController : ControllerBase
     public async Task<IActionResult> GetInvoice(Guid invoiceId, CancellationToken ct)
     {
         var invoice = await _mediator.Send(new GetInvoiceByIdQuery(invoiceId), ct);
+
+        if (User.IsInRole("Dealer") && invoice.DealerId != GetDealerId())
+            return Forbid();
+
         return Ok(invoice);
     }
 
@@ -132,6 +143,9 @@ public class PaymentController : ControllerBase
     public async Task<IActionResult> DownloadInvoice(Guid invoiceId, CancellationToken ct)
     {
         var invoice = await _mediator.Send(new GetInvoiceByIdQuery(invoiceId), ct);
+
+        if (User.IsInRole("Dealer") && invoice.DealerId != GetDealerId())
+            return Forbid();
 
         if (string.IsNullOrWhiteSpace(invoice.PdfStoragePath) || !System.IO.File.Exists(invoice.PdfStoragePath))
             return NotFound(new { error = "PDF not yet generated for this invoice." });
@@ -144,15 +158,7 @@ public class PaymentController : ControllerBase
     [Authorize(Roles = "Dealer,Admin,SuperAdmin")]
     public async Task<IActionResult> GetInvoiceByOrder(Guid orderId, CancellationToken ct)
     {
-        var role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
-        var isDealer = role == "Dealer";
-        Guid? dealerId = null;
-
-        if (isDealer)
-        {
-            var claim = User.FindFirst("dealerId")?.Value;
-            if (Guid.TryParse(claim, out var id)) dealerId = id;
-        }
+        Guid? dealerId = User.IsInRole("Dealer") ? GetDealerId() : null;
 
         var invoices = await _mediator.Send(new GetInvoicesQuery(dealerId), ct);
         var invoice = invoices.FirstOrDefault(i => i.OrderId == orderId);
@@ -178,6 +184,16 @@ public class PaymentController : ControllerBase
         var result = await _mediator.Send(new ExportSalesQuery(), ct);
         return File(result.FileBytes, result.ContentType, result.FileName);
     }
+
+    private Guid GetDealerId()
+    {
+        var claim = User.FindFirst("dealerId")?.Value;
+        if (Guid.TryParse(claim, out var id))
+            return id;
+
+        throw new UnauthorizedAccessException("Dealer token does not contain a valid dealerId claim.");
+    }
 }
 
 public record UpdateLimitRequest(decimal NewLimit);
+

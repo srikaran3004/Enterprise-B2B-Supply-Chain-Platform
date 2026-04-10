@@ -746,6 +746,8 @@ export class CartSlideoverComponent implements OnInit, OnDestroy {
                 razorpayOrderId: response.razorpay_order_id,
                 razorpayPaymentId: response.razorpay_payment_id,
                 razorpaySignature: response.razorpay_signature,
+                orderId,
+                amount,
               })
             );
             this.completeOrderSuccess(orderId);

@@ -11,6 +11,7 @@ public class NotificationDbContext : DbContext
     public DbSet<EmailTemplate>   EmailTemplates   => Set<EmailTemplate>();
     public DbSet<NotificationLog> NotificationLogs => Set<NotificationLog>();
     public DbSet<NotificationInbox> NotificationInbox => Set<NotificationInbox>();
+    public DbSet<ConsumedMessage> ConsumedMessages => Set<ConsumedMessage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

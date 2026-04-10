@@ -1,10 +1,14 @@
-using Hangfire;
+﻿using Hangfire;
 using Hangfire.SqlServer;
+using System.Net.Http.Headers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RabbitMQ.Client;
 using StackExchange.Redis;
+using SupplyChain.SharedInfrastructure.Correlation;
+using SupplyChain.SharedInfrastructure.Resilience;
+using SupplyChain.SharedInfrastructure.Security;
 using SupplyChain.Logistics.Application.Abstractions;
 using SupplyChain.Logistics.Infrastructure.Jobs;
 using SupplyChain.Logistics.Infrastructure.Persistence;
@@ -32,7 +36,7 @@ public static class DependencyInjection
 
         var redisOptions = ConfigurationOptions.Parse(redisConnection);
         redisOptions.AbortOnConnectFail = false;
-        redisOptions.ConnectTimeout   = 1000;   // 1s — fail fast if Redis is not running
+        redisOptions.ConnectTimeout   = 1000;   // 1s â€” fail fast if Redis is not running
         redisOptions.SyncTimeout      = 1000;
         redisOptions.AsyncTimeout     = 1000;
         redisOptions.ConnectRetry     = 0;
@@ -60,14 +64,29 @@ public static class DependencyInjection
         services.AddScoped<ITrackingCacheService,  TrackingCacheService>();
         services.AddScoped<IAgentAssignedEventPublisher, AgentAssignedEventPublisher>();
         services.AddScoped<IShipmentEventPublisher, ShipmentEventPublisher>();
+        services.AddHostedService<OrderReadyForDispatchConsumer>();
 
         var identityServiceUrl = configuration["ServiceUrls:IdentityService"] ?? "http://localhost:5002";
-        services.AddHttpClient<IIdentityServiceClient, IdentityServiceClient>(client =>
-            client.BaseAddress = new Uri(identityServiceUrl));
+        services.AddHttpClient<IIdentityServiceClient, IdentityServiceClient>((sp, client) =>
+        {
+            client.BaseAddress = new Uri(identityServiceUrl);
+            var tokenProvider = sp.GetRequiredService<IInternalServiceTokenProvider>();
+            var token = tokenProvider.CreateToken("identity");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        })
+            .AddHttpMessageHandler<CorrelationIdDelegatingHandler>()
+            .AddStandardResiliencePolicies();
 
-        var orderServiceUrl = configuration["ServiceUrls:OrderService"] ?? "http://localhost:5004";
-        services.AddHttpClient<IOrderServiceClient, OrderServiceClient>(client =>
-            client.BaseAddress = new Uri(orderServiceUrl));
+        var orderServiceUrl = configuration["ServiceUrls:OrderService"] ?? "http://localhost:5006";
+        services.AddHttpClient<IOrderServiceClient, OrderServiceClient>((sp, client) =>
+        {
+            client.BaseAddress = new Uri(orderServiceUrl);
+            var tokenProvider = sp.GetRequiredService<IInternalServiceTokenProvider>();
+            var token = tokenProvider.CreateToken("order");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        })
+            .AddHttpMessageHandler<CorrelationIdDelegatingHandler>()
+            .AddStandardResiliencePolicies();
 
         services.AddHangfire(cfg =>
             cfg.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
@@ -81,3 +100,4 @@ public static class DependencyInjection
         return services;
     }
 }
+

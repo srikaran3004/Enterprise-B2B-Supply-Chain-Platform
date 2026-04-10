@@ -24,16 +24,12 @@ import { ToastService } from '../../../../shared/ui/toast/toast.service';
             Approving return for order <strong>{{ selectedReturn.orderNumber || selectedReturn.orderId.substring(0,8) }}</strong>
           </p>
           <div class="form-group">
-            <label>Refund Amount (₹) *</label>
-            <input type="number" [(ngModel)]="refundAmount" min="0" placeholder="Enter refund amount" />
-          </div>
-          <div class="form-group">
-            <label>Resolution Notes</label>
-            <textarea [(ngModel)]="resolutionNotes" rows="2" placeholder="e.g., Item verified damaged, full refund approved"></textarea>
+            <label>Approval Notes</label>
+            <textarea [(ngModel)]="resolutionNotes" rows="2" placeholder="e.g., Return verified and approved"></textarea>
           </div>
           <div class="form-actions">
             <button class="btn btn--ghost" (click)="showApproveModal = false">Cancel</button>
-            <button class="btn btn--primary" [disabled]="refundAmount <= 0" (click)="confirmApprove()">Approve Return</button>
+            <button class="btn btn--primary" (click)="confirmApprove()">Approve Return</button>
           </div>
         </div>
       </hul-modal>
@@ -98,13 +94,6 @@ import { ToastService } from '../../../../shared/ui/toast/toast.service';
             </div>
           </div>
 
-          <div class="detail-section" *ngIf="selectedReturn.refundAmount">
-            <div class="detail-row">
-              <label>Refund Amount</label>
-              <span class="refund-amount">₹{{ formatNum(selectedReturn.refundAmount) }}</span>
-            </div>
-          </div>
-
           <div class="detail-section" *ngIf="selectedReturn.adminNotes">
             <h4>Admin Notes</h4>
             <p class="notes-text">{{ selectedReturn.adminNotes }}</p>
@@ -143,7 +132,6 @@ import { ToastService } from '../../../../shared/ui/toast/toast.service';
     .proof-image { position: relative; cursor: pointer; }
     .proof-image img { max-width: 100%; max-height: 300px; border-radius: var(--radius-lg); border: 1px solid var(--border-default); }
     .click-hint { display: block; font-size: 12px; color: var(--text-tertiary); margin-top: 8px; text-align: center; }
-    .refund-amount { color: #059669; font-weight: 700; font-size: 18px; }
   `]
 })
 export class AdminReturnsComponent implements OnInit {
@@ -158,7 +146,6 @@ export class AdminReturnsComponent implements OnInit {
   showRejectModal = false;
   showViewModal = false;
   selectedReturn: ReturnRequest | null = null;
-  refundAmount = 0;
   resolutionNotes = '';
   rejectionNotes = '';
 
@@ -202,7 +189,6 @@ export class AdminReturnsComponent implements OnInit {
     if (event.action === 'view') {
       this.showViewModal = true;
     } else if (event.action === 'approve') {
-      this.refundAmount = 0;
       this.resolutionNotes = '';
       this.showApproveModal = true;
     } else if (event.action === 'reject') {
@@ -212,12 +198,11 @@ export class AdminReturnsComponent implements OnInit {
   }
 
   confirmApprove() {
-    if (!this.selectedReturn || this.refundAmount <= 0) return;
+    if (!this.selectedReturn) return;
     
     this.returnsService.approveReturn(
-      this.selectedReturn.returnId, 
-      this.resolutionNotes || 'Approved by admin', 
-      this.refundAmount
+      this.selectedReturn.returnId,
+      this.resolutionNotes || 'Approved by admin'
     ).subscribe({
       next: () => {
         this.toastService.success('Return approved successfully');
@@ -234,7 +219,7 @@ export class AdminReturnsComponent implements OnInit {
     if (!this.selectedReturn || !this.rejectionNotes.trim()) return;
     
     this.returnsService.rejectReturn(
-      this.selectedReturn.returnId, 
+      this.selectedReturn.returnId,
       this.rejectionNotes
     ).subscribe({
       next: () => {
@@ -250,9 +235,5 @@ export class AdminReturnsComponent implements OnInit {
 
   openImageInNewTab(url: string) {
     window.open(url, '_blank');
-  }
-
-  formatNum(val: number): string {
-    return val ? val.toLocaleString('en-IN') : '0';
   }
 }

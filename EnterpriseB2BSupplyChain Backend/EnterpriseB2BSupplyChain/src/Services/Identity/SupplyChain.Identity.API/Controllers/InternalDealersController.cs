@@ -1,6 +1,7 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SupplyChain.SharedInfrastructure.Security;
 using SupplyChain.Identity.Application.Queries.GetDealerContact;
 
 namespace SupplyChain.Identity.API.Controllers;
@@ -14,7 +15,7 @@ public class InternalDealersController : ControllerBase
     public InternalDealersController(IMediator mediator)
         => _mediator = mediator;
 
-    [AllowAnonymous]
+    [Authorize(Policy = InternalAuthDefaults.InternalPolicy)]
     [HttpGet("{dealerId:guid}/contact")]
     public async Task<IActionResult> GetDealerContact(Guid dealerId, CancellationToken ct)
     {
@@ -22,3 +23,4 @@ public class InternalDealersController : ControllerBase
         return Ok(contact);
     }
 }
+

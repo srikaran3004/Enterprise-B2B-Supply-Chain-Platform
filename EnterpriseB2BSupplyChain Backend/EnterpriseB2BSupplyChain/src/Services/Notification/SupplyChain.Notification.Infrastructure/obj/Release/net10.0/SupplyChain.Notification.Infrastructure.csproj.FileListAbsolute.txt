@@ -17,3 +17,4 @@ D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Se
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.Infrastructure\obj\Release\net10.0\SupplyChain.Notification.Infrastructure.pdb
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.Infrastructure\obj\Release\net10.0\SupplyChain.Notification.Infrastructure.genruntimeconfig.cache
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.Infrastructure\obj\Release\net10.0\ref\SupplyChain.Notification.Infrastructure.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.Infrastructure\obj\Release\net10.0\SupplyChain.Notification.Infrastructure.sourcelink.json

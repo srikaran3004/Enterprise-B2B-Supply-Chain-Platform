@@ -7,6 +7,7 @@ using SupplyChain.Identity.Application.Commands.ReactivateDealer;
 using SupplyChain.Identity.Application.Commands.RejectDealer;
 using SupplyChain.Identity.Application.Commands.SuspendDealer;
 using SupplyChain.Identity.Application.Queries.GetDealerList;
+using SupplyChain.Identity.Application.Views;
 using SupplyChain.Identity.Domain.Enums;
 
 namespace SupplyChain.Identity.API.Controllers;
@@ -32,7 +33,7 @@ public class AdminDealerController : ControllerBase
             parsedStatus = s;
 
         var dealers = await _mediator.Send(new GetDealerListQuery(parsedStatus), ct);
-        return Ok(dealers);
+        return Ok(dealers.Select(DealerProfileView.FromDto).ToList());
     }
 
     /// <summary>Approve a pending dealer.</summary>

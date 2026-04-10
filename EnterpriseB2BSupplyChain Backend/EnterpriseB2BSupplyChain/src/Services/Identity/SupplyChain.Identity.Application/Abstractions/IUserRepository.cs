@@ -16,6 +16,8 @@ public interface IUserRepository
     Task<List<User>> GetUsersByRoleAsync(UserRole role, CancellationToken ct = default);
     Task AddOtpRecordAsync(OtpRecord otpRecord, CancellationToken ct = default);
     Task<OtpRecord?> GetLatestActiveOtpAsync(string email, OtpPurpose purpose, CancellationToken ct = default);
+    Task AddRefreshTokenAsync(RefreshToken refreshToken, CancellationToken ct = default);
+    Task<RefreshToken?> GetRefreshTokenByHashAsync(string tokenHash, CancellationToken ct = default);
     Task SaveChangesAsync(CancellationToken ct = default);
     void Delete(User user);
 }

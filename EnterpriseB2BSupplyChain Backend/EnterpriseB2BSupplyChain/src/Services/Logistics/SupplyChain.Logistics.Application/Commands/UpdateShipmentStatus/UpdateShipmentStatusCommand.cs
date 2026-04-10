@@ -6,6 +6,7 @@ namespace SupplyChain.Logistics.Application.Commands.UpdateShipmentStatus;
 public record UpdateShipmentStatusCommand(
     Guid           OrderId,
     Guid           AgentId,
+    string?        AgentFullName,
     ShipmentStatus NewStatus,
     decimal?       Latitude  = null,
     decimal?       Longitude = null,

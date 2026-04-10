@@ -15,17 +15,31 @@ public class NotificationInboxRepository : INotificationInboxRepository
 
     public async Task<List<NotificationInbox>> GetInboxAsync(Guid dealerId, CancellationToken ct = default)
     {
-        return await _context.NotificationInbox
-            .Where(n => n.DealerId == dealerId)
-            .OrderByDescending(n => n.CreatedAt)
-            .Take(50) // Return latest 50 for quick display
-            .ToListAsync(ct);
+        try
+        {
+            return await _context.NotificationInbox
+                .Where(n => n.DealerId == dealerId)
+                .OrderByDescending(n => n.CreatedAt)
+                .Take(50) // Return latest 50 for quick display
+                .ToListAsync(ct);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            return new List<NotificationInbox>();
+        }
     }
 
     public async Task<int> GetUnreadCountAsync(Guid dealerId, CancellationToken ct = default)
     {
-        return await _context.NotificationInbox
-            .CountAsync(n => n.DealerId == dealerId && !n.IsRead, ct);
+        try
+        {
+            return await _context.NotificationInbox
+                .CountAsync(n => n.DealerId == dealerId && !n.IsRead, ct);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            return 0;
+        }
     }
 
     public async Task MarkAsReadAsync(Guid notificationId, Guid dealerId, CancellationToken ct = default)
@@ -58,6 +72,33 @@ public class NotificationInboxRepository : INotificationInboxRepository
 
     public async Task SaveChangesAsync(CancellationToken ct = default)
     {
-        await _context.SaveChangesAsync(ct);
+        const int maxAttempts = 2;
+
+        for (var attempt = 1; attempt <= maxAttempts; attempt++)
+        {
+            try
+            {
+                await _context.SaveChangesAsync(ct);
+                return;
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                return;
+            }
+            catch (DbUpdateConcurrencyException ex) when (attempt < maxAttempts)
+            {
+                foreach (var entry in ex.Entries)
+                {
+                    var dbValues = await entry.GetDatabaseValuesAsync(ct);
+                    if (dbValues is null)
+                    {
+                        entry.State = EntityState.Detached;
+                        continue;
+                    }
+
+                    entry.OriginalValues.SetValues(dbValues);
+                }
+            }
+        }
     }
 }

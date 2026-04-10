@@ -1,5 +1,5 @@
-using System.Net.Http.Json;
 using SupplyChain.Logistics.Application.Abstractions;
+using SupplyChain.SharedInfrastructure.Results;
 
 namespace SupplyChain.Logistics.Infrastructure.Services;
 
@@ -18,7 +18,7 @@ public class IdentityServiceClient : IIdentityServiceClient
             if (!response.IsSuccessStatusCode)
                 return null;
 
-            return await response.Content.ReadFromJsonAsync<DealerContactDto>(cancellationToken: ct);
+            return await ApiResponseReader.ReadDataAsync<DealerContactDto>(response.Content, ct);
         }
         catch
         {
@@ -34,7 +34,7 @@ public class IdentityServiceClient : IIdentityServiceClient
             if (!response.IsSuccessStatusCode)
                 return null;
 
-            return await response.Content.ReadFromJsonAsync<UserContactDto>(cancellationToken: ct);
+            return await ApiResponseReader.ReadDataAsync<UserContactDto>(response.Content, ct);
         }
         catch
         {

@@ -22,6 +22,44 @@ namespace SupplyChain.Notification.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("SupplyChain.Notification.Domain.Entities.ConsumedMessage", b =>
+                {
+                    b.Property<Guid>("MessageLogId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Consumer")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("CorrelationId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("MessageId")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("ProcessedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("MessageLogId");
+
+                    b.HasIndex("ProcessedAtUtc");
+
+                    b.HasIndex("MessageId", "Consumer")
+                        .IsUnique();
+
+                    b.ToTable("ConsumedMessages", (string)null);
+                });
+
             modelBuilder.Entity("SupplyChain.Notification.Domain.Entities.EmailTemplate", b =>
                 {
                     b.Property<Guid>("TemplateId")

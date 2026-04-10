@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -24,7 +24,10 @@
     <ProjectReference Include="..\SupplyChain.Payment.Domain\SupplyChain.Payment.Domain.csproj" />
     <ProjectReference Include="..\SupplyChain.Payment.Application\SupplyChain.Payment.Application.csproj" />
     <ProjectReference Include="..\SupplyChain.Payment.Infrastructure\SupplyChain.Payment.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\..\BuildingBlocks\SupplyChain.BuildingBlocks\SupplyChain.BuildingBlocks.csproj" />
+    <ProjectReference Include="..\..\..\SharedInfrastructure\SupplyChain.SharedInfrastructure\SupplyChain.SharedInfrastructure.csproj" />
   </ItemGroup>
 
 </Project>
+
+
+

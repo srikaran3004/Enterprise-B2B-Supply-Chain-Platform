@@ -48,11 +48,12 @@ public class VerifyDealerLoginOtpCommandHandler : IRequestHandler<VerifyDealerLo
         var tokenHash = _tokenService.HashToken(refreshToken);
 
         var refreshTokenEntity = Domain.Entities.RefreshToken.Create(user.UserId, tokenHash);
+        await _userRepository.AddRefreshTokenAsync(refreshTokenEntity, ct);
         await _userRepository.SaveChangesAsync(ct);
 
         return new AuthResultDto(
             AccessToken: accessToken,
-            ExpiresInSeconds: 900,
+            ExpiresInSeconds: 3600,
             RefreshToken: refreshToken,
             Role: user.Role.ToString(),
             FullName: user.FullName,

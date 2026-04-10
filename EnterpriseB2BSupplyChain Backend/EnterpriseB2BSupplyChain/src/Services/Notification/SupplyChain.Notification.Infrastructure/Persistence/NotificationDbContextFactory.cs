@@ -8,7 +8,7 @@ public class NotificationDbContextFactory : IDesignTimeDbContextFactory<Notifica
     public NotificationDbContext CreateDbContext(string[] args)
     {
         var optionsBuilder = new DbContextOptionsBuilder<NotificationDbContext>();
-        optionsBuilder.UseSqlServer("Server=.\\SQLEXPRESS;Database=NotificationDB;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=True;");
+        optionsBuilder.UseSqlServer("Server=.\\SQLEXPRESS;Database=HUL_NotificationDb;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=True;");
         return new NotificationDbContext(optionsBuilder.Options);
     }
 }

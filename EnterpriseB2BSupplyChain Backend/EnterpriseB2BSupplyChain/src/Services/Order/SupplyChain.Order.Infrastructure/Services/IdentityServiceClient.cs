@@ -1,5 +1,5 @@
-using System.Net.Http.Json;
 using SupplyChain.Order.Application.Abstractions;
+using SupplyChain.SharedInfrastructure.Results;
 
 namespace SupplyChain.Order.Infrastructure.Services;
 
@@ -16,12 +16,12 @@ public class IdentityServiceClient : IIdentityServiceClient
     {
         try
         {
-            // Use the internal (no-auth) endpoint — service-to-service calls do not carry a user JWT
+            // Use the internal endpoint secured with service-to-service JWT.
             var response = await _httpClient.GetAsync($"/api/shipping-addresses/internal/dealer/{dealerId}", ct);
             if (!response.IsSuccessStatusCode)
                 return null;
 
-            var addresses = await response.Content.ReadFromJsonAsync<List<ShippingAddressDto>>(cancellationToken: ct);
+            var addresses = await ApiResponseReader.ReadDataAsync<List<ShippingAddressDto>>(response.Content, ct);
             if (addresses == null || !addresses.Any())
                 return null;
 
@@ -47,7 +47,7 @@ public class IdentityServiceClient : IIdentityServiceClient
             if (!response.IsSuccessStatusCode)
                 return null;
 
-            return await response.Content.ReadFromJsonAsync<DealerContactDto>(cancellationToken: ct);
+            return await ApiResponseReader.ReadDataAsync<DealerContactDto>(response.Content, ct);
         }
         catch
         {

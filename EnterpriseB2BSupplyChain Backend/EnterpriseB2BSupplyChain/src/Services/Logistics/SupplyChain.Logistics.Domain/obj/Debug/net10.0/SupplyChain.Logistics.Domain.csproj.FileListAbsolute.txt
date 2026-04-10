@@ -16,6 +16,7 @@ D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Se
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.Domain\obj\Debug\net10.0\SupplyChain.Logistics.Domain.AssemblyInfoInputs.cache
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.Domain\obj\Debug\net10.0\SupplyChain.Logistics.Domain.AssemblyInfo.cs
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.Domain\obj\Debug\net10.0\SupplyChain.Logistics.Domain.csproj.CoreCompileInputs.cache
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.Domain\obj\Debug\net10.0\SupplyChain.Logistics.Domain.sourcelink.json
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.Domain\obj\Debug\net10.0\SupplyChain.Logistics.Domain.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.Domain\obj\Debug\net10.0\refint\SupplyChain.Logistics.Domain.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.Domain\obj\Debug\net10.0\SupplyChain.Logistics.Domain.pdb

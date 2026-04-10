@@ -12,6 +12,7 @@ public class LogisticsDbContext : DbContext
     public DbSet<DeliveryAgent> DeliveryAgents => Set<DeliveryAgent>();
     public DbSet<Vehicle>       Vehicles       => Set<Vehicle>();
     public DbSet<TrackingEvent> TrackingEvents => Set<TrackingEvent>();
+    public DbSet<ConsumedMessage> ConsumedMessages => Set<ConsumedMessage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -8,6 +8,7 @@ import { API_ENDPOINTS } from '../../shared/constants/api-endpoints';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly TOKEN_KEY = 'hul_access_token';
+  private readonly REFRESH_TOKEN_KEY = 'hul_refresh_token';
   private readonly ROLE_KEY = 'hul_user_role';
   private readonly NAME_KEY = 'hul_user_name';
 
@@ -49,8 +50,20 @@ export class AuthService {
     return this.http.post<void>(API_ENDPOINTS.auth.forgotPasswordReset(), { email, otp, newPassword });
   }
 
+  refreshToken(): Observable<LoginResponse> {
+    const refreshToken = this.getRefreshToken();
+    return this.http.post<LoginResponse>(API_ENDPOINTS.auth.refresh(), { refreshToken }).pipe(
+      tap(response => {
+        if (response.accessToken) {
+          this.storeToken(response);
+        }
+      })
+    );
+  }
+
   logout(): void {
     localStorage.removeItem(this.TOKEN_KEY);
+    localStorage.removeItem(this.REFRESH_TOKEN_KEY);
     localStorage.removeItem(this.ROLE_KEY);
     localStorage.removeItem(this.NAME_KEY);
     this.router.navigate(['/auth/login']);
@@ -58,6 +71,10 @@ export class AuthService {
 
   getAccessToken(): string | null {
     return localStorage.getItem(this.TOKEN_KEY);
+  }
+
+  getRefreshToken(): string | null {
+    return localStorage.getItem(this.REFRESH_TOKEN_KEY);
   }
 
   getDecodedToken(): DecodedToken | null {
@@ -119,6 +136,9 @@ export class AuthService {
 
   private storeToken(response: LoginResponse): void {
     localStorage.setItem(this.TOKEN_KEY, response.accessToken);
+    if (response.refreshToken) {
+      localStorage.setItem(this.REFRESH_TOKEN_KEY, response.refreshToken);
+    }
 
     const decoded = this.decodeToken(response.accessToken);
     localStorage.setItem(this.ROLE_KEY, decoded?.role || response.role);

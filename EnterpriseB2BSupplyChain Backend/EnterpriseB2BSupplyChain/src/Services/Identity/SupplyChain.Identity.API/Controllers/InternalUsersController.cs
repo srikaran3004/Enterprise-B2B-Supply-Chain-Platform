@@ -1,6 +1,7 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SupplyChain.SharedInfrastructure.Security;
 using SupplyChain.Identity.Application.Queries.GetUserContact;
 
 namespace SupplyChain.Identity.API.Controllers;
@@ -14,7 +15,7 @@ public class InternalUsersController : ControllerBase
     public InternalUsersController(IMediator mediator)
         => _mediator = mediator;
 
-    [AllowAnonymous]
+    [Authorize(Policy = InternalAuthDefaults.InternalPolicy)]
     [HttpGet("{userId:guid}/contact")]
     public async Task<IActionResult> GetUserContact(Guid userId, CancellationToken ct)
     {
@@ -29,3 +30,4 @@ public class InternalUsersController : ControllerBase
         }
     }
 }
+

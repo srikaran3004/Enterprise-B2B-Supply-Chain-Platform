@@ -74,6 +74,14 @@ public class UserRepository : IUserRepository
             .OrderByDescending(o => o.CreatedAt)
             .FirstOrDefaultAsync(ct);
 
+    public async Task AddRefreshTokenAsync(RefreshToken refreshToken, CancellationToken ct = default)
+        => await _context.RefreshTokens.AddAsync(refreshToken, ct);
+
+    public async Task<RefreshToken?> GetRefreshTokenByHashAsync(string tokenHash, CancellationToken ct = default)
+        => await _context.RefreshTokens
+            .OrderByDescending(t => t.CreatedAt)
+            .FirstOrDefaultAsync(t => t.TokenHash == tokenHash, ct);
+
     public async Task SaveChangesAsync(CancellationToken ct = default)
         => await _context.SaveChangesAsync(ct);
 

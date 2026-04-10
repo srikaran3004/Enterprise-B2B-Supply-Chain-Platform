@@ -30,6 +30,7 @@ D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Se
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Infrastructure\obj\Debug\net10.0\SupplyChain.Catalog.Infrastructure.AssemblyInfoInputs.cache
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Infrastructure\obj\Debug\net10.0\SupplyChain.Catalog.Infrastructure.AssemblyInfo.cs
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Infrastructure\obj\Debug\net10.0\SupplyChain.Catalog.Infrastructure.csproj.CoreCompileInputs.cache
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Infrastructure\obj\Debug\net10.0\SupplyChain.Catalog.Infrastructure.sourcelink.json
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Infrastructure\obj\Debug\net10.0\SupplyCh.EBBE93B6.Up2Date
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Infrastructure\obj\Debug\net10.0\SupplyChain.Catalog.Infrastructure.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Infrastructure\obj\Debug\net10.0\refint\SupplyChain.Catalog.Infrastructure.dll

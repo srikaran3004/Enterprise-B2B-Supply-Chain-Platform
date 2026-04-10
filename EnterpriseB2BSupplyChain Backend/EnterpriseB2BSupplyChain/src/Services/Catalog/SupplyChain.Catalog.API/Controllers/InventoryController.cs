@@ -1,9 +1,12 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SupplyChain.SharedInfrastructure.Security;
+using SupplyChain.Catalog.Application.Commands.CommitOrderInventory;
 using SupplyChain.Catalog.Application.Commands.RestockProduct;
 using SupplyChain.Catalog.Application.Commands.ReserveInventory;
 using SupplyChain.Catalog.Application.Commands.ReleaseInventory;
+using SupplyChain.Catalog.Application.Commands.RestoreOrderInventory;
 using System.Security.Claims;
 
 namespace SupplyChain.Catalog.API.Controllers;
@@ -88,8 +91,47 @@ public class InventoryController : ControllerBase
 
         return Ok(new { Message = "All reservations released successfully" });
     }
+
+    /// <summary>
+    /// Internal endpoint: convert dealer cart reservations into committed stock deduction
+    /// when an order is successfully created.
+    /// </summary>
+    [HttpPost("internal/commit-order")]
+    [Authorize(Policy = InternalAuthDefaults.InternalPolicy)]
+    public async Task<IActionResult> CommitOrderInventory(
+        [FromBody] CommitOrderInventoryRequest request,
+        CancellationToken ct)
+    {
+        var lines = request.Lines?
+            .Select(l => new CommitOrderInventoryLine(l.ProductId, l.Quantity))
+            .ToList()
+            ?? new List<CommitOrderInventoryLine>();
+
+        await _mediator.Send(new CommitOrderInventoryCommand(request.DealerId, lines), ct);
+        return Ok(new { Message = "Order inventory committed." });
+    }
+
+    /// <summary>
+    /// Internal endpoint: restore stock back when an order is cancelled.
+    /// </summary>
+    [HttpPost("internal/restore-order")]
+    [Authorize(Policy = InternalAuthDefaults.InternalPolicy)]
+    public async Task<IActionResult> RestoreOrderInventory(
+        [FromBody] CommitOrderInventoryRequest request,
+        CancellationToken ct)
+    {
+        var lines = request.Lines?
+            .Select(l => new CommitOrderInventoryLine(l.ProductId, l.Quantity))
+            .ToList()
+            ?? new List<CommitOrderInventoryLine>();
+
+        await _mediator.Send(new RestoreOrderInventoryCommand(request.DealerId, lines), ct);
+        return Ok(new { Message = "Order inventory restored." });
+    }
 }
 
 public record RestockRequest(Guid ProductId, int Quantity, string? Notes);
 public record ReserveInventoryRequest(Guid ProductId, int Quantity);
 public record ReleaseInventoryRequest(Guid? ProductId);
+public record CommitOrderInventoryRequest(Guid DealerId, List<CommitOrderInventoryLineRequest> Lines);
+public record CommitOrderInventoryLineRequest(Guid ProductId, int Quantity);

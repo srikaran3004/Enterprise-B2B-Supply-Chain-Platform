@@ -503,7 +503,7 @@ export class DispatchQueueComponent implements OnInit {
     this.selectedVehicleId = '';
     this.regionAgents = [];
     this.showAssignModal = true;
-    // Prefer state (broadest match) → city → no region filter (load all)
+    // Prefer state (broadest match) -> city -> no region filter (load all)
     this.loadRegionAgents(order.shippingState || order.shippingCity || '');
   }
 
@@ -575,9 +575,9 @@ export class DispatchQueueComponent implements OnInit {
     if (!this.canAssign() || !this.selectedOrder) return;
     this.assigning = true;
 
-    // Default SLA = 48 hours from now. The backend will auto-create a Shipment
+    // Default SLA = 72 hours from now. The backend will auto-create a Shipment
     // row if one doesn't exist yet (idempotent upsert in AssignAgentCommandHandler).
-    const slaDeadlineUtc = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
+    const slaDeadlineUtc = new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString();
     const payload = {
       orderId: this.selectedOrder.orderId,
       agentId: this.selectedAgentId,
@@ -597,7 +597,12 @@ export class DispatchQueueComponent implements OnInit {
         this.loadVehicles();
       },
       error: err => {
-        this.toast.error(err.error?.error || err.error?.message || 'Assignment failed');
+        const apiMessage = err?.error?.error?.message
+          || err?.error?.error
+          || err?.error?.message
+          || err?.message
+          || 'Assignment failed';
+        this.toast.error(apiMessage);
         this.assigning = false;
       }
     });

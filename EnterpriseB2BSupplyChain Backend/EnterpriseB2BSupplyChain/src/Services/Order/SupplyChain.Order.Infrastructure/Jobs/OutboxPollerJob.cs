@@ -3,6 +3,7 @@ using Hangfire;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using SupplyChain.Order.Application.Abstractions;
+using SupplyChain.SharedInfrastructure.Contracts;
 
 namespace SupplyChain.Order.Infrastructure.Jobs;
 
@@ -45,7 +46,16 @@ public class OutboxPollerJob
                     .Replace("order", "order.")
                     .TrimEnd('.');
 
-                var body = System.Text.Encoding.UTF8.GetBytes(message.Payload);
+                var payloadElement = DeserializePayload(message.Payload);
+                var correlationId = ResolveCorrelationId(payloadElement, message.MessageId);
+                var envelope = new EventEnvelope<JsonElement>(
+                    EventId: message.MessageId,
+                    EventType: message.EventType,
+                    OccurredAt: message.CreatedAt,
+                    CorrelationId: correlationId,
+                    Source: "order-service",
+                    Payload: payloadElement);
+                var body = System.Text.Encoding.UTF8.GetBytes(JsonSerializer.Serialize(envelope));
 
                 var props = new BasicProperties
                 {
@@ -55,7 +65,8 @@ public class OutboxPollerJob
                     Headers = new Dictionary<string, object?>
                     {
                         ["EventType"]     = message.EventType,
-                        ["ServiceSource"] = "OrderService"
+                        ["ServiceSource"] = "OrderService",
+                        ["CorrelationId"] = correlationId
                     }
                 };
 
@@ -78,5 +89,39 @@ public class OutboxPollerJob
         }
 
         await _outboxRepository.SaveChangesAsync();
+    }
+
+    private static JsonElement DeserializePayload(string payload)
+    {
+        try
+        {
+            return JsonSerializer.Deserialize<JsonElement>(payload);
+        }
+        catch
+        {
+            return JsonSerializer.SerializeToElement(new { rawPayload = payload });
+        }
+    }
+
+    private static string ResolveCorrelationId(JsonElement payload, Guid messageId)
+    {
+        if (payload.ValueKind == JsonValueKind.Object)
+        {
+            foreach (var property in payload.EnumerateObject())
+            {
+                if ((property.NameEquals("correlationId") || property.NameEquals("CorrelationId"))
+                    && property.Value.ValueKind == JsonValueKind.String)
+                {
+                    var value = property.Value.GetString();
+                    if (!string.IsNullOrWhiteSpace(value))
+                    {
+                        return value!;
+                    }
+                }
+            }
+        }
+
+        // Outbox rows created before correlation fields existed still get a stable ID.
+        return messageId.ToString("N");
     }
 }

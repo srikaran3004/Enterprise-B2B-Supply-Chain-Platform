@@ -242,6 +242,7 @@ D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Se
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.Relational.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.SqlServer.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\bin\Debug\net10.0\Microsoft.Extensions.DependencyModel.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\bin\Debug\net10.0\Microsoft.Extensions.Http.Polly.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\bin\Debug\net10.0\Microsoft.Identity.Client.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\bin\Debug\net10.0\Microsoft.Identity.Client.Extensions.Msal.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\bin\Debug\net10.0\Microsoft.IdentityModel.Abstractions.dll
@@ -257,6 +258,8 @@ D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Se
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\bin\Debug\net10.0\Mono.TextTemplating.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\bin\Debug\net10.0\Newtonsoft.Json.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\bin\Debug\net10.0\Pipelines.Sockets.Unofficial.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\bin\Debug\net10.0\Polly.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\bin\Debug\net10.0\Polly.Extensions.Http.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\bin\Debug\net10.0\RabbitMQ.Client.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\bin\Debug\net10.0\Scalar.AspNetCore.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\bin\Debug\net10.0\Scriban.dll
@@ -379,14 +382,14 @@ D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Se
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\bin\Debug\net10.0\runtimes\win-arm64\native\Microsoft.Data.SqlClient.SNI.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\bin\Debug\net10.0\runtimes\win-x64\native\Microsoft.Data.SqlClient.SNI.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\bin\Debug\net10.0\runtimes\win-x86\native\Microsoft.Data.SqlClient.SNI.dll
-D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\bin\Debug\net10.0\SupplyChain.BuildingBlocks.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\bin\Debug\net10.0\SupplyChain.Notification.Application.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\bin\Debug\net10.0\SupplyChain.Notification.Domain.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\bin\Debug\net10.0\SupplyChain.Notification.Infrastructure.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\bin\Debug\net10.0\SupplyChain.SharedInfrastructure.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\bin\Debug\net10.0\SupplyChain.Notification.Domain.pdb
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\bin\Debug\net10.0\SupplyChain.Notification.Application.pdb
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\bin\Debug\net10.0\SupplyChain.Notification.Infrastructure.pdb
-D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\bin\Debug\net10.0\SupplyChain.BuildingBlocks.pdb
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\bin\Debug\net10.0\SupplyChain.SharedInfrastructure.pdb
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\obj\Debug\net10.0\SupplyChain.Notification.API.csproj.AssemblyReference.cache
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\obj\Debug\net10.0\rpswa.dswa.cache.json
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\obj\Debug\net10.0\SupplyChain.Notification.API.GeneratedMSBuildEditorConfig.editorconfig
@@ -395,6 +398,7 @@ D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Se
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\obj\Debug\net10.0\SupplyChain.Notification.API.csproj.CoreCompileInputs.cache
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\obj\Debug\net10.0\SupplyChain.Notification.API.MvcApplicationPartsAssemblyInfo.cs
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\obj\Debug\net10.0\SupplyChain.Notification.API.MvcApplicationPartsAssemblyInfo.cache
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\obj\Debug\net10.0\SupplyChain.Notification.API.sourcelink.json
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\obj\Debug\net10.0\rjimswa.dswa.cache.json
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\obj\Debug\net10.0\rjsmrazor.dswa.cache.json
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\obj\Debug\net10.0\rjsmcshtml.dswa.cache.json
@@ -404,6 +408,7 @@ D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Se
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\obj\Debug\net10.0\staticwebassets.development.json
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\obj\Debug\net10.0\staticwebassets.build.endpoints.json
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\obj\Debug\net10.0\swae.build.ex.cache
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\obj\Debug\net10.0\staticwebassets.upToDateCheck.txt
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\obj\Debug\net10.0\SupplyCh.3D42448A.Up2Date
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\obj\Debug\net10.0\SupplyChain.Notification.API.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\obj\Debug\net10.0\refint\SupplyChain.Notification.API.dll

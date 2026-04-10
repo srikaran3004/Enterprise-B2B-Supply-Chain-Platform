@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "E8bMuGRB4BE=",
+  "dgSpecHash": "dMdCrchF5uU=",
   "success": true,
   "projectFilePath": "D:\\Early Sprint\\EnterpriseB2BSupplyChain Backend\\EnterpriseB2BSupplyChain\\src\\Services\\Payment\\SupplyChain.Payment.API\\SupplyChain.Payment.API.csproj",
   "expectedPackageFiles": [
@@ -41,6 +41,7 @@
     "C:\\Users\\Srikaran\\.nuget\\packages\\microsoft.entityframeworkcore.relational\\10.0.5\\microsoft.entityframeworkcore.relational.10.0.5.nupkg.sha512",
     "C:\\Users\\Srikaran\\.nuget\\packages\\microsoft.entityframeworkcore.sqlserver\\10.0.5\\microsoft.entityframeworkcore.sqlserver.10.0.5.nupkg.sha512",
     "C:\\Users\\Srikaran\\.nuget\\packages\\microsoft.extensions.dependencymodel\\10.0.5\\microsoft.extensions.dependencymodel.10.0.5.nupkg.sha512",
+    "C:\\Users\\Srikaran\\.nuget\\packages\\microsoft.extensions.http.polly\\10.0.5\\microsoft.extensions.http.polly.10.0.5.nupkg.sha512",
     "C:\\Users\\Srikaran\\.nuget\\packages\\microsoft.identity.client\\4.73.1\\microsoft.identity.client.4.73.1.nupkg.sha512",
     "C:\\Users\\Srikaran\\.nuget\\packages\\microsoft.identity.client.extensions.msal\\4.73.1\\microsoft.identity.client.extensions.msal.4.73.1.nupkg.sha512",
     "C:\\Users\\Srikaran\\.nuget\\packages\\microsoft.identitymodel.abstractions\\8.14.0\\microsoft.identitymodel.abstractions.8.14.0.nupkg.sha512",
@@ -55,6 +56,8 @@
     "C:\\Users\\Srikaran\\.nuget\\packages\\mono.texttemplating\\3.0.0\\mono.texttemplating.3.0.0.nupkg.sha512",
     "C:\\Users\\Srikaran\\.nuget\\packages\\newtonsoft.json\\13.0.4\\newtonsoft.json.13.0.4.nupkg.sha512",
     "C:\\Users\\Srikaran\\.nuget\\packages\\pipelines.sockets.unofficial\\2.2.8\\pipelines.sockets.unofficial.2.2.8.nupkg.sha512",
+    "C:\\Users\\Srikaran\\.nuget\\packages\\polly\\7.2.4\\polly.7.2.4.nupkg.sha512",
+    "C:\\Users\\Srikaran\\.nuget\\packages\\polly.extensions.http\\3.0.0\\polly.extensions.http.3.0.0.nupkg.sha512",
     "C:\\Users\\Srikaran\\.nuget\\packages\\portable.bouncycastle\\1.9.0\\portable.bouncycastle.1.9.0.nupkg.sha512",
     "C:\\Users\\Srikaran\\.nuget\\packages\\questpdf\\2026.2.4\\questpdf.2026.2.4.nupkg.sha512",
     "C:\\Users\\Srikaran\\.nuget\\packages\\rabbitmq.client\\7.2.1\\rabbitmq.client.7.2.1.nupkg.sha512",

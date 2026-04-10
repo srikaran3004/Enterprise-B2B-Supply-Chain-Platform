@@ -85,6 +85,27 @@
   },
   {
     "ContainingType": "SupplyChain.Payment.API.Controllers.PaymentController",
+    "Method": "CheckCreditInternal",
+    "RelativePath": "api/payment/internal/dealers/{dealerId}/credit-check",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dealerId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "amount",
+        "Type": "System.Decimal",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SupplyChain.Payment.API.Controllers.PaymentController",
     "Method": "GetInvoices",
     "RelativePath": "api/payment/invoices",
     "HttpMethod": "GET",

@@ -75,12 +75,12 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResultDto>
 
         // Persist refresh token
         var refreshTokenEntity = Domain.Entities.RefreshToken.Create(user.UserId, tokenHash);
-        // We will add AddRefreshTokenAsync to the repository next
+        await _userRepository.AddRefreshTokenAsync(refreshTokenEntity, ct);
         await _userRepository.SaveChangesAsync(ct);
 
         return new AuthResultDto(
             AccessToken: accessToken,
-            ExpiresInSeconds: 900,  // 15 minutes
+            ExpiresInSeconds: 3600,  // 1 hour
             RefreshToken: refreshToken,
             Role: user.Role.ToString(),
             FullName: user.FullName,

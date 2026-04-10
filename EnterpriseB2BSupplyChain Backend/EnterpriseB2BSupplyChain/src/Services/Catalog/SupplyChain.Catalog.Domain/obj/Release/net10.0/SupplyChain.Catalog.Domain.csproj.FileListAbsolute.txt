@@ -9,3 +9,4 @@ D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Se
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Domain\obj\Release\net10.0\refint\SupplyChain.Catalog.Domain.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Domain\obj\Release\net10.0\SupplyChain.Catalog.Domain.pdb
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Domain\obj\Release\net10.0\ref\SupplyChain.Catalog.Domain.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Catalog\SupplyChain.Catalog.Domain\obj\Release\net10.0\SupplyChain.Catalog.Domain.sourcelink.json

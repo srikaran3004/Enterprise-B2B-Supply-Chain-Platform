@@ -85,6 +85,18 @@ export class AdminOrdersComponent implements OnInit {
   ];
   tableActions: DataTableAction[] = [
     { key: 'view', label: 'View' },
+    {
+      key: 'approve',
+      label: 'Approve',
+      variant: 'primary',
+      condition: (row: any) => row?.status === 'OnHold' || row?.status === 'Placed'
+    },
+    {
+      key: 'ready',
+      label: 'Ready for Dispatch',
+      variant: 'primary',
+      condition: (row: any) => row?.status === 'Processing'
+    }
   ];
 
   constructor(private http: ZoneHttpService, private router: Router, private toast: ToastService) {}
@@ -145,6 +157,28 @@ export class AdminOrdersComponent implements OnInit {
   onAction(e: any): void {
     if (e.action === 'view') {
       this.router.navigate(['/admin/orders', e.row.orderId]);
+      return;
+    }
+
+    if (e.action === 'approve') {
+      this.http.put(API_ENDPOINTS.orders.approveOrder(e.row.orderId), {}).subscribe({
+        next: () => {
+          this.toast.success(`Order ${e.row.orderNumber} approved and moved to Processing`);
+          this.load();
+        },
+        error: (err) => this.toast.error(err?.error?.message || 'Failed to approve order')
+      });
+      return;
+    }
+
+    if (e.action === 'ready') {
+      this.http.put(API_ENDPOINTS.orders.readyForDispatch(e.row.orderId), {}).subscribe({
+        next: () => {
+          this.toast.success(`Order ${e.row.orderNumber} marked as Ready for Dispatch`);
+          this.load();
+        },
+        error: (err) => this.toast.error(err?.error?.message || 'Failed to mark order ready for dispatch')
+      });
     }
   }
 

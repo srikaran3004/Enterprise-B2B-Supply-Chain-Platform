@@ -47,6 +47,23 @@ export class CartEffects {
         )
     );
 
+    // Keep reservation quantity in sync whenever cart quantity changes
+    syncReservationOnQuantityUpdate$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(CartActions.updateQuantity),
+            switchMap(({ productId, quantity }) =>
+                this.cartService.reserveInventory(productId, quantity).pipe(
+                    map(() => CartActions.reserveInventorySuccess({ productId })),
+                    catchError((error) => {
+                        const message = error.error?.message || 'Failed to sync reservation with updated quantity';
+                        this.toast.error(message);
+                        return of(CartActions.reserveInventorySuccess({ productId }));
+                    })
+                )
+            )
+        )
+    );
+
     // Release all inventory when clearing cart
     releaseAllInventory$ = createEffect(() =>
         this.actions$.pipe(

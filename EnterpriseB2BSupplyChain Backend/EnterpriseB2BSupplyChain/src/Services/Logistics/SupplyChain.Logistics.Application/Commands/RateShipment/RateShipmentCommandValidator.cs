@@ -9,6 +9,9 @@ public class RateShipmentCommandValidator : AbstractValidator<RateShipmentComman
         RuleFor(x => x.ShipmentId)
             .NotEmpty().WithMessage("ShipmentId is required.");
 
+        RuleFor(x => x.DealerId)
+            .NotEmpty().WithMessage("DealerId is required.");
+
         RuleFor(x => x.Rating)
             .InclusiveBetween(1, 5).WithMessage("Rating must be between 1 and 5.");
 

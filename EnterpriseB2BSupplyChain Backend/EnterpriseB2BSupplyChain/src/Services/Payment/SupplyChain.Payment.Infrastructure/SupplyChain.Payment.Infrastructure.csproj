@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SupplyChain.Payment.Application\SupplyChain.Payment.Application.csproj" />
+    <ProjectReference Include="..\..\..\SharedInfrastructure\SupplyChain.SharedInfrastructure\SupplyChain.SharedInfrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

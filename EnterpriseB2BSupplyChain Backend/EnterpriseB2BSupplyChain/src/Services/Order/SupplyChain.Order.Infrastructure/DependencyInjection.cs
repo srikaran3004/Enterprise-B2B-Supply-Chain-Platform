@@ -1,9 +1,13 @@
-using Hangfire;
+﻿using Hangfire;
 using Hangfire.SqlServer;
+using System.Net.Http.Headers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RabbitMQ.Client;
+using SupplyChain.SharedInfrastructure.Correlation;
+using SupplyChain.SharedInfrastructure.Resilience;
+using SupplyChain.SharedInfrastructure.Security;
 using SupplyChain.Order.Application.Abstractions;
 using SupplyChain.Order.Infrastructure.Jobs;
 using SupplyChain.Order.Infrastructure.Persistence;
@@ -23,7 +27,7 @@ public static class DependencyInjection
         services.AddDbContext<OrderDbContext>(options =>
             options.UseSqlServer(connString, sql => sql.EnableRetryOnFailure(3)));
 
-        // RabbitMQ connection (singleton — one connection, many channels)
+        // RabbitMQ connection (singleton â€” one connection, many channels)
         var rabbitHost = configuration["RabbitMQ:Host"] ?? "localhost";
         var rabbitUser = configuration["RabbitMQ:Username"] ?? "guest";
         var rabbitPass = configuration["RabbitMQ:Password"] ?? "guest";
@@ -45,13 +49,39 @@ public static class DependencyInjection
 
         // Payment Service HTTP Client
         var paymentServiceUrl = configuration["ServiceUrls:PaymentService"] ?? "http://localhost:5010";
-        services.AddHttpClient<IPaymentServiceClient, PaymentServiceClient>(client =>
-            client.BaseAddress = new Uri(paymentServiceUrl));
+        services.AddHttpClient<IPaymentServiceClient, PaymentServiceClient>((sp, client) =>
+        {
+            client.BaseAddress = new Uri(paymentServiceUrl);
+            var tokenProvider = sp.GetRequiredService<IInternalServiceTokenProvider>();
+            var token = tokenProvider.CreateToken("payment");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        })
+            .AddHttpMessageHandler<CorrelationIdDelegatingHandler>()
+            .AddStandardResiliencePolicies();
+
+        // Catalog Service HTTP Client
+        var catalogServiceUrl = configuration["ServiceUrls:CatalogService"] ?? "http://localhost:5004";
+        services.AddHttpClient<IInventoryServiceClient, CatalogServiceClient>((sp, client) =>
+        {
+            client.BaseAddress = new Uri(catalogServiceUrl);
+            var tokenProvider = sp.GetRequiredService<IInternalServiceTokenProvider>();
+            var token = tokenProvider.CreateToken("catalog");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        })
+            .AddHttpMessageHandler<CorrelationIdDelegatingHandler>()
+            .AddStandardResiliencePolicies();
 
         // Identity Service HTTP Client
         var identityServiceUrl = configuration["ServiceUrls:IdentityService"] ?? "http://localhost:5002";
-        services.AddHttpClient<IIdentityServiceClient, IdentityServiceClient>(client =>
-            client.BaseAddress = new Uri(identityServiceUrl));
+        services.AddHttpClient<IIdentityServiceClient, IdentityServiceClient>((sp, client) =>
+        {
+            client.BaseAddress = new Uri(identityServiceUrl);
+            var tokenProvider = sp.GetRequiredService<IInternalServiceTokenProvider>();
+            var token = tokenProvider.CreateToken("identity");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        })
+            .AddHttpMessageHandler<CorrelationIdDelegatingHandler>()
+            .AddStandardResiliencePolicies();
 
         // Hangfire
         services.AddHangfire(cfg =>
@@ -61,8 +91,10 @@ public static class DependencyInjection
                .UseSqlServerStorage(connString));
 
         services.AddHangfireServer();
+        services.AddScoped<OutboxCleanupJob>();
         services.AddScoped<OutboxPollerJob>();
 
         return services;
     }
 }
+

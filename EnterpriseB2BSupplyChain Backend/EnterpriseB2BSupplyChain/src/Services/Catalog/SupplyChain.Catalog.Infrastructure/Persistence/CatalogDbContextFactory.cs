@@ -11,7 +11,7 @@ public class CatalogDbContextFactory : IDesignTimeDbContextFactory<CatalogDbCont
 
         var connectionString =
             Environment.GetEnvironmentVariable("CATALOG_DB_CONNECTION")
-            ?? "Server=.\\SQLEXPRESS;Database=InventoryDB;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=True;";
+            ?? "Server=.\\SQLEXPRESS;Database=HUL_InventoryDb;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=True;";
 
         optionsBuilder.UseSqlServer(connectionString, sql => sql.EnableRetryOnFailure(3));
 

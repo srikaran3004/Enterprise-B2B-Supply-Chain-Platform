@@ -3,6 +3,7 @@ using MediatR;
 using SupplyChain.Order.Application.Abstractions;
 using SupplyChain.Order.Application.Services;
 using SupplyChain.Order.Domain.Entities;
+using SupplyChain.Order.Domain.Exceptions;
 
 namespace SupplyChain.Order.Application.Commands.PlaceOrder;
 
@@ -11,17 +12,20 @@ public class PlaceOrderCommandHandler : IRequestHandler<PlaceOrderCommand, Place
     private readonly IOrderRepository      _orderRepository;
     private readonly IOutboxRepository     _outboxRepository;
     private readonly IPaymentServiceClient _paymentClient;
+    private readonly IInventoryServiceClient _inventoryClient;
     private readonly IIdentityServiceClient _identityClient;
 
     public PlaceOrderCommandHandler(
         IOrderRepository      orderRepository,
         IOutboxRepository     outboxRepository,
         IPaymentServiceClient paymentClient,
+        IInventoryServiceClient inventoryClient,
         IIdentityServiceClient identityClient)
     {
         _orderRepository  = orderRepository;
         _outboxRepository = outboxRepository;
         _paymentClient    = paymentClient;
+        _inventoryClient  = inventoryClient;
         _identityClient   = identityClient;
     }
 
@@ -40,6 +44,15 @@ public class PlaceOrderCommandHandler : IRequestHandler<PlaceOrderCommand, Place
         // Credit check against Payment Service (subtotal + shipping)
         var totalWithShipping = subtotal + shippingFee;
         var creditCheck = await _paymentClient.CheckCreditAsync(command.DealerId, totalWithShipping, ct);
+
+        // Commit inventory for the ordered quantities.
+        var inventoryCommitted = await _inventoryClient.CommitOrderInventoryAsync(
+            command.DealerId,
+            command.Lines.Select(l => new InventoryOrderLine(l.ProductId, l.Quantity)).ToList(),
+            ct);
+
+        if (!inventoryCommitted)
+            throw new DomainException("INVENTORY_COMMIT_FAILED", "Unable to commit inventory for one or more products.");
 
         // Generate a new OrderId upfront so Lines can reference it
         var orderId     = Guid.NewGuid();

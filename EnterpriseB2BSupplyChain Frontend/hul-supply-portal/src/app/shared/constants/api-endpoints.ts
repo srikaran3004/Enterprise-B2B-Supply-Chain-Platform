@@ -8,6 +8,7 @@ export const API_ENDPOINTS = {
   auth: {
     login: () => `${getBaseUrl(environment.identityServiceUrl)}/api/auth/login`,
     loginVerifyOtp: () => `${getBaseUrl(environment.identityServiceUrl)}/api/auth/login/verify-otp`,
+    refresh: () => `${getBaseUrl(environment.identityServiceUrl)}/api/auth/refresh`,
     register: () => `${getBaseUrl(environment.identityServiceUrl)}/api/auth/register`,
     registerVerifyOtp: () => `${getBaseUrl(environment.identityServiceUrl)}/api/auth/register/verify-otp`,
     forgotPassword: () => `${getBaseUrl(environment.identityServiceUrl)}/api/auth/forgot-password`,
@@ -36,6 +37,7 @@ export const API_ENDPOINTS = {
   },
   orders: {
     base: () => `${getBaseUrl(environment.orderServiceUrl)}/api/orders`,
+    uploadReturnImage: () => `${getBaseUrl(environment.orderServiceUrl)}/api/orders/upload-return-image`,
     myOrders: () => `${getBaseUrl(environment.orderServiceUrl)}/api/orders/my`,
     orderById: (id: string) => `${getBaseUrl(environment.orderServiceUrl)}/api/orders/${id}`,
     approveOrder: (id: string) => `${getBaseUrl(environment.orderServiceUrl)}/api/orders/${id}/approve`,

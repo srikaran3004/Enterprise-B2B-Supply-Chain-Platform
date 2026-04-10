@@ -1,6 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System.Net.Http.Headers;
+using SupplyChain.SharedInfrastructure.Correlation;
+using SupplyChain.SharedInfrastructure.Resilience;
+using SupplyChain.SharedInfrastructure.Security;
 using SupplyChain.Payment.Application.Abstractions;
 using SupplyChain.Payment.Infrastructure.Persistence;
 using SupplyChain.Payment.Infrastructure.Persistence.Repositories;
@@ -21,7 +25,21 @@ public static class DependencyInjection
 
         services.AddScoped<IInvoiceRepository, InvoiceRepository>();
         services.AddScoped<ICreditAccountRepository, CreditAccountRepository>();
+        services.AddScoped<IPaymentRecordRepository, PaymentRecordRepository>();
         services.AddScoped<IInvoicePdfService, QuestPdfInvoiceService>();
+
+        var orderServiceUrl = configuration["ServiceUrls:OrderService"] ?? "http://localhost:5006";
+        services.AddHttpClient<IOrderInternalClient, OrderInternalClient>((sp, client) =>
+        {
+            client.BaseAddress = new Uri(orderServiceUrl);
+            var tokenProvider = sp.GetRequiredService<IInternalServiceTokenProvider>();
+            var token = tokenProvider.CreateToken("order");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        })
+            .AddHttpMessageHandler<CorrelationIdDelegatingHandler>()
+            .AddStandardResiliencePolicies();
+
+        services.AddHostedService<OrderDeliveredConsumer>();
 
         return services;
     }

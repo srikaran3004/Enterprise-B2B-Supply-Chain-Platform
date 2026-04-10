@@ -17,6 +17,7 @@ import { SharedModule } from './shared/shared.module';
 // Interceptors
 import { AuthInterceptor } from './core/interceptors/auth.interceptor';
 import { ErrorInterceptor } from './core/interceptors/error.interceptor';
+import { ResponseEnvelopeInterceptor } from './core/interceptors/response-envelope.interceptor';
 import { ZoneInterceptor } from './core/interceptors/zone.interceptor';
 
 // Store
@@ -75,6 +76,7 @@ import { UnauthorizedPageComponent } from './features/unauthorized/unauthorized-
     provideBrowserGlobalErrorListeners(),
     { provide: HTTP_INTERCEPTORS, useClass: ZoneInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: ResponseEnvelopeInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
   ],
   bootstrap: [App]

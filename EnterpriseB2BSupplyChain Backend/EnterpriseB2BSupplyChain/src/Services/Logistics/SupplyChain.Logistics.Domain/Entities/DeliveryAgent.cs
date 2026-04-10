@@ -72,6 +72,14 @@ public class DeliveryAgent
         AverageRating = Math.Round(totalScore / TotalDeliveries, 2);
     }
 
+    public void LinkToUser(Guid userId)
+    {
+        if (userId == Guid.Empty)
+            throw new DomainException("INVALID_USER_ID", "UserId is required.");
+
+        UserId = userId;
+    }
+
     public void SetOffDuty()  => Status = AgentStatus.OffDuty;
     public void SetAvailable() => Status = AgentStatus.Available;
 }

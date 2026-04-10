@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SupplyChain.Identity.Application.Abstractions;
+using SupplyChain.Identity.Infrastructure.Jobs;
 using SupplyChain.Identity.Infrastructure.Persistence;
 using SupplyChain.Identity.Infrastructure.Persistence.Repositories;
 using SupplyChain.Identity.Infrastructure.Services;
@@ -32,6 +33,7 @@ public static class DependencyInjection
         services.AddSingleton<StackExchange.Redis.IConnectionMultiplexer>(sp => 
             StackExchange.Redis.ConnectionMultiplexer.Connect(redisConn));
         services.AddSingleton<ICacheService, RedisCacheService>();
+        services.AddHostedService<OtpCleanupBackgroundService>();
 
         return services;
     }

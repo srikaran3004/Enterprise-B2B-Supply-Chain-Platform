@@ -3,6 +3,8 @@ import { ZoneHttpService } from '../../../../core/services/zone-http.service';
 import { API_ENDPOINTS } from '../../../../shared/constants/api-endpoints';
 import { ToastService } from '../../../../shared/ui/toast/toast.service';
 import { DataTableColumn, DataTableAction } from '../../../../shared/ui/data-table/hul-data-table.component';
+import { forkJoin, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-credit-management', standalone: false,
@@ -144,19 +146,49 @@ export class CreditManagementComponent implements OnInit {
     this.loading = true;
     this.http.get<any[]>(API_ENDPOINTS.admin.dealers() + '?status=Active').subscribe({
       next: dealers => {
-        this.allDealers = dealers.map(d => ({
-          ...d,
-          creditLimit: d.creditLimit || 50000,
-          outstanding: d.outstanding || 0,
-          available: (d.creditLimit || 50000) - (d.outstanding || 0),
-          utilization: d.creditLimit ? Math.round((d.outstanding || 0) / d.creditLimit * 100) + '%' : '0%'
-        }));
-        this.dealers = [...this.allDealers];
-        this.totalCredit = this.allDealers.reduce((s, d) => s + (d.creditLimit || 0), 0);
-        this.totalOutstanding = this.allDealers.reduce((s, d) => s + (d.outstanding || 0), 0);
-        this.highUtil = this.allDealers.filter(d => d.creditLimit && (d.outstanding || 0) / d.creditLimit > 0.8).length;
-        this.loading = false;
-        this.cdr.detectChanges();
+        const requests = dealers.map(dealer =>
+          this.http.get<any>(API_ENDPOINTS.payment.creditAccount(this.getDealerFinancialId(dealer))).pipe(
+            map(account => {
+              const creditLimit = account?.creditLimit ?? 500_000;
+              const outstanding = account?.outstanding ?? 0;
+              const available = account?.available ?? (creditLimit - outstanding);
+              const utilization = creditLimit > 0 ? Math.round((outstanding / creditLimit) * 100) : 0;
+
+              return {
+                ...dealer,
+                creditLimit,
+                outstanding,
+                available,
+                utilization: `${utilization}%`
+              };
+            }),
+            catchError(() => of({
+              ...dealer,
+              creditLimit: 500_000,
+              outstanding: 0,
+              available: 500_000,
+              utilization: '0%'
+            }))
+          )
+        );
+
+        forkJoin(requests).subscribe({
+          next: dealerRows => {
+            this.allDealers = dealerRows;
+            this.dealers = [...this.allDealers];
+            this.totalCredit = this.allDealers.reduce((s, d) => s + (d.creditLimit || 0), 0);
+            this.totalOutstanding = this.allDealers.reduce((s, d) => s + (d.outstanding || 0), 0);
+            this.highUtil = this.allDealers.filter(d => {
+              const utilization = Number(String(d.utilization || '0').replace('%', ''));
+              return utilization > 80;
+            }).length;
+            this.loading = false;
+            this.cdr.detectChanges();
+          },
+          error: () => {
+            this.loading = false;
+          }
+        });
       },
       error: () => { this.loading = false; }
     });
@@ -170,7 +202,7 @@ export class CreditManagementComponent implements OnInit {
   onAction(e: any): void {
     if (e.action === 'adjust') {
       this.editDealer = e.row;
-      this.newCreditLimit = e.row.creditLimit || 50000;
+      this.newCreditLimit = e.row.creditLimit || 500000;
       this.showCreditModal = true;
     }
   }
@@ -185,8 +217,9 @@ export class CreditManagementComponent implements OnInit {
     if (!this.newCreditLimit || this.newCreditLimit < 0 || !this.editDealer) return;
 
     this.saving = true;
+    const dealerFinancialId = this.getDealerFinancialId(this.editDealer);
     // Backend expects { NewLimit: number } — capital N
-    this.http.put(API_ENDPOINTS.payment.creditLimit(this.editDealer.userId), { NewLimit: this.newCreditLimit }).subscribe({
+    this.http.put(API_ENDPOINTS.payment.creditLimit(dealerFinancialId), { NewLimit: this.newCreditLimit }).subscribe({
       next: () => {
         this.toast.success(`Credit limit updated to ₹${this.newCreditLimit!.toLocaleString('en-IN')}`);
         this.saving = false;
@@ -202,4 +235,8 @@ export class CreditManagementComponent implements OnInit {
   }
 
   formatNum(val: number): string { return val ? val.toLocaleString('en-IN') : '0'; }
+
+  private getDealerFinancialId(dealer: any): string {
+    return dealer?.dealerProfileId || dealer?.userId;
+  }
 }

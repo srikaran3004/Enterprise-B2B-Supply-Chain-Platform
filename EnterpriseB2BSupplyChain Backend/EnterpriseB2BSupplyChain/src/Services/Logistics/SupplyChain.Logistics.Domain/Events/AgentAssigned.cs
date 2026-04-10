@@ -7,6 +7,7 @@ public record AgentAssigned(
     Guid DealerId,
     string DealerEmail,
     Guid AgentId,
+    Guid AgentUserId,
     string AgentName,
     string AgentPhone,
     string VehicleNo,

@@ -8,7 +8,7 @@ public class PaymentDbContextFactory : IDesignTimeDbContextFactory<PaymentDbCont
     public PaymentDbContext CreateDbContext(string[] args)
     {
         var optionsBuilder = new DbContextOptionsBuilder<PaymentDbContext>();
-        optionsBuilder.UseSqlServer("Server=.\\SQLEXPRESS;Database=PaymentDB;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=True;");
+        optionsBuilder.UseSqlServer("Server=.\\SQLEXPRESS;Database=HUL_PaymentDb;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=True;");
         return new PaymentDbContext(optionsBuilder.Options);
     }
 }

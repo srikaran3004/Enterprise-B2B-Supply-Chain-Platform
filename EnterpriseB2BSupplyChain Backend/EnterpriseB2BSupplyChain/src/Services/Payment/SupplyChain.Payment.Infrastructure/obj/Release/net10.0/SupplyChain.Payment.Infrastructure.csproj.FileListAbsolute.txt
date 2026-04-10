@@ -36,3 +36,6 @@ D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Se
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\obj\Release\net10.0\SupplyChain.Payment.Infrastructure.pdb
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\obj\Release\net10.0\SupplyChain.Payment.Infrastructure.genruntimeconfig.cache
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\obj\Release\net10.0\ref\SupplyChain.Payment.Infrastructure.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\obj\Release\net10.0\SupplyChain.Payment.Infrastructure.sourcelink.json
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Release\net10.0\SupplyChain.SharedInfrastructure.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Infrastructure\bin\Release\net10.0\SupplyChain.SharedInfrastructure.pdb

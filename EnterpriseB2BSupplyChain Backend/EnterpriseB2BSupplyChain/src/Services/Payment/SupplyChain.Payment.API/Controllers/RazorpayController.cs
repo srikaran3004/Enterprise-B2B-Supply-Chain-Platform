@@ -29,7 +29,10 @@ public class RazorpayController : ControllerBase
         var result = await _mediator.Send(new ConfirmRazorpayPaymentCommand(
             request.RazorpayOrderId,
             request.RazorpayPaymentId,
-            request.RazorpaySignature
+            request.RazorpaySignature,
+            request.OrderId,
+            request.Amount,
+            GetDealerIdOrNull()
         ), ct);
 
         if (!result.Verified)
@@ -51,7 +54,10 @@ public class RazorpayController : ControllerBase
         var confirmation = await _mediator.Send(new ConfirmRazorpayPaymentCommand(
             result.RazorpayOrderId,
             result.RazorpayPaymentId,
-            result.RazorpaySignature
+            result.RazorpaySignature,
+            request.OrderId,
+            request.Amount,
+            GetDealerIdOrNull()
         ), ct);
 
         if (!confirmation.Verified)
@@ -65,8 +71,24 @@ public class RazorpayController : ControllerBase
             message          = "Payment simulated and verified successfully."
         });
     }
+
+    private Guid? GetDealerIdOrNull()
+    {
+        var claim = User.FindFirst("dealerId")?.Value;
+        return Guid.TryParse(claim, out var id) ? id : null;
+    }
 }
 
 public record CreateRazorpayOrderRequest(decimal Amount, string ReceiptId);
-public record ConfirmRazorpayPaymentRequest(string RazorpayOrderId, string RazorpayPaymentId, string RazorpaySignature);
-public record SimulateCaptureRequest(string RazorpayOrderId);
+public record ConfirmRazorpayPaymentRequest(
+    string RazorpayOrderId,
+    string RazorpayPaymentId,
+    string RazorpaySignature,
+    Guid? OrderId = null,
+    decimal? Amount = null
+);
+public record SimulateCaptureRequest(
+    string RazorpayOrderId,
+    Guid? OrderId = null,
+    decimal? Amount = null
+);

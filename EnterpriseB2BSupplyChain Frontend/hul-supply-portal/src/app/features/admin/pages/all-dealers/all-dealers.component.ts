@@ -272,7 +272,7 @@ import { environment } from '../../../../../environments/environment';
             </div>
           </div>
           <div class="credit-stats-row">
-            <div class="cstat-box"><span class="cstat-lbl">Current Limit</span><span class="cstat-val">₹{{ formatNum(dealerCredit?.creditLimit || 50000) }}</span></div>
+            <div class="cstat-box"><span class="cstat-lbl">Current Limit</span><span class="cstat-val">₹{{ formatNum(dealerCredit?.creditLimit || 500000) }}</span></div>
             <div class="cstat-box"><span class="cstat-lbl">Outstanding</span><span class="cstat-val cstat-val--danger">₹{{ formatNum(dealerCredit?.outstanding || 0) }}</span></div>
           </div>
           <div class="form-group">
@@ -568,7 +568,8 @@ export class AllDealersComponent implements OnInit {
     this.http.get<any>(API_ENDPOINTS.orders.base() + '?pageSize=100').subscribe({
       next: (response: any) => {
         const allOrders = response.items || response || [];
-        this.dealerOrders = allOrders.filter((o: any) => o.dealerEmail === dealer.email || o.dealerId === dealer.userId);
+        const dealerFinancialId = this.getDealerFinancialId(dealer);
+        this.dealerOrders = allOrders.filter((o: any) => o.dealerEmail === dealer.email || o.dealerId === dealerFinancialId);
         const stats = {
           totalOrders: this.dealerOrders.length,
           totalSpent: this.dealerOrders.reduce((s: number, o: any) => s + (o.totalAmount || 0), 0),
@@ -592,9 +593,9 @@ export class AllDealersComponent implements OnInit {
     });
 
     // Load credit
-    this.http.get<any>(API_ENDPOINTS.payment.creditAccount(dealer.userId)).subscribe({
+    this.http.get<any>(API_ENDPOINTS.payment.creditAccount(this.getDealerFinancialId(dealer))).subscribe({
       next: (credit: any) => {
-        const limit = credit.creditLimit || 50000;
+        const limit = credit.creditLimit || 500000;
         const outstanding = credit.outstanding || 0;
         this.dealerCredit = {
           creditLimit: limit,
@@ -604,12 +605,12 @@ export class AllDealersComponent implements OnInit {
         };
       },
       error: () => {
-        this.dealerCredit = { creditLimit: 50000, outstanding: 0, available: 50000, utilization: 0 };
+        this.dealerCredit = { creditLimit: 500000, outstanding: 0, available: 500000, utilization: 0 };
       }
     });
 
     // Load invoices
-    this.http.get<any[]>(API_ENDPOINTS.payment.invoicesByDealer(dealer.userId)).subscribe({
+    this.http.get<any[]>(API_ENDPOINTS.payment.invoicesByDealer(this.getDealerFinancialId(dealer))).subscribe({
       next: (invoices: any) => {
         this.dealerInvoices = Array.isArray(invoices) ? invoices : [];
         this.dealerPayments = this.dealerInvoices.filter(inv => inv.paidAt).map(inv => ({
@@ -719,7 +720,7 @@ export class AllDealersComponent implements OnInit {
     this.savingCredit = false;
     // Always fetch fresh credit data before opening the modal so the displayed
     // current limit is never stale or defaulted to a hardcoded value
-    this.http.get<any>(API_ENDPOINTS.payment.creditAccount(dealer.userId)).subscribe({
+    this.http.get<any>(API_ENDPOINTS.payment.creditAccount(this.getDealerFinancialId(dealer))).subscribe({
       next: (credit: any) => {
         const limit = credit.creditLimit || 0;
         const outstanding = credit.outstanding || 0;
@@ -743,16 +744,16 @@ export class AllDealersComponent implements OnInit {
   confirmCreditUpdate(): void {
     if (!this.editingCreditDealer || !this.newCreditLimit || this.newCreditLimit < 0) return;
     this.savingCredit = true;
-    const dealerUserId = this.editingCreditDealer.userId;
+    const dealerFinancialId = this.getDealerFinancialId(this.editingCreditDealer);
     const newLimit = this.newCreditLimit;
     // Backend expects { NewLimit: number } — capital N per UpdateLimitRequest record
-    this.http.put(API_ENDPOINTS.payment.creditLimit(dealerUserId), { NewLimit: newLimit }).subscribe({
+    this.http.put(API_ENDPOINTS.payment.creditLimit(dealerFinancialId), { NewLimit: newLimit }).subscribe({
       next: () => {
         this.toast.success(`Credit limit updated to ₹${this.formatNum(newLimit)}`);
         this.showCreditModal = false;
         this.savingCredit = false;
         // Re-fetch credit info from DB and patch ALL local state
-        this.http.get<any>(API_ENDPOINTS.payment.creditAccount(dealerUserId)).subscribe({
+        this.http.get<any>(API_ENDPOINTS.payment.creditAccount(dealerFinancialId)).subscribe({
           next: (credit: any) => {
             const limit = credit.creditLimit || newLimit;
             const outstanding = credit.outstanding || 0;
@@ -763,12 +764,12 @@ export class AllDealersComponent implements OnInit {
               utilization: limit ? Math.round(outstanding / limit * 100) : 0
             };
             // Patch the row in allDealers so the table also reflects the new limit
-            const dealerRow = this.allDealers.find(d => d.userId === dealerUserId);
+            const dealerRow = this.allDealers.find(d => this.getDealerFinancialId(d) === dealerFinancialId);
             if (dealerRow) {
               dealerRow.creditLimit = limit;
             }
             // Patch viewingDealer in-place (keep same reference for Angular change detection)
-            if (this.viewingDealer?.userId === dealerUserId) {
+            if (this.viewingDealer && this.getDealerFinancialId(this.viewingDealer) === dealerFinancialId) {
               this.viewingDealer.creditLimit = limit;
             }
             // Re-derive filtered list to push changes to the data-table
@@ -793,6 +794,10 @@ export class AllDealersComponent implements OnInit {
   }
 
   formatNum(val: number): string { return val ? val.toLocaleString('en-IN') : '0'; }
+
+  private getDealerFinancialId(dealer: any): string {
+    return dealer?.dealerProfileId || dealer?.userId;
+  }
 
   private trustSvg(svg: string): SafeHtml {
     return this.sanitizer.bypassSecurityTrustHtml(svg);

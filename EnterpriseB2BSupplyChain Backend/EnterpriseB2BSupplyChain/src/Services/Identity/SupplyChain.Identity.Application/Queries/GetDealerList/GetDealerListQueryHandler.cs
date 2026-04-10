@@ -28,6 +28,7 @@ public class GetDealerListQueryHandler : IRequestHandler<GetDealerListQuery, Lis
 
         var result = users.Select(u => new DealerListDto(
             UserId: u.UserId,
+            DealerProfileId: u.DealerProfile?.DealerProfileId,
             Email: u.Email,
             FullName: u.FullName,
             PhoneNumber: u.PhoneNumber,

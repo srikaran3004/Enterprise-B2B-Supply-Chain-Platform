@@ -34,41 +34,56 @@ public class UpdateShipmentStatusCommandHandler : IRequestHandler<UpdateShipment
         var shipment = await _shipmentRepository.GetByOrderIdAsync(command.OrderId, ct)
             ?? throw new KeyNotFoundException($"No shipment found for order {command.OrderId}.");
 
-        var agent = shipment.AgentId.HasValue
-            ? await _agentRepository.GetByIdAsync(shipment.AgentId.Value, ct)
-            : null;
+        if (shipment.AgentId is null)
+            throw new UnauthorizedAccessException("No delivery agent is assigned to this shipment.");
 
-        if (command.NewStatus == ShipmentStatus.Delivered)
-        {
-            shipment.MarkDelivered(command.AgentId, command.Latitude, command.Longitude);
+        var actorAgent = await ResolveAgentForUserAsync(command.AgentId, command.AgentFullName, ct);
+        if (actorAgent is null || actorAgent.AgentId != shipment.AgentId.Value)
+            throw new UnauthorizedAccessException("You are not assigned to this shipment.");
 
-            // Free up the agent and vehicle
-            if (shipment.AgentId.HasValue)
-            {
-                var deliveryAgent = await _agentRepository.GetByIdAsync(shipment.AgentId.Value, ct);
-                deliveryAgent?.CompleteDelivery();
-            }
-        }
-        else if (command.NewStatus == ShipmentStatus.VehicleBreakdown)
+        var assignedAgent = shipment.Agent
+            ?? await _agentRepository.GetByIdAsync(shipment.AgentId.Value, ct);
+
+        var assignedAgentId = shipment.AgentId.Value;
+        var agent = assignedAgent;
+
+        if (command.NewStatus == ShipmentStatus.PickedUp)
         {
-            // Record tracking event with place
-            shipment.UpdateStatus(command.NewStatus, command.AgentId,
-                command.Latitude, command.Longitude,
-                command.Notes ?? "Vehicle breakdown reported by agent.",
-                command.Place);
-        }
-        else if (command.NewStatus == ShipmentStatus.PickedUp)
-        {
-            shipment.MarkPickedUp(command.AgentId, command.Latitude, command.Longitude);
+            var pickupMarked = await _shipmentRepository.AtomicMarkPickedUpAsync(
+                shipment.ShipmentId,
+                assignedAgentId,
+                command.Latitude,
+                command.Longitude,
+                ct);
+
+            if (!pickupMarked)
+                throw new InvalidOperationException("Shipment is no longer eligible for pickup confirmation.");
         }
         else
         {
-            shipment.UpdateStatus(command.NewStatus, command.AgentId,
-                command.Latitude, command.Longitude, command.Notes, command.Place);
+            var statusUpdated = await _shipmentRepository.AtomicUpdateStatusAsync(
+                shipment.ShipmentId,
+                assignedAgentId,
+                command.NewStatus,
+                command.Latitude,
+                command.Longitude,
+                command.Notes,
+                command.Place,
+                ct);
+
+            if (!statusUpdated)
+                throw new InvalidOperationException("Shipment status could not be updated due to concurrent changes.");
         }
 
-        await _shipmentRepository.SaveChangesAsync(ct);
-        await _agentRepository.SaveChangesAsync(ct);
+        // Keep HUL_OrderDb status history in sync for dealer/admin order timelines.
+        if (command.NewStatus is ShipmentStatus.PickedUp or ShipmentStatus.InTransit or ShipmentStatus.OutForDelivery or ShipmentStatus.VehicleBreakdown)
+        {
+            _ = await _orderServiceClient.MarkInTransitAsync(command.OrderId, ct);
+        }
+        else if (command.NewStatus == ShipmentStatus.Delivered)
+        {
+            _ = await _orderServiceClient.MarkDeliveredAsync(command.OrderId, ct);
+        }
 
         // Update Redis with latest GPS + status
         await _cache.SetLatestLocationAsync(
@@ -95,6 +110,7 @@ public class UpdateShipmentStatusCommandHandler : IRequestHandler<UpdateShipment
                     ShipmentStatus.VehicleBreakdown => "VehicleBreakdown",
                     _                              => "ShipmentStatusUpdated"
                 };
+                var updatedAt = DateTime.UtcNow;
 
                 var statusEvent = new ShipmentStatusEvent(
                     ShipmentId:  shipment.ShipmentId,
@@ -102,11 +118,16 @@ public class UpdateShipmentStatusCommandHandler : IRequestHandler<UpdateShipment
                     OrderNumber: orderDetails.OrderNumber,
                     DealerId:    orderDetails.DealerId,
                     DealerEmail: dealerContact?.Email ?? string.Empty,
-                    AgentId:     command.AgentId,
+                    DealerName:  orderDetails.DealerName ?? "Dealer",
+                    AgentId:     assignedAgentId,
+                    AgentUserId: agent?.UserId ?? Guid.Empty,
                     AgentName:   agent?.FullName ?? string.Empty,
                     AgentPhone:  agent?.Phone ?? string.Empty,
+                    VehicleRegistrationNo: shipment.Vehicle?.RegistrationNo,
+                    VehicleType: shipment.Vehicle?.VehicleType,
                     EventType:   eventType,
                     Status:      command.NewStatus.ToString(),
+                    UpdatedAt:   updatedAt,
                     Place:       command.Place,
                     Notes:       command.Notes
                 );
@@ -118,5 +139,39 @@ public class UpdateShipmentStatusCommandHandler : IRequestHandler<UpdateShipment
         {
             // Non-critical — don't fail the status update if notification fails
         }
+    }
+
+    private async Task<Domain.Entities.DeliveryAgent?> ResolveAgentForUserAsync(
+        Guid userId,
+        string? fullNameHint,
+        CancellationToken ct)
+    {
+        var directAgent = await _agentRepository.GetByUserIdAsync(userId, ct);
+        if (directAgent is not null)
+            return directAgent;
+
+        var fullName = fullNameHint;
+        if (string.IsNullOrWhiteSpace(fullName))
+        {
+            var userContact = await _identityServiceClient.GetUserContactAsync(userId, ct);
+            fullName = userContact?.FullName;
+        }
+
+        if (string.IsNullOrWhiteSpace(fullName))
+            return null;
+
+        var byNameAgent = await _agentRepository.GetByFullNameAsync(fullName, ct);
+        if (byNameAgent is null)
+            return null;
+
+        // Self-heal stale seed linkage when this userId is not mapped yet.
+        var userAlreadyLinked = await _agentRepository.ExistsByUserIdAsync(userId, ct);
+        if (!userAlreadyLinked && byNameAgent.UserId != userId)
+        {
+            byNameAgent.LinkToUser(userId);
+            await _agentRepository.SaveChangesAsync(ct);
+        }
+
+        return byNameAgent;
     }
 }

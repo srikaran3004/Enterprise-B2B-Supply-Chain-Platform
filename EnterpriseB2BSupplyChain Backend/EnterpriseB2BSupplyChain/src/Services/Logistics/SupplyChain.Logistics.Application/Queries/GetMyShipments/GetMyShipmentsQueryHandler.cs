@@ -4,7 +4,7 @@ using SupplyChain.Logistics.Application.DTOs;
 
 namespace SupplyChain.Logistics.Application.Queries.GetMyShipments;
 
-public record GetMyShipmentsQuery(Guid AgentUserId) : IRequest<List<AgentShipmentDto>>;
+public record GetMyShipmentsQuery(Guid AgentUserId, string? AgentFullName = null) : IRequest<List<AgentShipmentDto>>;
 
 public record TrackingEventDto(
     string   Status,
@@ -37,22 +37,23 @@ public class GetMyShipmentsQueryHandler : IRequestHandler<GetMyShipmentsQuery, L
     private readonly IShipmentRepository  _shipmentRepository;
     private readonly IAgentRepository     _agentRepository;
     private readonly IOrderServiceClient  _orderServiceClient;
+    private readonly IIdentityServiceClient _identityServiceClient;
 
     public GetMyShipmentsQueryHandler(
         IShipmentRepository shipmentRepository,
         IAgentRepository    agentRepository,
-        IOrderServiceClient orderServiceClient)
+        IOrderServiceClient orderServiceClient,
+        IIdentityServiceClient identityServiceClient)
     {
         _shipmentRepository = shipmentRepository;
         _agentRepository    = agentRepository;
         _orderServiceClient = orderServiceClient;
+        _identityServiceClient = identityServiceClient;
     }
 
     public async Task<List<AgentShipmentDto>> Handle(GetMyShipmentsQuery query, CancellationToken ct)
     {
-        // Find agent by user ID
-        var agents = await _agentRepository.GetAllAsync(ct);
-        var agent  = agents.FirstOrDefault(a => a.UserId == query.AgentUserId);
+        var agent = await ResolveAgentForUserAsync(query.AgentUserId, query.AgentFullName, ct);
 
         if (agent is null)
             return new List<AgentShipmentDto>();
@@ -95,5 +96,39 @@ public class GetMyShipmentsQueryHandler : IRequestHandler<GetMyShipmentsQuery, L
         }
 
         return result;
+    }
+
+    private async Task<Domain.Entities.DeliveryAgent?> ResolveAgentForUserAsync(
+        Guid userId,
+        string? fullNameHint,
+        CancellationToken ct)
+    {
+        var directAgent = await _agentRepository.GetByUserIdAsync(userId, ct);
+        if (directAgent is not null)
+            return directAgent;
+
+        var fullName = fullNameHint;
+        if (string.IsNullOrWhiteSpace(fullName))
+        {
+            var userContact = await _identityServiceClient.GetUserContactAsync(userId, ct);
+            fullName = userContact?.FullName;
+        }
+
+        if (string.IsNullOrWhiteSpace(fullName))
+            return null;
+
+        var byNameAgent = await _agentRepository.GetByFullNameAsync(fullName, ct);
+        if (byNameAgent is null)
+            return null;
+
+        // Self-heal stale seed linkage when this userId is not mapped yet.
+        var userAlreadyLinked = await _agentRepository.ExistsByUserIdAsync(userId, ct);
+        if (!userAlreadyLinked && byNameAgent.UserId != userId)
+        {
+            byNameAgent.LinkToUser(userId);
+            await _agentRepository.SaveChangesAsync(ct);
+        }
+
+        return byNameAgent;
     }
 }

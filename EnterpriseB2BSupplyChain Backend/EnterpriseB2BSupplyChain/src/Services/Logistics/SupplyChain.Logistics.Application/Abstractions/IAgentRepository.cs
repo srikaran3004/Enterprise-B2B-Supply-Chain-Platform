@@ -6,6 +6,9 @@ namespace SupplyChain.Logistics.Application.Abstractions;
 public interface IAgentRepository
 {
     Task<DeliveryAgent?> GetByIdAsync(Guid agentId, CancellationToken ct = default);
+    Task<DeliveryAgent?> GetByUserIdAsync(Guid userId, CancellationToken ct = default);
+    Task<DeliveryAgent?> GetByFullNameAsync(string fullName, CancellationToken ct = default);
+    Task<bool> ExistsByUserIdAsync(Guid userId, CancellationToken ct = default);
     Task<List<DeliveryAgent>> GetAllAsync(CancellationToken ct = default);
     Task<List<DeliveryAgent>> GetByStatusAsync(AgentStatus status, CancellationToken ct = default);
     Task<List<DeliveryAgent>> GetByStatusAndRegionAsync(AgentStatus status, string region, CancellationToken ct = default);

@@ -13,3 +13,4 @@ D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Se
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Application\obj\Release\net10.0\refint\SupplyChain.Payment.Application.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Application\obj\Release\net10.0\SupplyChain.Payment.Application.pdb
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Application\obj\Release\net10.0\ref\SupplyChain.Payment.Application.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Payment\SupplyChain.Payment.Application\obj\Release\net10.0\SupplyChain.Payment.Application.sourcelink.json

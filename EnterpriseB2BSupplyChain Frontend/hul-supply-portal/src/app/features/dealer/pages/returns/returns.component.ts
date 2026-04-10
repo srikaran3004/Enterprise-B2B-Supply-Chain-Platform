@@ -63,9 +63,6 @@ import { API_ENDPOINTS } from '../../../../shared/constants/api-endpoints';
               <img [src]="ret.photoUrl" alt="Return proof" (click)="openImage(ret.photoUrl)" />
               <span class="image-hint">Click to enlarge</span>
             </div>
-            <div *ngIf="ret.refundAmount" class="return-refund">
-              <strong>Refund Amount:</strong> <span class="refund-value">{{ ret.refundAmount | inrCurrency }}</span>
-            </div>
             <div *ngIf="ret.adminNotes" class="admin-notes">
               <strong>Admin Note:</strong> {{ ret.adminNotes }}
             </div>
@@ -157,8 +154,6 @@ import { API_ENDPOINTS } from '../../../../shared/constants/api-endpoints';
     .return-image img { width: 100%; border-radius: var(--radius-md); border: 1px solid var(--border-default); cursor: pointer; transition: transform var(--duration-fast); }
     .return-image img:hover { transform: scale(1.05); }
     .image-hint { display: block; font-size: 11px; color: var(--text-tertiary); margin-top: 4px; }
-    .return-refund { font-size: 14px; color: var(--text-secondary); }
-    .refund-value { color: #059669; font-weight: 700; font-size: 16px; }
     .admin-notes { padding: 12px; background: var(--bg-muted); border-radius: var(--radius-md); font-size: 13px; color: var(--text-secondary); border-left: 3px solid var(--hul-primary); }
     
     .return-form { padding: 8px 0; }
@@ -302,7 +297,7 @@ export class ReturnsComponent implements OnInit {
       formData.append('file', this.selectedFile);
       
       const uploadResponse = await this.http.post<{ url: string }>(
-        API_ENDPOINTS.orders.base() + '/upload-return-image',
+        API_ENDPOINTS.orders.uploadReturnImage(),
         formData
       ).toPromise();
 

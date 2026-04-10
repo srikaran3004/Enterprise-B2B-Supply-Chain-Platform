@@ -14,6 +14,7 @@ using SupplyChain.Logistics.Application.Queries.GetAvailableAgents;
 using SupplyChain.Logistics.Application.Queries.GetMyShipments;
 using SupplyChain.Logistics.Application.Queries.GetPendingShipments;
 using SupplyChain.Logistics.Application.Queries.GetTracking;
+using SupplyChain.Logistics.Application.Views;
 using SupplyChain.Logistics.Domain.Enums;
 
 namespace SupplyChain.Logistics.API.Controllers;
@@ -49,7 +50,7 @@ public class LogisticsController : ControllerBase
     public async Task<IActionResult> GetPendingShipments(CancellationToken ct)
     {
         var result = await _mediator.Send(new GetPendingShipmentsQuery(), ct);
-        return Ok(result);
+        return Ok(result.Select(ShipmentDashboardView.FromDto).ToList());
     }
 
     /// <summary>Get all shipments including delivered history.</summary>
@@ -58,7 +59,7 @@ public class LogisticsController : ControllerBase
     public async Task<IActionResult> GetAllShipments(CancellationToken ct)
     {
         var result = await _mediator.Send(new GetAllShipmentsQuery(), ct);
-        return Ok(result);
+        return Ok(result.Select(ShipmentDashboardView.FromDto).ToList());
     }
 
     /// <summary>Assign delivery agent and vehicle to a shipment.</summary>
@@ -83,10 +84,11 @@ public class LogisticsController : ControllerBase
         if (!Enum.TryParse<ShipmentStatus>(request.Status, true, out var status))
             return BadRequest(new { error = "Invalid status value." });
 
-        var agentId = GetCurrentUserId();
+        var agentUserId = GetCurrentUserId();
+        var agentFullName = GetCurrentUserFullName();
 
         await _mediator.Send(new UpdateShipmentStatusCommand(
-            orderId, agentId, status,
+            orderId, agentUserId, agentFullName, status,
             request.Latitude, request.Longitude, request.Notes, request.Place), ct);
 
         return Ok(new { Message = "Status updated." });
@@ -109,7 +111,8 @@ public class LogisticsController : ControllerBase
     public async Task<IActionResult> GetMyShipments(CancellationToken ct)
     {
         var agentUserId = GetCurrentUserId();
-        var result = await _mediator.Send(new GetMyShipmentsQuery(agentUserId), ct);
+        var agentFullName = GetCurrentUserFullName();
+        var result = await _mediator.Send(new GetMyShipmentsQuery(agentUserId, agentFullName), ct);
         return Ok(result);
     }
 
@@ -119,8 +122,25 @@ public class LogisticsController : ControllerBase
     public async Task<IActionResult> GetMyAgentProfile(CancellationToken ct)
     {
         var userId = GetCurrentUserId();
-        var agents = await _agentRepository.GetAllAsync(ct);
-        var agent  = agents.FirstOrDefault(a => a.UserId == userId);
+        var agent = await _agentRepository.GetByUserIdAsync(userId, ct);
+        if (agent is null)
+        {
+            var fullName = GetCurrentUserFullName();
+            if (!string.IsNullOrWhiteSpace(fullName))
+            {
+                agent = await _agentRepository.GetByFullNameAsync(fullName, ct);
+                if (agent is not null && agent.UserId != userId)
+                {
+                    var userAlreadyLinked = await _agentRepository.ExistsByUserIdAsync(userId, ct);
+                    if (!userAlreadyLinked)
+                    {
+                        agent.LinkToUser(userId);
+                        await _agentRepository.SaveChangesAsync(ct);
+                    }
+                }
+            }
+        }
+
         if (agent is null) return NotFound(new { error = "Agent profile not found." });
         return Ok(new
         {
@@ -193,14 +213,15 @@ public class LogisticsController : ControllerBase
 
     /// <summary>Rate a delivered shipment.</summary>
     [HttpPost("shipments/{id:guid}/rate")]
-    [Authorize]
+    [Authorize(Roles = "Dealer")]
     public async Task<IActionResult> RateShipment(
         Guid id,
         [FromBody] RateShipmentRequest request,
         CancellationToken ct)
     {
+        var dealerId = GetDealerId();
         var result = await _mediator.Send(
-            new RateShipmentCommand(id, request.Rating, request.Feedback), ct);
+            new RateShipmentCommand(id, dealerId, request.Rating, request.Feedback), ct);
         return Ok(result);
     }
 
@@ -208,7 +229,23 @@ public class LogisticsController : ControllerBase
     {
         var sub = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
                ?? User.FindFirst("sub")?.Value;
-        return Guid.TryParse(sub, out var id) ? id : Guid.Empty;
+        if (Guid.TryParse(sub, out var id))
+            return id;
+
+        throw new UnauthorizedAccessException("Authenticated user id claim is missing or invalid.");
+    }
+
+    private string? GetCurrentUserFullName()
+        => User.FindFirst("fullName")?.Value
+        ?? User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
+
+    private Guid GetDealerId()
+    {
+        var claim = User.FindFirst("dealerId")?.Value;
+        if (Guid.TryParse(claim, out var id))
+            return id;
+
+        throw new UnauthorizedAccessException("Dealer token does not contain a valid dealerId claim.");
     }
 }
 

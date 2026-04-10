@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -23,7 +23,10 @@
     <ProjectReference Include="..\SupplyChain.Catalog.Domain\SupplyChain.Catalog.Domain.csproj" />
     <ProjectReference Include="..\SupplyChain.Catalog.Application\SupplyChain.Catalog.Application.csproj" />
     <ProjectReference Include="..\SupplyChain.Catalog.Infrastructure\SupplyChain.Catalog.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\..\BuildingBlocks\SupplyChain.BuildingBlocks\SupplyChain.BuildingBlocks.csproj" />
+    <ProjectReference Include="..\..\..\SharedInfrastructure\SupplyChain.SharedInfrastructure\SupplyChain.SharedInfrastructure.csproj" />
   </ItemGroup>
 
 </Project>
+
+
+

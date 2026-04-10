@@ -1,11 +1,13 @@
-using System.Text;
+﻿using System.Text;
 using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using Serilog;
-using SupplyChain.BuildingBlocks.Extensions;
+using SupplyChain.SharedInfrastructure.Extensions;
+using SupplyChain.SharedInfrastructure.Observability;
+using SupplyChain.SharedInfrastructure.Security;
 using SupplyChain.Order.Application;
 using SupplyChain.Order.Infrastructure;
 using SupplyChain.Order.Infrastructure.Jobs;
@@ -13,15 +15,25 @@ using SupplyChain.Order.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Host.UseSerilog((ctx, cfg) =>
-    cfg.ReadFrom.Configuration(ctx.Configuration).WriteTo.Console());
+builder.Host.UseSharedSerilog("order-service");
 
-builder.Services.AddBuildingBlocks();
+builder.Services.AddSharedInfrastructure();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddControllers();
 
 var jwtSecret = builder.Configuration["Jwt:Secret"]!;
+var configuredAudiences = builder.Configuration.GetSection("Jwt:Audiences").Get<string[]>();
+var validAudiences = (configuredAudiences ?? Array.Empty<string>())
+    .Concat(new[]
+    {
+        builder.Configuration["Jwt:Audience"] ?? "UniSupplyAPI",
+        "gateway", "identity", "order", "catalog", "payment", "logistics", "notification"
+    })
+    .Where(a => !string.IsNullOrWhiteSpace(a))
+    .Distinct(StringComparer.OrdinalIgnoreCase)
+    .ToArray();
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -32,13 +44,18 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateLifetime         = true,
             ValidateIssuerSigningKey = true,
             ValidIssuer              = builder.Configuration["Jwt:Issuer"],
-            ValidAudience            = builder.Configuration["Jwt:Audience"],
+            ValidAudiences           = validAudiences,
             IssuerSigningKey         = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
             ClockSkew                = TimeSpan.Zero
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(InternalAuthDefaults.InternalPolicy, policy =>
+        policy.RequireAuthenticatedUser()
+              .RequireClaim(InternalAuthDefaults.ClientTypeClaim, InternalAuthDefaults.InternalClientType));
+});
 
 builder.Services.AddOpenApi(options =>
 {
@@ -77,8 +94,8 @@ if (app.Environment.IsDevelopment())
            .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient));
 }
 
+app.UseSharedInfrastructure();
 app.UseCors("AllowAngular");
-app.UseBuildingBlocks();
 app.UseSerilogRequestLogging();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -90,10 +107,17 @@ if (app.Environment.IsDevelopment())
 app.MapControllers();
 app.MapHealthChecks("/health");
 
-// Register Outbox Poller — runs every 5 seconds
+// Register Outbox Poller â€” runs every 5 seconds
 RecurringJob.AddOrUpdate<OutboxPollerJob>(
     "outbox-poller",
     job => job.ExecuteAsync(),
     "*/5 * * * * *");  // Every 5 seconds (cron seconds syntax)
 
+RecurringJob.AddOrUpdate<OutboxCleanupJob>(
+    "outbox-cleanup",
+    job => job.ExecuteAsync(CancellationToken.None),
+    "0 2 * * *"); // Daily at 02:00
+
 app.Run();
+
+

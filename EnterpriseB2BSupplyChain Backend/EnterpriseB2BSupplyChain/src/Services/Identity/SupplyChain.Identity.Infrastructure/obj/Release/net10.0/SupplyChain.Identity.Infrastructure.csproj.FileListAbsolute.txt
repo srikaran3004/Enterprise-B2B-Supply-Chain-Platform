@@ -17,3 +17,4 @@ D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Se
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Identity\SupplyChain.Identity.Infrastructure\obj\Release\net10.0\SupplyChain.Identity.Infrastructure.pdb
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Identity\SupplyChain.Identity.Infrastructure\obj\Release\net10.0\SupplyChain.Identity.Infrastructure.genruntimeconfig.cache
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Identity\SupplyChain.Identity.Infrastructure\obj\Release\net10.0\ref\SupplyChain.Identity.Infrastructure.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Identity\SupplyChain.Identity.Infrastructure\obj\Release\net10.0\SupplyChain.Identity.Infrastructure.sourcelink.json

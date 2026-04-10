@@ -1,6 +1,7 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SupplyChain.SharedInfrastructure.Security;
 using SupplyChain.Identity.Application.Commands.ShippingAddress;
 using SupplyChain.Identity.Application.Queries.ShippingAddress;
 
@@ -8,7 +9,6 @@ namespace SupplyChain.Identity.API.Controllers;
 
 [ApiController]
 [Route("api/shipping-addresses")]
-[Authorize(Roles = "Dealer")]
 public class ShippingAddressController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -41,13 +41,10 @@ public class ShippingAddressController : ControllerBase
     }
 
     /// <summary>
-    /// Internal service-to-service endpoint (no auth required) — called by the Order Service
-    /// when placing an order to snapshot the dealer's shipping address without a user token.
-    /// This route is NOT exposed through the Ocelot gateway, so it is only reachable
-    /// from within the internal network (localhost service-to-service calls).
+    /// Internal service-to-service endpoint secured with internal JWT policy.
     /// </summary>
     [HttpGet("internal/dealer/{dealerId:guid}")]
-    [AllowAnonymous]
+    [Authorize(Policy = InternalAuthDefaults.InternalPolicy)]
     public async Task<IActionResult> GetAddressesByDealerIdInternal(Guid dealerId, CancellationToken ct)
     {
         var result = await _mediator.Send(new GetShippingAddressesQuery(dealerId), ct);
@@ -55,6 +52,7 @@ public class ShippingAddressController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Dealer")]
     public async Task<IActionResult> AddAddress([FromBody] AddShippingAddressRequest request, CancellationToken ct)
     {
         var dealerId = GetDealerId();
@@ -70,6 +68,7 @@ public class ShippingAddressController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = "Dealer")]
     public async Task<IActionResult> UpdateAddress(Guid id, [FromBody] UpdateShippingAddressRequest request, CancellationToken ct)
     {
         var dealerId = GetDealerId();
@@ -85,6 +84,7 @@ public class ShippingAddressController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = "Dealer")]
     public async Task<IActionResult> DeleteAddress(Guid id, CancellationToken ct)
     {
         var dealerId = GetDealerId();
@@ -95,6 +95,7 @@ public class ShippingAddressController : ControllerBase
     }
 
     [HttpPut("{id:guid}/set-default")]
+    [Authorize(Roles = "Dealer")]
     public async Task<IActionResult> SetDefault(Guid id, CancellationToken ct)
     {
         var dealerId = GetDealerId();
@@ -125,3 +126,4 @@ public record UpdateShippingAddressRequest(
     string  PinCode,
     string? PhoneNumber
 );
+

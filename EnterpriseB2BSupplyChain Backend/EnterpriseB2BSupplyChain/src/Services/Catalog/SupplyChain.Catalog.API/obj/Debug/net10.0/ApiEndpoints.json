@@ -102,6 +102,38 @@
   },
   {
     "ContainingType": "SupplyChain.Catalog.API.Controllers.InventoryController",
+    "Method": "CommitOrderInventory",
+    "RelativePath": "api/inventory/internal/commit-order",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "SupplyChain.Catalog.API.Controllers.CommitOrderInventoryRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SupplyChain.Catalog.API.Controllers.InventoryController",
+    "Method": "RestoreOrderInventory",
+    "RelativePath": "api/inventory/internal/restore-order",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "SupplyChain.Catalog.API.Controllers.CommitOrderInventoryRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SupplyChain.Catalog.API.Controllers.InventoryController",
     "Method": "ReleaseInventory",
     "RelativePath": "api/inventory/release",
     "HttpMethod": "POST",

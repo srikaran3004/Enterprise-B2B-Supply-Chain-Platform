@@ -17,6 +17,54 @@
   },
   {
     "ContainingType": "SupplyChain.Order.API.Controllers.InternalOrdersController",
+    "Method": "GetInvoiceDetails",
+    "RelativePath": "api/internal/orders/{orderId}/invoice-details",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "orderId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SupplyChain.Order.API.Controllers.InternalOrdersController",
+    "Method": "MarkDelivered",
+    "RelativePath": "api/internal/orders/{orderId}/mark-delivered",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "orderId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SupplyChain.Order.API.Controllers.InternalOrdersController",
+    "Method": "MarkInTransit",
+    "RelativePath": "api/internal/orders/{orderId}/mark-in-transit",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "orderId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SupplyChain.Order.API.Controllers.InternalOrdersController",
     "Method": "GetNotificationDetails",
     "RelativePath": "api/internal/orders/{orderId}/notification-details",
     "HttpMethod": "GET",
@@ -216,6 +264,63 @@
       {
         "Name": "pageSize",
         "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SupplyChain.Order.API.Controllers.OrdersController",
+    "Method": "GetReturnImage",
+    "RelativePath": "api/orders/return-images/{fileName}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "fileName",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SupplyChain.Order.API.Controllers.OrdersController",
+    "Method": "UploadReturnImage",
+    "RelativePath": "api/orders/upload-return-image",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "ContentType",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "ContentDisposition",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Headers",
+        "Type": "Microsoft.AspNetCore.Http.IHeaderDictionary",
+        "IsRequired": false
+      },
+      {
+        "Name": "Length",
+        "Type": "System.Int64",
+        "IsRequired": false
+      },
+      {
+        "Name": "Name",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "FileName",
+        "Type": "System.String",
         "IsRequired": false
       }
     ],

@@ -6,12 +6,12 @@ namespace SupplyChain.Identity.Infrastructure.Services;
 
 public class RedisCacheService : ICacheService
 {
+    private const string CacheIndexPrefix = "cache:index:";
+
     private readonly IDatabase _db;
-    private readonly IConnectionMultiplexer _redis;
 
     public RedisCacheService(IConnectionMultiplexer redis)
     {
-        _redis = redis;
         _db = redis.GetDatabase();
     }
 
@@ -25,7 +25,7 @@ public class RedisCacheService : ICacheService
         }
         catch
         {
-            return default; // Fallback smoothly if Redis is down
+            return default;
         }
     }
 
@@ -35,10 +35,10 @@ public class RedisCacheService : ICacheService
         {
             var json = JsonSerializer.Serialize(value);
             await _db.StringSetAsync(key, json, ttl ?? TimeSpan.FromMinutes(10));
+            await TrackKeyAsync(key);
         }
         catch
         {
-            // Ignore Redis connectivity issues
         }
     }
 
@@ -47,6 +47,7 @@ public class RedisCacheService : ICacheService
         try
         {
             await _db.KeyDeleteAsync(key);
+            await UntrackKeyAsync(key);
         }
         catch
         {
@@ -57,22 +58,89 @@ public class RedisCacheService : ICacheService
     {
         try
         {
-            var server = GetServer();
-            if (server is null) return;
+            var namespacePrefix = TryGetNamespacePrefixFromPattern(pattern);
+            if (string.IsNullOrWhiteSpace(namespacePrefix))
+                return;
 
-            var keys = server.Keys(pattern: pattern).ToArray();
-            if (keys.Length > 0)
-                await _db.KeyDeleteAsync(keys);
+            var indexKey = GetCacheIndexKey(namespacePrefix);
+            var members = await _db.SetMembersAsync(indexKey);
+            if (members.Length == 0)
+                return;
+
+            var keys = members
+                .Select(m => m.ToString())
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .Select(s => (RedisKey)s)
+                .ToArray();
+
+            if (keys.Length == 0)
+            {
+                await _db.KeyDeleteAsync(indexKey);
+                return;
+            }
+
+            await _db.KeyDeleteAsync(keys);
+            await _db.KeyDeleteAsync(indexKey);
         }
         catch
         {
         }
     }
 
-    private IServer? GetServer()
+    private async Task TrackKeyAsync(string key)
     {
-        var endpoints = _redis.GetEndPoints();
-        if (endpoints.Length == 0) return null;
-        return _redis.GetServer(endpoints[0]);
+        var indexKey = GetCacheIndexKeyForKey(key);
+        if (indexKey is null)
+            return;
+
+        await _db.SetAddAsync(indexKey, key);
     }
+
+    private async Task UntrackKeyAsync(string key)
+    {
+        var indexKey = GetCacheIndexKeyForKey(key);
+        if (indexKey is null)
+            return;
+
+        await _db.SetRemoveAsync(indexKey, key);
+    }
+
+    private static string? GetCacheIndexKeyForKey(string key)
+    {
+        var prefix = TryGetNamespacePrefixFromKey(key);
+        return string.IsNullOrWhiteSpace(prefix) ? null : GetCacheIndexKey(prefix);
+    }
+
+    private static string? TryGetNamespacePrefixFromKey(string key)
+    {
+        if (string.IsNullOrWhiteSpace(key))
+            return null;
+
+        var firstSeparator = key.IndexOf(':');
+        if (firstSeparator < 0)
+            return key;
+
+        var secondSeparator = key.IndexOf(':', firstSeparator + 1);
+        if (secondSeparator < 0)
+            return key;
+
+        return key[..secondSeparator];
+    }
+
+    private static string? TryGetNamespacePrefixFromPattern(string pattern)
+    {
+        if (string.IsNullOrWhiteSpace(pattern))
+            return null;
+
+        var normalized = pattern.Trim();
+        if (normalized.EndsWith('*'))
+            normalized = normalized[..^1];
+
+        normalized = normalized.TrimEnd(':');
+        return string.IsNullOrWhiteSpace(normalized) ? null : normalized;
+    }
+
+    private static string GetCacheIndexKey(string namespacePrefix)
+        => $"{CacheIndexPrefix}{namespacePrefix}";
 }
+

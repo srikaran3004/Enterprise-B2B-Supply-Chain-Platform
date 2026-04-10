@@ -3,19 +3,27 @@ using System.Text.Json;
 using RabbitMQ.Client;
 using SupplyChain.Logistics.Application.Abstractions;
 using SupplyChain.Logistics.Domain.Events;
+using SupplyChain.SharedInfrastructure.Contracts;
+using SupplyChain.SharedInfrastructure.Correlation;
 
 namespace SupplyChain.Logistics.Infrastructure.Services;
 
 public class AgentAssignedEventPublisher : IAgentAssignedEventPublisher
 {
     private readonly IConnection _rabbitConnection;
+    private readonly ICorrelationIdAccessor _correlationIdAccessor;
 
-    public AgentAssignedEventPublisher(IConnection rabbitConnection)
-        => _rabbitConnection = rabbitConnection;
+    public AgentAssignedEventPublisher(
+        IConnection rabbitConnection,
+        ICorrelationIdAccessor correlationIdAccessor)
+    {
+        _rabbitConnection = rabbitConnection;
+        _correlationIdAccessor = correlationIdAccessor;
+    }
 
     public async Task PublishAsync(AgentAssigned @event, CancellationToken ct)
     {
-        var payload = JsonSerializer.Serialize(new
+        var payload = new
         {
             @event.ShipmentId,
             @event.OrderId,
@@ -23,6 +31,7 @@ public class AgentAssignedEventPublisher : IAgentAssignedEventPublisher
             @event.DealerId,
             @event.DealerEmail,
             @event.AgentId,
+            @event.AgentUserId,
             @event.AgentName,
             @event.AgentPhone,
             @event.VehicleNo,
@@ -30,9 +39,17 @@ public class AgentAssignedEventPublisher : IAgentAssignedEventPublisher
             @event.ShippingAddressLine,
             @event.ShippingCity,
             @event.ShippingPinCode
-        });
+        };
 
-        var body = Encoding.UTF8.GetBytes(payload);
+        var envelope = new EventEnvelope<object>(
+            EventId: Guid.NewGuid(),
+            EventType: "AgentAssigned",
+            OccurredAt: DateTime.UtcNow,
+            CorrelationId: _correlationIdAccessor.CorrelationId,
+            Source: "logistics-service",
+            Payload: payload);
+
+        var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(envelope));
         await using var channel = await _rabbitConnection.CreateChannelAsync(cancellationToken: ct);
 
         await channel.ExchangeDeclareAsync(
@@ -48,7 +65,8 @@ public class AgentAssignedEventPublisher : IAgentAssignedEventPublisher
             Headers = new Dictionary<string, object?>
             {
                 ["EventType"] = "AgentAssigned",
-                ["ServiceSource"] = "LogisticsService"
+                ["ServiceSource"] = "LogisticsService",
+                ["CorrelationId"] = _correlationIdAccessor.CorrelationId
             }
         };
 

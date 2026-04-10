@@ -40,4 +40,7 @@
     <Project Path="src/Services/Payment/SupplyChain.Payment.Domain/SupplyChain.Payment.Domain.csproj" />
     <Project Path="src/Services/Payment/SupplyChain.Payment.Infrastructure/SupplyChain.Payment.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/src/SharedInfrastructure/">
+    <Project Path="src/SharedInfrastructure/SupplyChain.SharedInfrastructure/SupplyChain.SharedInfrastructure.csproj" />
+  </Folder>
 </Solution>

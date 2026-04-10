@@ -1,5 +1,7 @@
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -9,17 +11,27 @@ using RabbitMQ.Client.Events;
 using SupplyChain.Notification.Application.Abstractions;
 using SupplyChain.Notification.Application.Services;
 using SupplyChain.Notification.Domain.Entities;
+using SupplyChain.Notification.Infrastructure.Persistence;
 
 namespace SupplyChain.Notification.Infrastructure.Services;
 
 public class RabbitMqNotificationConsumer : BackgroundService
 {
+    private const string ConsumerName = "notification-email-consumer";
+
     private readonly IConfiguration _configuration;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<RabbitMqNotificationConsumer> _logger;
+    private readonly int _maxRetries;
 
     private IConnection? _connection;
     private IChannel? _channel;
+    private string _exchange = "supplychain.domain.events";
+    private string _queue = "notification.email.queue";
+    private string _routingKey = "#";
+    private string _deadLetterExchange = "supplychain.domain.events.dead";
+    private string _deadLetterQueue = "notification.email.queue.dead";
+    private string _deadLetterRoutingKey = "notification.email.queue.dead";
 
     public RabbitMqNotificationConsumer(
         IConfiguration configuration,
@@ -29,6 +41,7 @@ public class RabbitMqNotificationConsumer : BackgroundService
         _configuration = configuration;
         _scopeFactory = scopeFactory;
         _logger = logger;
+        _maxRetries = _configuration.GetValue<int?>("RabbitMQ:MaxRetries") ?? 5;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -36,9 +49,12 @@ public class RabbitMqNotificationConsumer : BackgroundService
         var host = _configuration["RabbitMQ:Host"] ?? "localhost";
         var username = _configuration["RabbitMQ:Username"] ?? "guest";
         var password = _configuration["RabbitMQ:Password"] ?? "guest";
-        var exchange = _configuration["RabbitMQ:Exchange"] ?? "supplychain.domain.events";
-        var queue = _configuration["RabbitMQ:Queue"] ?? "notification.email.queue";
-        var routingKey = _configuration["RabbitMQ:RoutingKey"] ?? "#";
+        _exchange = _configuration["RabbitMQ:Exchange"] ?? "supplychain.domain.events";
+        _queue = _configuration["RabbitMQ:Queue"] ?? "notification.email.queue";
+        _routingKey = _configuration["RabbitMQ:RoutingKey"] ?? "#";
+        _deadLetterExchange = _configuration["RabbitMQ:DeadLetterExchange"] ?? $"{_exchange}.dead";
+        _deadLetterQueue = _configuration["RabbitMQ:DeadLetterQueue"] ?? $"{_queue}.dead";
+        _deadLetterRoutingKey = _configuration["RabbitMQ:DeadLetterRoutingKey"] ?? $"{_queue}.dead";
 
         var factory = new ConnectionFactory
         {
@@ -51,34 +67,55 @@ public class RabbitMqNotificationConsumer : BackgroundService
         _channel = await _connection.CreateChannelAsync(cancellationToken: stoppingToken);
 
         await _channel.ExchangeDeclareAsync(
-            exchange: exchange,
+            exchange: _exchange,
+            type: ExchangeType.Topic,
+            durable: true,
+            cancellationToken: stoppingToken);
+
+        await _channel.ExchangeDeclareAsync(
+            exchange: _deadLetterExchange,
             type: ExchangeType.Topic,
             durable: true,
             cancellationToken: stoppingToken);
 
         await _channel.QueueDeclareAsync(
-            queue: queue,
+            queue: _queue,
+            durable: true,
+            exclusive: false,
+            autoDelete: false,
+            cancellationToken: stoppingToken);
+
+        await _channel.QueueDeclareAsync(
+            queue: _deadLetterQueue,
             durable: true,
             exclusive: false,
             autoDelete: false,
             cancellationToken: stoppingToken);
 
         await _channel.QueueBindAsync(
-            queue: queue,
-            exchange: exchange,
-            routingKey: routingKey,
+            queue: _queue,
+            exchange: _exchange,
+            routingKey: _routingKey,
+            cancellationToken: stoppingToken);
+
+        await _channel.QueueBindAsync(
+            queue: _deadLetterQueue,
+            exchange: _deadLetterExchange,
+            routingKey: _deadLetterRoutingKey,
             cancellationToken: stoppingToken);
 
         var consumer = new AsyncEventingBasicConsumer(_channel);
         consumer.ReceivedAsync += async (_, args) => await HandleMessageAsync(args, stoppingToken);
 
         await _channel.BasicConsumeAsync(
-            queue: queue,
+            queue: _queue,
             autoAck: false,
             consumer: consumer,
             cancellationToken: stoppingToken);
 
-        _logger.LogInformation("Notification consumer started. Queue: {Queue}", queue);
+        _logger.LogInformation(
+            "Notification consumer started. Queue: {Queue}, DLQ: {DeadLetterQueue}, MaxRetries: {MaxRetries}",
+            _queue, _deadLetterQueue, _maxRetries);
 
         await Task.Delay(Timeout.Infinite, stoppingToken);
     }
@@ -88,19 +125,30 @@ public class RabbitMqNotificationConsumer : BackgroundService
         if (_channel is null)
             return;
 
-        var payload = Encoding.UTF8.GetString(args.Body.ToArray());
-        var eventType = GetEventType(args);
+        var rawBody = Encoding.UTF8.GetString(args.Body.ToArray());
+        var headerEventType = GetEventType(args);
+        var (eventType, correlationId, envelopeEventId, payloadRoot) = ParseEnvelope(rawBody, headerEventType);
+        var messageId = ResolveMessageId(args, envelopeEventId, rawBody, eventType);
 
         try
         {
-            using var doc = JsonDocument.Parse(payload);
-            var root = doc.RootElement;
-            var templateData = ToTemplateData(root);
-            AddTemplateAliases(templateData);
-
             using var scope = _scopeFactory.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<NotificationDbContext>();
             var dispatch = scope.ServiceProvider.GetRequiredService<EmailDispatchService>();
             var inboxRepo = scope.ServiceProvider.GetRequiredService<INotificationInboxRepository>();
+
+            var alreadyProcessed = await db.ConsumedMessages
+                .AnyAsync(x => x.MessageId == messageId && x.Consumer == ConsumerName, ct);
+            if (alreadyProcessed)
+            {
+                await _channel.BasicAckAsync(args.DeliveryTag, false, ct);
+                return;
+            }
+
+            var templateData = ToTemplateData(payloadRoot);
+            if (!string.IsNullOrWhiteSpace(correlationId))
+                templateData["correlationId"] = correlationId;
+            AddTemplateAliases(templateData);
 
             if (eventType.Equals("AgentAssigned", StringComparison.OrdinalIgnoreCase))
             {
@@ -140,12 +188,29 @@ public class RabbitMqNotificationConsumer : BackgroundService
                 await WriteInboxAsync(inboxRepo, templateData, eventType, ct);
             }
 
+            db.ConsumedMessages.Add(ConsumedMessage.Create(messageId, ConsumerName, eventType, correlationId));
+            await db.SaveChangesAsync(ct);
             await _channel.BasicAckAsync(args.DeliveryTag, false, ct);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed processing notification event. EventType: {EventType}", eventType);
-            await _channel.BasicNackAsync(args.DeliveryTag, false, requeue: true, cancellationToken: ct);
+            var nextRetry = GetRetryCount(args.BasicProperties?.Headers) + 1;
+            if (nextRetry > _maxRetries)
+            {
+                await PublishDeadLetterAsync(args, eventType, messageId, nextRetry, ex.Message, ct);
+                _logger.LogError(ex,
+                    "Notification event moved to DLQ. EventType={EventType}, MessageId={MessageId}, Retries={Retries}",
+                    eventType, messageId, nextRetry - 1);
+            }
+            else
+            {
+                await PublishRetryAsync(args, eventType, messageId, nextRetry, ex.Message, ct);
+                _logger.LogWarning(ex,
+                    "Notification event retry queued. EventType={EventType}, MessageId={MessageId}, Retry={Retry}/{MaxRetries}",
+                    eventType, messageId, nextRetry, _maxRetries);
+            }
+
+            await _channel.BasicAckAsync(args.DeliveryTag, false, ct);
         }
     }
 
@@ -160,9 +225,16 @@ public class RabbitMqNotificationConsumer : BackgroundService
             var orderNumber = data.TryGetValue("OrderNumber", out var on) ? on?.ToString() : null;
             var dealerIdStr = data.TryGetValue("DealerId", out var di) ? di?.ToString() : null;
             var agentIdStr  = data.TryGetValue("AgentId",  out var ai) ? ai?.ToString() : null;
+            var agentUserIdStr = data.TryGetValue("AgentUserId", out var aui) ? aui?.ToString() : null;
+            var status      = data.TryGetValue("Status", out var st) ? st?.ToString() : null;
+            var place       = data.TryGetValue("Place", out var pl) ? pl?.ToString() : null;
 
             Guid? dealerId = Guid.TryParse(dealerIdStr, out var did) ? did : null;
             Guid? agentId  = Guid.TryParse(agentIdStr,  out var aid) ? aid : null;
+            Guid? agentUserId = Guid.TryParse(agentUserIdStr, out var auiParsed) ? auiParsed : null;
+            var inboxAgentOwnerId = agentUserId is { } validAgentUserId && validAgentUserId != Guid.Empty
+                ? validAgentUserId
+                : agentId;
 
             (string? title, string? message, string? type) = eventType switch
             {
@@ -198,7 +270,7 @@ public class RabbitMqNotificationConsumer : BackgroundService
 
                 "ShipmentStatusUpdated" =>
                     ($"Delivery Update — {orderNumber}",
-                     $"Order {orderNumber} delivery status has been updated.",
+                     $"Order {orderNumber} is now {(string.IsNullOrWhiteSpace(status) ? "updated" : status)}{(string.IsNullOrWhiteSpace(place) ? "." : $" at {place}.")}",
                      "Logistics"),
 
                 "VehicleBreakdown" =>
@@ -236,20 +308,20 @@ public class RabbitMqNotificationConsumer : BackgroundService
             }
 
             // Agent inbox — for AgentAssigned event
-            if (eventType == "AgentAssigned" && agentId.HasValue && agentId.Value != Guid.Empty)
+            if (eventType == "AgentAssigned" && inboxAgentOwnerId.HasValue && inboxAgentOwnerId.Value != Guid.Empty)
             {
                 var agentTitle = $"New Assignment — Order {orderNumber}";
                 var agentMsg   = $"You have been assigned Order {orderNumber}. Please pick up from warehouse.";
-                var agentNotif = NotificationInbox.Create(agentId.Value, agentTitle, agentMsg, "Logistics");
+                var agentNotif = NotificationInbox.Create(inboxAgentOwnerId.Value, agentTitle, agentMsg, "Logistics");
                 await inboxRepo.AddAsync(agentNotif, ct);
                 await inboxRepo.SaveChangesAsync(ct);
             }
 
             // Agent inbox — for ShipmentStatusUpdated / VehicleBreakdown / SLAAtRisk
             if (eventType is "ShipmentStatusUpdated" or "VehicleBreakdown" or "SLAAtRisk"
-                && agentId.HasValue && agentId.Value != Guid.Empty)
+                && inboxAgentOwnerId.HasValue && inboxAgentOwnerId.Value != Guid.Empty)
             {
-                var agentNotif = NotificationInbox.Create(agentId.Value, title, message, type!);
+                var agentNotif = NotificationInbox.Create(inboxAgentOwnerId.Value, title, message, type!);
                 await inboxRepo.AddAsync(agentNotif, ct);
                 await inboxRepo.SaveChangesAsync(ct);
             }
@@ -278,6 +350,191 @@ public class RabbitMqNotificationConsumer : BackgroundService
         return args.RoutingKey;
     }
 
+    private static (string EventType, string? CorrelationId, Guid? EventId, JsonElement Payload) ParseEnvelope(
+        string rawBody,
+        string fallbackEventType)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(rawBody);
+            var root = doc.RootElement;
+
+            if (root.ValueKind == JsonValueKind.Object &&
+                TryGetProperty(root, "payload", out var payloadElement) &&
+                payloadElement.ValueKind == JsonValueKind.Object)
+            {
+                var eventType = TryGetProperty(root, "eventType", out var evt)
+                    ? evt.GetString() ?? fallbackEventType
+                    : fallbackEventType;
+
+                string? correlationId = null;
+                if (TryGetProperty(root, "correlationId", out var cid) && cid.ValueKind == JsonValueKind.String)
+                    correlationId = cid.GetString();
+
+                Guid? eventId = null;
+                if (TryGetProperty(root, "eventId", out var idElement) &&
+                    idElement.ValueKind == JsonValueKind.String &&
+                    Guid.TryParse(idElement.GetString(), out var parsedId))
+                {
+                    eventId = parsedId;
+                }
+
+                return (eventType, correlationId, eventId, payloadElement.Clone());
+            }
+
+            return (fallbackEventType, null, null, root.Clone());
+        }
+        catch
+        {
+            return (fallbackEventType, null, null, JsonSerializer.SerializeToElement(new { rawPayload = rawBody }));
+        }
+    }
+
+    private static bool TryGetProperty(JsonElement element, string propertyName, out JsonElement value)
+    {
+        foreach (var property in element.EnumerateObject())
+        {
+            if (string.Equals(property.Name, propertyName, StringComparison.OrdinalIgnoreCase))
+            {
+                value = property.Value;
+                return true;
+            }
+        }
+
+        value = default;
+        return false;
+    }
+
+    private static string ResolveMessageId(
+        BasicDeliverEventArgs args,
+        Guid? envelopeEventId,
+        string rawBody,
+        string eventType)
+    {
+        if (!string.IsNullOrWhiteSpace(args.BasicProperties?.MessageId))
+            return args.BasicProperties.MessageId!;
+
+        if (envelopeEventId.HasValue)
+            return envelopeEventId.Value.ToString("N");
+
+        var hashBytes = SHA256.HashData(Encoding.UTF8.GetBytes($"{eventType}|{rawBody}"));
+        return Convert.ToHexString(hashBytes);
+    }
+
+    private static int GetRetryCount(IDictionary<string, object?>? headers)
+    {
+        if (headers is null)
+        {
+            return 0;
+        }
+
+        if (!headers.TryGetValue("X-Retry-Count", out var value) || value is null)
+        {
+            return 0;
+        }
+
+        return value switch
+        {
+            byte b => b,
+            sbyte sb => sb,
+            short s => s,
+            ushort us => us,
+            int i => i,
+            long l => (int)l,
+            byte[] bytes when int.TryParse(Encoding.UTF8.GetString(bytes), out var parsed) => parsed,
+            ReadOnlyMemory<byte> memory when int.TryParse(Encoding.UTF8.GetString(memory.Span), out var parsed) => parsed,
+            _ when int.TryParse(value.ToString(), out var parsed) => parsed,
+            _ => 0
+        };
+    }
+
+    private static Dictionary<string, object?> CloneHeaders(IDictionary<string, object?>? headers)
+    {
+        var clone = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+        if (headers is null)
+        {
+            return clone;
+        }
+
+        foreach (var header in headers)
+        {
+            clone[header.Key] = header.Value;
+        }
+
+        return clone;
+    }
+
+    private async Task PublishRetryAsync(
+        BasicDeliverEventArgs args,
+        string eventType,
+        string messageId,
+        int retryCount,
+        string errorMessage,
+        CancellationToken ct)
+    {
+        if (_channel is null)
+        {
+            return;
+        }
+
+        var headers = CloneHeaders(args.BasicProperties?.Headers);
+        headers["X-Retry-Count"] = retryCount;
+        headers["EventType"] = eventType;
+        headers["LastError"] = errorMessage;
+
+        var props = new BasicProperties
+        {
+            MessageId = messageId,
+            ContentType = args.BasicProperties?.ContentType ?? "application/json",
+            DeliveryMode = DeliveryModes.Persistent,
+            Headers = headers
+        };
+
+        await _channel.BasicPublishAsync(
+            exchange: _exchange,
+            routingKey: args.RoutingKey,
+            mandatory: false,
+            basicProperties: props,
+            body: args.Body,
+            cancellationToken: ct);
+    }
+
+    private async Task PublishDeadLetterAsync(
+        BasicDeliverEventArgs args,
+        string eventType,
+        string messageId,
+        int retryCount,
+        string errorMessage,
+        CancellationToken ct)
+    {
+        if (_channel is null)
+        {
+            return;
+        }
+
+        var headers = CloneHeaders(args.BasicProperties?.Headers);
+        headers["X-Retry-Count"] = retryCount;
+        headers["EventType"] = eventType;
+        headers["DeadLetterReason"] = errorMessage;
+        headers["DeadLetteredAtUtc"] = DateTime.UtcNow.ToString("O");
+
+        var props = new BasicProperties
+        {
+            MessageId = messageId,
+            ContentType = args.BasicProperties?.ContentType ?? "application/json",
+            DeliveryMode = DeliveryModes.Persistent,
+            Headers = headers
+        };
+
+        await _channel.BasicPublishAsync(
+            exchange: _deadLetterExchange,
+            routingKey: _deadLetterRoutingKey,
+            mandatory: false,
+            basicProperties: props,
+            body: args.Body,
+            cancellationToken: ct);
+    }
+
     private static string? FirstValue(Dictionary<string, object?> data, params string[] keys)
     {
         foreach (var key in keys)
@@ -296,6 +553,8 @@ public class RabbitMqNotificationConsumer : BackgroundService
     private static Dictionary<string, object?> ToTemplateData(JsonElement root)
     {
         var data = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+        if (root.ValueKind != JsonValueKind.Object)
+            return data;
 
         foreach (var property in root.EnumerateObject())
         {
@@ -316,9 +575,18 @@ public class RabbitMqNotificationConsumer : BackgroundService
     private static void AddTemplateAliases(Dictionary<string, object?> data)
     {
         CopyAlias(data, "OrderNumber", "order_number");
+        CopyAlias(data, "DealerName", "dealer_name");
+        CopyAlias(data, "DealerEmail", "dealer_email");
+        CopyAlias(data, "Status", "status");
         CopyAlias(data, "AgentName", "agent_name");
         CopyAlias(data, "AgentPhone", "agent_phone");
         CopyAlias(data, "VehicleNo", "vehicle_no");
+        CopyAlias(data, "VehicleRegistrationNo", "vehicle_registration_no");
+        CopyAlias(data, "VehicleType", "vehicle_type");
+        CopyAlias(data, "Place", "place");
+        CopyAlias(data, "Notes", "notes");
+        CopyAlias(data, "UpdatedAt", "updated_at");
+        CopyAlias(data, "RecordedAt", "updated_at");
         CopyAlias(data, "ShippingAddressLine", "shipping_address");
         CopyAlias(data, "ShippingCity", "shipping_city");
         CopyAlias(data, "ShippingPinCode", "shipping_pincode");

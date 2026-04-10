@@ -18,6 +18,16 @@ public interface IShipmentRepository
     /// Returns the resulting shipment ID, or null if any precondition failed.
     /// </summary>
     Task<Guid?> AtomicAssignAsync(Guid orderId, Guid agentId, Guid vehicleId, DateTime slaDeadlineUtc, CancellationToken ct = default);
+    Task<bool> AtomicMarkPickedUpAsync(Guid shipmentId, Guid agentId, decimal? latitude, decimal? longitude, CancellationToken ct = default);
+    Task<bool> AtomicUpdateStatusAsync(
+        Guid shipmentId,
+        Guid agentId,
+        ShipmentStatus newStatus,
+        decimal? latitude,
+        decimal? longitude,
+        string? notes,
+        string? place,
+        CancellationToken ct = default);
     Task AddAsync(Shipment shipment, CancellationToken ct = default);
     Task SaveChangesAsync(CancellationToken ct = default);
 }

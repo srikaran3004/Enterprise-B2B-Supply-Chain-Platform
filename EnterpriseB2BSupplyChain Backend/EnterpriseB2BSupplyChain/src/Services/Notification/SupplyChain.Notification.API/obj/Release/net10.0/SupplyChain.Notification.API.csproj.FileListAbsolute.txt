@@ -204,3 +204,9 @@ D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Se
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\bin\Release\net10.0\BouncyCastle.Cryptography.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\bin\Release\net10.0\MailKit.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\bin\Release\net10.0\MimeKit.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\obj\Release\net10.0\SupplyChain.Notification.API.sourcelink.json
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\bin\Release\net10.0\SupplyChain.SharedInfrastructure.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\bin\Release\net10.0\SupplyChain.SharedInfrastructure.pdb
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\bin\Release\net10.0\Microsoft.Extensions.Http.Polly.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\bin\Release\net10.0\Polly.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Notification\SupplyChain.Notification.API\bin\Release\net10.0\Polly.Extensions.Http.dll

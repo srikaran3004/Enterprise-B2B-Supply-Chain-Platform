@@ -7,7 +7,8 @@ public record ConfirmRazorpayPaymentCommand(
     string RazorpayPaymentId,
     string RazorpaySignature,
     Guid? OrderId = null,
-    decimal? Amount = null
+    decimal? Amount = null,
+    Guid? DealerId = null
 ) : IRequest<RazorpayConfirmationResult>;
 
 public record RazorpayConfirmationResult(

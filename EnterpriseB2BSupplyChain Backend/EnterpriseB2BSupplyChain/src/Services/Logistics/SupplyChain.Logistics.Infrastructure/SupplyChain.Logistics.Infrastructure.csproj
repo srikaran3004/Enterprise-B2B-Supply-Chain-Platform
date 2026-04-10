@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SupplyChain.Logistics.Application\SupplyChain.Logistics.Application.csproj" />
+    <ProjectReference Include="..\..\..\SharedInfrastructure\SupplyChain.SharedInfrastructure\SupplyChain.SharedInfrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,3 +25,6 @@
   </PropertyGroup>
 
 </Project>
+
+
+

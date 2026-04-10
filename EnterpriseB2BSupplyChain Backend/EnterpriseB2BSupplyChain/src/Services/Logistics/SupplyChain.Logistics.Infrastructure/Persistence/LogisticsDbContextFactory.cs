@@ -8,7 +8,7 @@ public class LogisticsDbContextFactory : IDesignTimeDbContextFactory<LogisticsDb
     public LogisticsDbContext CreateDbContext(string[] args)
     {
         var optionsBuilder = new DbContextOptionsBuilder<LogisticsDbContext>();
-        optionsBuilder.UseSqlServer("Server=.\\SQLEXPRESS;Database=LogisticsDB;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=True;");
+        optionsBuilder.UseSqlServer("Server=.\\SQLEXPRESS;Database=HUL_LogisticsDb;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=True;");
         
         return new LogisticsDbContext(optionsBuilder.Options);
     }

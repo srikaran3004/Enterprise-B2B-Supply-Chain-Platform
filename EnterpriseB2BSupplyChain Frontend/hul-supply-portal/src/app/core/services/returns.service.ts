@@ -9,8 +9,6 @@ export interface ReturnRequest {
   dealerId: string;
   reason: string;
   status: string;
-  resolution?: string;
-  refundAmount?: number;
   createdAt: string;
   adminNotes?: string;
   orderNumber?: string;
@@ -35,8 +33,8 @@ export class ReturnsService {
     return this.http.get<ReturnRequest[]>(API_ENDPOINTS.returns.allReturns());
   }
 
-  approveReturn(returnId: string, resolution: string, refundAmount: number): Observable<void> {
-    return this.http.put<void>(API_ENDPOINTS.returns.approve(returnId), { resolution, refundAmount });
+  approveReturn(returnId: string, adminNotes: string): Observable<void> {
+    return this.http.put<void>(API_ENDPOINTS.returns.approve(returnId), { adminNotes });
   }
 
   rejectReturn(returnId: string, adminNotes: string): Observable<void> {

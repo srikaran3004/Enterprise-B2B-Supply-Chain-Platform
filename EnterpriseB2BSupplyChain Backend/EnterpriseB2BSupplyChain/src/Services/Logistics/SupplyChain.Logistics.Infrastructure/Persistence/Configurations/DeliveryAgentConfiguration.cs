@@ -16,6 +16,7 @@ public class DeliveryAgentConfiguration : IEntityTypeConfiguration<DeliveryAgent
         builder.Property(a => a.TotalDeliveries).HasDefaultValue(0);
         builder.Property(a => a.AverageRating).HasColumnType("decimal(3,2)").HasDefaultValue(0.0m);
         builder.Property(a => a.Status).HasConversion<string>().HasMaxLength(20);
+        builder.HasIndex(a => a.UserId).IsUnique();
         builder.ToTable("DeliveryAgents");
     }
 }

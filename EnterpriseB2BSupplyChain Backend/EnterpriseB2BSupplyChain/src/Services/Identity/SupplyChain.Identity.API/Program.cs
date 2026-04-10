@@ -1,10 +1,12 @@
-using System.Text;
+﻿using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using Serilog;
-using SupplyChain.BuildingBlocks.Extensions;
+using SupplyChain.SharedInfrastructure.Extensions;
+using SupplyChain.SharedInfrastructure.Observability;
+using SupplyChain.SharedInfrastructure.Security;
 using SupplyChain.Identity.Application;
 using SupplyChain.Identity.Infrastructure;
 using SupplyChain.Identity.Infrastructure.Persistence;
@@ -12,23 +14,32 @@ using SupplyChain.Identity.Infrastructure.Persistence.Seed;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ── Serilog ────────────────────────────────────────────────────────
-builder.Host.UseSerilog((ctx, cfg) =>
-    cfg.ReadFrom.Configuration(ctx.Configuration)
-       .WriteTo.Console());
+// â”€â”€ Serilog â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+builder.Host.UseSharedSerilog("identity-service");
 
-// ── Shared BuildingBlocks (correlation, exception handling, etc.) ─
-builder.Services.AddBuildingBlocks();
+// Shared infrastructure (correlation, exception handling, etc.)
+builder.Services.AddSharedInfrastructure();
 
-// ── Application + Infrastructure (Clean Architecture DI) ───────────
+// â”€â”€ Application + Infrastructure (Clean Architecture DI) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
-// ── Controllers ────────────────────────────────────────────────────
+// â”€â”€ Controllers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 builder.Services.AddControllers();
 
-// ── JWT Authentication ──────────────────────────────────────────────
+// â”€â”€ JWT Authentication â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 var jwtSecret = builder.Configuration["Jwt:Secret"]!;
+var configuredAudiences = builder.Configuration.GetSection("Jwt:Audiences").Get<string[]>();
+var validAudiences = (configuredAudiences ?? Array.Empty<string>())
+    .Concat(new[]
+    {
+        builder.Configuration["Jwt:Audience"] ?? "UniSupplyAPI",
+        "gateway", "identity", "order", "catalog", "payment", "logistics", "notification"
+    })
+    .Where(a => !string.IsNullOrWhiteSpace(a))
+    .Distinct(StringComparer.OrdinalIgnoreCase)
+    .ToArray();
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -39,16 +50,21 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
+            ValidAudiences = validAudiences,
             IssuerSigningKey = new SymmetricSecurityKey(
                                            Encoding.UTF8.GetBytes(jwtSecret)),
-            ClockSkew = TimeSpan.Zero   // No tolerance — token expires exactly on time
+            ClockSkew = TimeSpan.Zero   // No tolerance â€” token expires exactly on time
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(InternalAuthDefaults.InternalPolicy, policy =>
+        policy.RequireAuthenticatedUser()
+              .RequireClaim(InternalAuthDefaults.ClientTypeClaim, InternalAuthDefaults.InternalClientType));
+});
 
-// ── OpenAPI + Scalar (replaces Swagger in .NET 10) ─────────────────
+// â”€â”€ OpenAPI + Scalar (replaces Swagger in .NET 10) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 builder.Services.AddOpenApi(options =>
 {
     options.AddDocumentTransformer((doc, _, _) =>
@@ -60,10 +76,10 @@ builder.Services.AddOpenApi(options =>
     });
 });
 
-// ── Health Checks ───────────────────────────────────────────────────
+// â”€â”€ Health Checks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 builder.Services.AddHealthChecks();
 
-// ── CORS ────────────────────────────────────────────────────────────
+// â”€â”€ CORS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 builder.Services.AddCors(opt =>
     opt.AddPolicy("AllowAngular", p =>
         p.WithOrigins("http://localhost:4200")
@@ -79,7 +95,7 @@ using (var scope = app.Services.CreateScope())
     await IdentitySeeder.SeedAsync(db, builder.Configuration);
 }
 
-// ── Middleware Pipeline ─────────────────────────────────────────────
+// â”€â”€ Middleware Pipeline â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -89,9 +105,9 @@ if (app.Environment.IsDevelopment())
            .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient));
 }
 
+app.UseSharedInfrastructure(); // Correlation ID + global exception handling
 app.UseCors("AllowAngular");
 app.UseStaticFiles(); // Added to serve profile pictures
-app.UseBuildingBlocks(); // Correlation ID + global exception handling
 app.UseSerilogRequestLogging();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -99,3 +115,5 @@ app.MapControllers();
 app.MapHealthChecks("/health");
 
 app.Run();
+
+

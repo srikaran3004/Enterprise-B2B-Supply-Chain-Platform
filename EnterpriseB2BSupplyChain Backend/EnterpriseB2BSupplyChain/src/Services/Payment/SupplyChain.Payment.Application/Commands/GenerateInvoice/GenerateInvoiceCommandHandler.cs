@@ -55,7 +55,11 @@ public class GenerateInvoiceCommandHandler : IRequestHandler<GenerateInvoiceComm
         await _invoiceRepository.AddAsync(invoice, ct);
 
         var account = await _creditRepository.GetByDealerIdAsync(command.DealerId, ct);
-        account?.ReduceOutstanding(command.TotalAmount);
+        if (account is not null &&
+            string.Equals(command.PaymentMode, "Credit", StringComparison.OrdinalIgnoreCase))
+        {
+            account.AddOutstanding(command.TotalAmount);
+        }
 
         await _invoiceRepository.SaveChangesAsync(ct);
 

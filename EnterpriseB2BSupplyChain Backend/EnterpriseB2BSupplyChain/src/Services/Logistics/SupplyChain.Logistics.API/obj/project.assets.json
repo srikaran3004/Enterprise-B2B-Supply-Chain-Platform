@@ -841,6 +841,23 @@
           "buildTransitive/net8.0/_._": {}
         }
       },
+      "Microsoft.Extensions.Http.Polly/10.0.5": {
+        "type": "package",
+        "dependencies": {
+          "Polly": "7.2.4",
+          "Polly.Extensions.Http": "3.0.0"
+        },
+        "compile": {
+          "lib/netstandard2.0/Microsoft.Extensions.Http.Polly.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/netstandard2.0/Microsoft.Extensions.Http.Polly.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "Microsoft.Identity.Client/4.73.1": {
         "type": "package",
         "dependencies": {
@@ -1044,6 +1061,35 @@
         },
         "runtime": {
           "lib/net5.0/Pipelines.Sockets.Unofficial.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Polly/7.2.4": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/Polly.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/netstandard2.0/Polly.dll": {
+            "related": ".pdb;.xml"
+          }
+        }
+      },
+      "Polly.Extensions.Http/3.0.0": {
+        "type": "package",
+        "dependencies": {
+          "Polly": "7.1.0"
+        },
+        "compile": {
+          "lib/netstandard2.0/Polly.Extensions.Http.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/netstandard2.0/Polly.Extensions.Http.dll": {
             "related": ".xml"
           }
         }
@@ -1497,24 +1543,6 @@
           "buildTransitive/net8.0/_._": {}
         }
       },
-      "SupplyChain.BuildingBlocks/1.0.0": {
-        "type": "project",
-        "framework": ".NETCoreApp,Version=v10.0",
-        "dependencies": {
-          "FluentValidation": "11.11.0",
-          "Serilog": "4.3.1",
-          "Serilog.AspNetCore": "10.0.0"
-        },
-        "compile": {
-          "bin/placeholder/SupplyChain.BuildingBlocks.dll": {}
-        },
-        "runtime": {
-          "bin/placeholder/SupplyChain.BuildingBlocks.dll": {}
-        },
-        "frameworkReferences": [
-          "Microsoft.AspNetCore.App"
-        ]
-      },
       "SupplyChain.Logistics.Application/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v10.0",
@@ -1551,7 +1579,8 @@
           "RabbitMQ.Client": "7.2.1",
           "Serilog": "4.3.1",
           "StackExchange.Redis": "2.12.4",
-          "SupplyChain.Logistics.Application": "1.0.0"
+          "SupplyChain.Logistics.Application": "1.0.0",
+          "SupplyChain.SharedInfrastructure": "1.0.0"
         },
         "compile": {
           "bin/placeholder/SupplyChain.Logistics.Infrastructure.dll": {}
@@ -1559,6 +1588,26 @@
         "runtime": {
           "bin/placeholder/SupplyChain.Logistics.Infrastructure.dll": {}
         }
+      },
+      "SupplyChain.SharedInfrastructure/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "FluentValidation": "11.11.0",
+          "Microsoft.Extensions.Http.Polly": "10.0.5",
+          "Serilog": "4.3.1",
+          "Serilog.AspNetCore": "10.0.0",
+          "Serilog.Sinks.File": "7.0.0"
+        },
+        "compile": {
+          "bin/placeholder/SupplyChain.SharedInfrastructure.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/SupplyChain.SharedInfrastructure.dll": {}
+        },
+        "frameworkReferences": [
+          "Microsoft.AspNetCore.App"
+        ]
       }
     }
   },
@@ -3249,6 +3298,22 @@
         "useSharedDesignerContext.txt"
       ]
     },
+    "Microsoft.Extensions.Http.Polly/10.0.5": {
+      "sha512": "4VcH+2eVBQw3MtRpo02nrhv/nU54tL/pkcRF0fSSwD+8MoxgE1EjylPKbSIqHEK7iiB17I0iB37Ao8y+q1sV8g==",
+      "type": "package",
+      "path": "microsoft.extensions.http.polly/10.0.5",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "PACKAGE.md",
+        "THIRD-PARTY-NOTICES.TXT",
+        "lib/netstandard2.0/Microsoft.Extensions.Http.Polly.dll",
+        "lib/netstandard2.0/Microsoft.Extensions.Http.Polly.xml",
+        "microsoft.extensions.http.polly.10.0.5.nupkg.sha512",
+        "microsoft.extensions.http.polly.nuspec"
+      ]
+    },
     "Microsoft.Identity.Client/4.73.1": {
       "sha512": "NnDLS8QwYqO5ZZecL2oioi1LUqjh5Ewk4bMLzbgiXJbQmZhDLtKwLxL3DpGMlQAJ2G4KgEnvGPKa+OOgffeJbw==",
       "type": "package",
@@ -3554,6 +3619,46 @@
         "lib/netstandard2.1/Pipelines.Sockets.Unofficial.xml",
         "pipelines.sockets.unofficial.2.2.8.nupkg.sha512",
         "pipelines.sockets.unofficial.nuspec"
+      ]
+    },
+    "Polly/7.2.4": {
+      "sha512": "bw00Ck5sh6ekduDE3mnCo1ohzuad946uslCDEENu3091+6UKnBuKLo4e+yaNcCzXxOZCXWY2gV4a35+K1d4LDA==",
+      "type": "package",
+      "path": "polly/7.2.4",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "lib/net461/Polly.dll",
+        "lib/net461/Polly.pdb",
+        "lib/net461/Polly.xml",
+        "lib/net472/Polly.dll",
+        "lib/net472/Polly.pdb",
+        "lib/net472/Polly.xml",
+        "lib/netstandard1.1/Polly.dll",
+        "lib/netstandard1.1/Polly.pdb",
+        "lib/netstandard1.1/Polly.xml",
+        "lib/netstandard2.0/Polly.dll",
+        "lib/netstandard2.0/Polly.pdb",
+        "lib/netstandard2.0/Polly.xml",
+        "package-icon.png",
+        "polly.7.2.4.nupkg.sha512",
+        "polly.nuspec"
+      ]
+    },
+    "Polly.Extensions.Http/3.0.0": {
+      "sha512": "drrG+hB3pYFY7w1c3BD+lSGYvH2oIclH8GRSehgfyP5kjnFnHKQuuBhuHLv+PWyFuaTDyk/vfRpnxOzd11+J8g==",
+      "type": "package",
+      "path": "polly.extensions.http/3.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/netstandard1.1/Polly.Extensions.Http.dll",
+        "lib/netstandard1.1/Polly.Extensions.Http.xml",
+        "lib/netstandard2.0/Polly.Extensions.Http.dll",
+        "lib/netstandard2.0/Polly.Extensions.Http.xml",
+        "polly.extensions.http.3.0.0.nupkg.sha512",
+        "polly.extensions.http.nuspec"
       ]
     },
     "RabbitMQ.Client/7.2.1": {
@@ -4219,11 +4324,6 @@
         "useSharedDesignerContext.txt"
       ]
     },
-    "SupplyChain.BuildingBlocks/1.0.0": {
-      "type": "project",
-      "path": "../../../BuildingBlocks/SupplyChain.BuildingBlocks/SupplyChain.BuildingBlocks.csproj",
-      "msbuildProject": "../../../BuildingBlocks/SupplyChain.BuildingBlocks/SupplyChain.BuildingBlocks.csproj"
-    },
     "SupplyChain.Logistics.Application/1.0.0": {
       "type": "project",
       "path": "../SupplyChain.Logistics.Application/SupplyChain.Logistics.Application.csproj",
@@ -4238,6 +4338,11 @@
       "type": "project",
       "path": "../SupplyChain.Logistics.Infrastructure/SupplyChain.Logistics.Infrastructure.csproj",
       "msbuildProject": "../SupplyChain.Logistics.Infrastructure/SupplyChain.Logistics.Infrastructure.csproj"
+    },
+    "SupplyChain.SharedInfrastructure/1.0.0": {
+      "type": "project",
+      "path": "../../../SharedInfrastructure/SupplyChain.SharedInfrastructure/SupplyChain.SharedInfrastructure.csproj",
+      "msbuildProject": "../../../SharedInfrastructure/SupplyChain.SharedInfrastructure/SupplyChain.SharedInfrastructure.csproj"
     }
   },
   "projectFileDependencyGroups": {
@@ -4249,10 +4354,10 @@
       "Newtonsoft.Json >= 13.0.4",
       "Scalar.AspNetCore >= 2.13.13",
       "Serilog.AspNetCore >= 10.0.0",
-      "SupplyChain.BuildingBlocks >= 1.0.0",
       "SupplyChain.Logistics.Application >= 1.0.0",
       "SupplyChain.Logistics.Domain >= 1.0.0",
-      "SupplyChain.Logistics.Infrastructure >= 1.0.0"
+      "SupplyChain.Logistics.Infrastructure >= 1.0.0",
+      "SupplyChain.SharedInfrastructure >= 1.0.0"
     ]
   },
   "packageFolders": {
@@ -4287,9 +4392,6 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "projectReferences": {
-            "D:\\Early Sprint\\EnterpriseB2BSupplyChain Backend\\EnterpriseB2BSupplyChain\\src\\BuildingBlocks\\SupplyChain.BuildingBlocks\\SupplyChain.BuildingBlocks.csproj": {
-              "projectPath": "D:\\Early Sprint\\EnterpriseB2BSupplyChain Backend\\EnterpriseB2BSupplyChain\\src\\BuildingBlocks\\SupplyChain.BuildingBlocks\\SupplyChain.BuildingBlocks.csproj"
-            },
             "D:\\Early Sprint\\EnterpriseB2BSupplyChain Backend\\EnterpriseB2BSupplyChain\\src\\Services\\Logistics\\SupplyChain.Logistics.Application\\SupplyChain.Logistics.Application.csproj": {
               "projectPath": "D:\\Early Sprint\\EnterpriseB2BSupplyChain Backend\\EnterpriseB2BSupplyChain\\src\\Services\\Logistics\\SupplyChain.Logistics.Application\\SupplyChain.Logistics.Application.csproj"
             },
@@ -4298,6 +4400,9 @@
             },
             "D:\\Early Sprint\\EnterpriseB2BSupplyChain Backend\\EnterpriseB2BSupplyChain\\src\\Services\\Logistics\\SupplyChain.Logistics.Infrastructure\\SupplyChain.Logistics.Infrastructure.csproj": {
               "projectPath": "D:\\Early Sprint\\EnterpriseB2BSupplyChain Backend\\EnterpriseB2BSupplyChain\\src\\Services\\Logistics\\SupplyChain.Logistics.Infrastructure\\SupplyChain.Logistics.Infrastructure.csproj"
+            },
+            "D:\\Early Sprint\\EnterpriseB2BSupplyChain Backend\\EnterpriseB2BSupplyChain\\src\\SharedInfrastructure\\SupplyChain.SharedInfrastructure\\SupplyChain.SharedInfrastructure.csproj": {
+              "projectPath": "D:\\Early Sprint\\EnterpriseB2BSupplyChain Backend\\EnterpriseB2BSupplyChain\\src\\SharedInfrastructure\\SupplyChain.SharedInfrastructure\\SupplyChain.SharedInfrastructure.csproj"
             }
           }
         }

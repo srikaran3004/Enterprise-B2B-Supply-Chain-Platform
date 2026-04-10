@@ -9,3 +9,4 @@ D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Se
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Order\SupplyChain.Order.Domain\obj\Release\net10.0\refint\SupplyChain.Order.Domain.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Order\SupplyChain.Order.Domain\obj\Release\net10.0\SupplyChain.Order.Domain.pdb
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Order\SupplyChain.Order.Domain\obj\Release\net10.0\ref\SupplyChain.Order.Domain.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Order\SupplyChain.Order.Domain\obj\Release\net10.0\SupplyChain.Order.Domain.sourcelink.json

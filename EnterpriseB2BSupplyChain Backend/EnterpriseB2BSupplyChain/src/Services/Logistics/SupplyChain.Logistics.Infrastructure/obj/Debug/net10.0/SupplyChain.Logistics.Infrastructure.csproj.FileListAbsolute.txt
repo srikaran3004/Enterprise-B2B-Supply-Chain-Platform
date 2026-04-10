@@ -23,13 +23,16 @@ D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Se
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.Infrastructure\bin\Debug\net10.0\SupplyChain.Logistics.Infrastructure.pdb
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.Infrastructure\bin\Debug\net10.0\SupplyChain.Logistics.Application.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.Infrastructure\bin\Debug\net10.0\SupplyChain.Logistics.Domain.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.Infrastructure\bin\Debug\net10.0\SupplyChain.SharedInfrastructure.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.Infrastructure\bin\Debug\net10.0\SupplyChain.Logistics.Application.pdb
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.Infrastructure\bin\Debug\net10.0\SupplyChain.SharedInfrastructure.pdb
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.Infrastructure\bin\Debug\net10.0\SupplyChain.Logistics.Domain.pdb
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.Infrastructure\obj\Debug\net10.0\SupplyChain.Logistics.Infrastructure.csproj.AssemblyReference.cache
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.Infrastructure\obj\Debug\net10.0\SupplyChain.Logistics.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.Infrastructure\obj\Debug\net10.0\SupplyChain.Logistics.Infrastructure.AssemblyInfoInputs.cache
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.Infrastructure\obj\Debug\net10.0\SupplyChain.Logistics.Infrastructure.AssemblyInfo.cs
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.Infrastructure\obj\Debug\net10.0\SupplyChain.Logistics.Infrastructure.csproj.CoreCompileInputs.cache
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.Infrastructure\obj\Debug\net10.0\SupplyChain.Logistics.Infrastructure.sourcelink.json
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.Infrastructure\obj\Debug\net10.0\SupplyCh.A981A7E1.Up2Date
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.Infrastructure\obj\Debug\net10.0\SupplyChain.Logistics.Infrastructure.dll
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.Infrastructure\obj\Debug\net10.0\refint\SupplyChain.Logistics.Infrastructure.dll

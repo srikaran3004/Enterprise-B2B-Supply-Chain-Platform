@@ -19,7 +19,13 @@ export class RazorpayService {
     );
   }
 
-  confirmPayment(payload: { razorpayOrderId: string; razorpayPaymentId: string; razorpaySignature: string }): Observable<{ message: string }> {
+  confirmPayment(payload: {
+    razorpayOrderId: string;
+    razorpayPaymentId: string;
+    razorpaySignature: string;
+    orderId?: string;
+    amount?: number;
+  }): Observable<{ message: string }> {
     return this.http.post<{ message: string }>(API_ENDPOINTS.payment.razorpayConfirm(), payload);
   }
 
@@ -27,13 +33,13 @@ export class RazorpayService {
    * TEST MODE: Backend generates a synthetic payment ID + valid HMAC signature,
    * then self-confirms. Returns the confirmed payment details.
    */
-  simulateCapture(razorpayOrderId: string): Observable<{
+  simulateCapture(razorpayOrderId: string, orderId?: string, amount?: number): Observable<{
     razorpayOrderId: string;
     razorpayPaymentId: string;
     razorpaySignature: string;
     message: string;
   }> {
-    return this.http.post<any>(API_ENDPOINTS.payment.razorpaySimulateCapture(), { razorpayOrderId });
+    return this.http.post<any>(API_ENDPOINTS.payment.razorpaySimulateCapture(), { razorpayOrderId, orderId, amount });
   }
 
   // Uses Razorpay SDK window (kept for reference, not used in test mode)

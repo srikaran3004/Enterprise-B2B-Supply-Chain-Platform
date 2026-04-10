@@ -17,3 +17,6 @@ D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Se
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.Infrastructure\obj\Release\net10.0\SupplyChain.Logistics.Infrastructure.pdb
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.Infrastructure\obj\Release\net10.0\SupplyChain.Logistics.Infrastructure.genruntimeconfig.cache
 D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.Infrastructure\obj\Release\net10.0\ref\SupplyChain.Logistics.Infrastructure.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.Infrastructure\obj\Release\net10.0\SupplyChain.Logistics.Infrastructure.sourcelink.json
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.Infrastructure\bin\Release\net10.0\SupplyChain.SharedInfrastructure.dll
+D:\Early Sprint\EnterpriseB2BSupplyChain Backend\EnterpriseB2BSupplyChain\src\Services\Logistics\SupplyChain.Logistics.Infrastructure\bin\Release\net10.0\SupplyChain.SharedInfrastructure.pdb
