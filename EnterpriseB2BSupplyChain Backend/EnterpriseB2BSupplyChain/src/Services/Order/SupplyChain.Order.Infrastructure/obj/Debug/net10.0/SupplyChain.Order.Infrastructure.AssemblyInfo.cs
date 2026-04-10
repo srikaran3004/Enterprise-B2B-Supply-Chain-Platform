@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SupplyChain.Order.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+515da118ab75ce356da2123f917f7f2ed273c2ad")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0e94582bdba30bab5306bdc14b7f2e16d60ef950")]
 [assembly: System.Reflection.AssemblyProductAttribute("SupplyChain.Order.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SupplyChain.Order.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -164,5 +164,15 @@ public class OrderRepository : IOrderRepository
         return await _context.ReturnRequests.Include(r => r.Order).FirstOrDefaultAsync(r => r.ReturnId == returnId, ct);
     }  
     public async Task SaveChangesAsync(CancellationToken ct = default)
-        => await _context.SaveChangesAsync(ct);
+    {
+        try
+        {
+            await _context.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            _context.ChangeTracker.Clear();
+            throw;
+        }
+    }
 }

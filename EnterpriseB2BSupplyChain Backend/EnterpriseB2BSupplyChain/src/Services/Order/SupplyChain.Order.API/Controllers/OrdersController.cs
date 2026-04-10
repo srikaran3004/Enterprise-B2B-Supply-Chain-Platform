@@ -24,12 +24,10 @@ namespace SupplyChain.Order.API.Controllers;
 public class OrdersController : ControllerBase
 {
     private readonly IMediator _mediator;
-    private readonly IWebHostEnvironment _environment;
 
-    public OrdersController(IMediator mediator, IWebHostEnvironment environment)
+    public OrdersController(IMediator mediator)
     {
         _mediator = mediator;
-        _environment = environment;
     }
 
     /// <summary>Place a new bulk order. Dealer only.</summary>
@@ -220,15 +218,14 @@ public class OrdersController : ControllerBase
         if (!allowedExtensions.Contains(extension))
             return BadRequest(new { Message = "Invalid image extension. Use JPG, PNG, or WEBP." });
 
-        var fileName = $"return-{Guid.NewGuid():N}{extension}";
-        var root = Path.Combine(_environment.ContentRootPath, "uploads", "returns");
-        Directory.CreateDirectory(root);
-
-        var fullPath = Path.Combine(root, fileName);
-        await using var stream = System.IO.File.Create(fullPath);
+        await using var stream = new MemoryStream();
         await file.CopyToAsync(stream, ct);
+        var bytes = stream.ToArray();
+        var base64 = Convert.ToBase64String(bytes);
+        var dataUri = $"data:{file.ContentType};base64,{base64}";
 
-        return Ok(new { Url = $"/api/orders/return-images/{fileName}" });
+        // The caller stores this data URI in ReturnRequests.PhotoUrl (database-backed only).
+        return Ok(new { Url = dataUri });
     }
 
     /// <summary>Get uploaded return proof image.</summary>
@@ -236,30 +233,7 @@ public class OrdersController : ControllerBase
     [AllowAnonymous]
     public IActionResult GetReturnImage(string fileName)
     {
-        if (string.IsNullOrWhiteSpace(fileName))
-            return BadRequest(new { Message = "File name is required." });
-
-        var safeFileName = Path.GetFileName(fileName);
-        if (!string.Equals(fileName, safeFileName, StringComparison.Ordinal))
-            return BadRequest(new { Message = "Invalid file name." });
-
-        var extension = Path.GetExtension(safeFileName).ToLowerInvariant();
-        var contentType = extension switch
-        {
-            ".png" => "image/png",
-            ".webp" => "image/webp",
-            ".jpg" or ".jpeg" => "image/jpeg",
-            _ => string.Empty
-        };
-
-        if (string.IsNullOrWhiteSpace(contentType))
-            return BadRequest(new { Message = "Unsupported image type." });
-
-        var fullPath = Path.Combine(_environment.ContentRootPath, "uploads", "returns", safeFileName);
-        if (!System.IO.File.Exists(fullPath))
-            return NotFound(new { Message = "Image not found." });
-
-        return PhysicalFile(fullPath, contentType);
+        return NotFound(new { Message = "Return proof images are database-backed and no longer served as local files." });
     }
 
     // ── Helpers ──────────────────────────────────────────────────

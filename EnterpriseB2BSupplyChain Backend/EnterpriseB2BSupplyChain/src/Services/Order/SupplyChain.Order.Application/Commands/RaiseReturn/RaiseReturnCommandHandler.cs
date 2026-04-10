@@ -18,23 +18,43 @@ public class RaiseReturnCommandHandler : IRequestHandler<RaiseReturnCommand>
 
     public async Task Handle(RaiseReturnCommand command, CancellationToken ct)
     {
-        var order = await _orderRepository.GetByIdAsync(command.OrderId, ct)
-            ?? throw new KeyNotFoundException($"Order {command.OrderId} not found.");
-
-        if (order.DealerId != command.DealerId)
-            throw new UnauthorizedAccessException("You can only raise returns for your own orders.");
-
-        order.RaiseReturnRequest(command.DealerId, command.Reason, command.PhotoUrl);
-
-        var outbox = OutboxMessage.Create("ReturnRequested", JsonSerializer.Serialize(new
+        const int maxAttempts = 2;
+        for (var attempt = 1; attempt <= maxAttempts; attempt++)
         {
-            order.OrderId,
-            order.OrderNumber,
-            order.DealerId,
-            Reason = command.Reason
-        }));
+            var order = await _orderRepository.GetByIdAsync(command.OrderId, ct)
+                ?? throw new KeyNotFoundException($"Order {command.OrderId} not found.");
 
-        await _outboxRepository.AddAsync(outbox, ct);
-        await _orderRepository.SaveChangesAsync(ct);
+            if (order.DealerId != command.DealerId)
+                throw new UnauthorizedAccessException("You can only raise returns for your own orders.");
+
+            order.RaiseReturnRequest(command.DealerId, command.Reason, command.PhotoUrl);
+
+            var outbox = OutboxMessage.Create("ReturnRequested", JsonSerializer.Serialize(new
+            {
+                order.OrderId,
+                order.OrderNumber,
+                order.DealerId,
+                Reason = command.Reason
+            }));
+
+            await _outboxRepository.AddAsync(outbox, ct);
+
+            try
+            {
+                await _orderRepository.SaveChangesAsync(ct);
+                return;
+            }
+            catch (Exception ex) when (IsDbConcurrencyException(ex) && attempt < maxAttempts)
+            {
+                // The order was updated concurrently. Reload and retry once.
+            }
+            catch (Exception ex) when (IsDbConcurrencyException(ex))
+            {
+                throw new InvalidOperationException("Order was updated by another operation. Please refresh and try return request again.");
+            }
+        }
     }
+
+    private static bool IsDbConcurrencyException(Exception exception)
+        => exception.GetType().FullName == "Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException";
 }

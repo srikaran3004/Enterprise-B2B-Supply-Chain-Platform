@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, catchError, map, of, tap } from 'rxjs';
+import { Observable, catchError, finalize, map, of, shareReplay, tap } from 'rxjs';
 import { Router } from '@angular/router';
 import { DecodedToken, LoginResponse, RegisterDealerDto, UserRole } from '../models/user.model';
 import { API_ENDPOINTS } from '../../shared/constants/api-endpoints';
@@ -9,6 +9,7 @@ import { API_ENDPOINTS } from '../../shared/constants/api-endpoints';
 export class AuthService {
   // Access token is intentionally in-memory only for stronger XSS posture.
   private accessToken: string | null = null;
+  private refreshInFlight$: Observable<LoginResponse> | null = null;
 
   constructor(private http: HttpClient, private router: Router) { }
 
@@ -55,7 +56,11 @@ export class AuthService {
   }
 
   refreshToken(): Observable<LoginResponse> {
-    return this.http
+    if (this.refreshInFlight$) {
+      return this.refreshInFlight$;
+    }
+
+    this.refreshInFlight$ = this.http
       .post<LoginResponse>(API_ENDPOINTS.auth.refresh(), {}, { withCredentials: true })
       .pipe(
         map(response => this.normalizeAuthResponse(response)),
@@ -63,8 +68,14 @@ export class AuthService {
           if (response.accessToken) {
             this.storeToken(response);
           }
-        })
+        }),
+        finalize(() => {
+          this.refreshInFlight$ = null;
+        }),
+        shareReplay(1)
       );
+
+    return this.refreshInFlight$;
   }
 
   logout(): void {
