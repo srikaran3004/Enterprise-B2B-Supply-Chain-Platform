@@ -34,6 +34,7 @@ public static class DependencyInjection
             StackExchange.Redis.ConnectionMultiplexer.Connect(redisConn));
         services.AddSingleton<ICacheService, RedisCacheService>();
         services.AddHostedService<OtpCleanupBackgroundService>();
+        services.AddHostedService<RefreshTokenCleanupBackgroundService>();
 
         return services;
     }

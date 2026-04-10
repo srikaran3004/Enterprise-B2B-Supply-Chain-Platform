@@ -85,7 +85,21 @@ export class LoginOtpComponent implements OnInit, OnDestroy {
     this.authService.verifyLoginOtp(this.email, this.otpValue).subscribe({
       next: () => {
         this.loading = false;
+
+        if (!this.authService.isAuthenticated()) {
+          this.hasError = true;
+          this.errorMessage = 'Login response did not contain a valid token. Please try again.';
+          this.otpInput?.shake();
+          return;
+        }
+
         const route = this.authService.getRoleDashboardRoute();
+        if (route === '/auth/login') {
+          this.hasError = true;
+          this.errorMessage = 'Unable to determine your account role. Please sign in again.';
+          return;
+        }
+
         this.router.navigate([route]);
         this.toast.success('Welcome back!');
       },

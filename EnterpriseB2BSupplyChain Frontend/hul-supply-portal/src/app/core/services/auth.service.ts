@@ -1,37 +1,41 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, catchError, map, of, tap } from 'rxjs';
 import { Router } from '@angular/router';
-import { DecodedToken, LoginRequest, LoginResponse, RegisterDealerDto, UserRole } from '../models/user.model';
+import { DecodedToken, LoginResponse, RegisterDealerDto, UserRole } from '../models/user.model';
 import { API_ENDPOINTS } from '../../shared/constants/api-endpoints';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly TOKEN_KEY = 'hul_access_token';
-  private readonly REFRESH_TOKEN_KEY = 'hul_refresh_token';
-  private readonly ROLE_KEY = 'hul_user_role';
-  private readonly NAME_KEY = 'hul_user_name';
+  // Access token is intentionally in-memory only for stronger XSS posture.
+  private accessToken: string | null = null;
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private http: HttpClient, private router: Router) { }
 
   login(email: string, password: string): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(API_ENDPOINTS.auth.login(), { email, password }).pipe(
-      tap(response => {
-        if (response.accessToken) {
-          this.storeToken(response);
-        }
-      })
-    );
+    return this.http
+      .post<LoginResponse>(API_ENDPOINTS.auth.login(), { email, password }, { withCredentials: true })
+      .pipe(
+        map(response => this.normalizeAuthResponse(response)),
+        tap(response => {
+          if (response.accessToken) {
+            this.storeToken(response);
+          }
+        })
+      );
   }
 
   verifyLoginOtp(email: string, otp: string): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(API_ENDPOINTS.auth.loginVerifyOtp(), { email, otp }).pipe(
-      tap(response => {
-        if (response.accessToken) {
-          this.storeToken(response);
-        }
-      })
-    );
+    return this.http
+      .post<LoginResponse>(API_ENDPOINTS.auth.loginVerifyOtp(), { email, otp }, { withCredentials: true })
+      .pipe(
+        map(response => this.normalizeAuthResponse(response)),
+        tap(response => {
+          if (response.accessToken) {
+            this.storeToken(response);
+          }
+        })
+      );
   }
 
   register(dto: RegisterDealerDto): Observable<{ userId: string; message: string }> {
@@ -51,30 +55,30 @@ export class AuthService {
   }
 
   refreshToken(): Observable<LoginResponse> {
-    const refreshToken = this.getRefreshToken();
-    return this.http.post<LoginResponse>(API_ENDPOINTS.auth.refresh(), { refreshToken }).pipe(
-      tap(response => {
-        if (response.accessToken) {
-          this.storeToken(response);
-        }
-      })
-    );
+    return this.http
+      .post<LoginResponse>(API_ENDPOINTS.auth.refresh(), {}, { withCredentials: true })
+      .pipe(
+        map(response => this.normalizeAuthResponse(response)),
+        tap(response => {
+          if (response.accessToken) {
+            this.storeToken(response);
+          }
+        })
+      );
   }
 
   logout(): void {
-    localStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem(this.REFRESH_TOKEN_KEY);
-    localStorage.removeItem(this.ROLE_KEY);
-    localStorage.removeItem(this.NAME_KEY);
+    this.http.post(API_ENDPOINTS.auth.logout(), {}, { withCredentials: true }).subscribe({
+      next: () => { },
+      error: () => { }
+    });
+
+    this.accessToken = null;
     this.router.navigate(['/auth/login']);
   }
 
   getAccessToken(): string | null {
-    return localStorage.getItem(this.TOKEN_KEY);
-  }
-
-  getRefreshToken(): string | null {
-    return localStorage.getItem(this.REFRESH_TOKEN_KEY);
+    return this.accessToken;
   }
 
   getDecodedToken(): DecodedToken | null {
@@ -85,24 +89,11 @@ export class AuthService {
   }
 
   getUserRole(): UserRole | null {
-    const decodedRole = this.getDecodedToken()?.role;
-    if (decodedRole) {
-      localStorage.setItem(this.ROLE_KEY, decodedRole);
-      return decodedRole as UserRole;
-    }
-
-    const role = localStorage.getItem(this.ROLE_KEY);
-    return role ? (role as UserRole) : null;
+    return (this.getDecodedToken()?.role as UserRole) ?? null;
   }
 
   getUserName(): string | null {
-    const decodedName = this.getDecodedToken()?.fullName;
-    if (decodedName) {
-      localStorage.setItem(this.NAME_KEY, decodedName);
-      return decodedName;
-    }
-
-    return localStorage.getItem(this.NAME_KEY);
+    return this.getDecodedToken()?.fullName ?? null;
   }
 
   isAuthenticated(): boolean {
@@ -135,14 +126,31 @@ export class AuthService {
   }
 
   private storeToken(response: LoginResponse): void {
-    localStorage.setItem(this.TOKEN_KEY, response.accessToken);
-    if (response.refreshToken) {
-      localStorage.setItem(this.REFRESH_TOKEN_KEY, response.refreshToken);
+    this.accessToken = response.accessToken;
+  }
+
+  ensureAuthenticated(): Observable<boolean> {
+    if (this.isAuthenticated()) {
+      return of(true);
     }
 
-    const decoded = this.decodeToken(response.accessToken);
-    localStorage.setItem(this.ROLE_KEY, decoded?.role || response.role);
-    localStorage.setItem(this.NAME_KEY, decoded?.fullName || response.fullName);
+    return this.refreshToken().pipe(
+      map(response => !!response.accessToken && this.isAuthenticated()),
+      catchError(() => of(false))
+    );
+  }
+
+  private normalizeAuthResponse(response: unknown): LoginResponse {
+    const payload = ((response as any)?.data ?? response) as any;
+
+    return {
+      accessToken: payload?.accessToken ?? payload?.AccessToken ?? '',
+      expiresInSeconds: payload?.expiresInSeconds ?? payload?.ExpiresInSeconds ?? 0,
+      refreshToken: payload?.refreshToken ?? payload?.RefreshToken ?? null,
+      role: payload?.role ?? payload?.Role ?? '',
+      fullName: payload?.fullName ?? payload?.FullName ?? '',
+      userId: payload?.userId ?? payload?.UserId ?? '',
+    };
   }
 
   private decodeToken(token: string): DecodedToken | null {

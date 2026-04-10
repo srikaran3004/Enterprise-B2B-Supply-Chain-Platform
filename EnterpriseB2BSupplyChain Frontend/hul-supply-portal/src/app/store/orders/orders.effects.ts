@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { of } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
 import { map, switchMap, catchError, tap } from 'rxjs/operators';
 import * as OrdersActions from './orders.actions';
 import * as CartActions from '../cart/cart.actions';
@@ -28,10 +28,34 @@ export class OrdersEffects {
         params.append('pageSize', pageSize.toString());
         
         return this.http.get<any>(`${url}?${params.toString()}`).pipe(
-          map(res => {
+          switchMap(res => {
             // Handle both paginated response (Items) and direct array
             const orders = res.items || res.Items || [];
-            return OrdersActions.loadMyOrdersSuccess({ orders });
+            if (!Array.isArray(orders) || orders.length === 0) {
+              return of(OrdersActions.loadMyOrdersSuccess({ orders: [] }));
+            }
+
+            const trackingRequests = orders.map((order: any) =>
+              this.http.get<any>(API_ENDPOINTS.logistics.tracking(order.orderId)).pipe(
+                map(tracking => ({ order, tracking })),
+                catchError(() => of({ order, tracking: null }))
+              )
+            );
+
+            return forkJoin(trackingRequests).pipe(
+              map(items => {
+                const mergedOrders = items.map(({ order, tracking }) => {
+                  const effectiveStatus = this.getEffectiveStatus(order?.status, tracking?.currentStatus || tracking?.status);
+                  return {
+                    ...order,
+                    status: effectiveStatus,
+                    trackingStatus: tracking?.currentStatus || tracking?.status || null,
+                  };
+                });
+
+                return OrdersActions.loadMyOrdersSuccess({ orders: mergedOrders });
+              })
+            );
           }),
           catchError(error => {
             console.error('Failed to load orders:', error);
@@ -98,4 +122,45 @@ export class OrdersEffects {
       )
     )
   );
+
+  private getEffectiveStatus(orderStatus: string, trackingStatusRaw?: string): string {
+    const trackingStatus = this.mapTrackingToOrderStatus(trackingStatusRaw);
+    if (!trackingStatus) {
+      return orderStatus;
+    }
+
+    const rank: Record<string, number> = {
+      Placed: 1,
+      OnHold: 2,
+      Processing: 3,
+      ReadyForDispatch: 4,
+      InTransit: 5,
+      OutForDelivery: 6,
+      Delivered: 7,
+      Cancelled: 8,
+    };
+
+    const orderRank = rank[orderStatus] ?? 0;
+    const trackingRank = rank[trackingStatus] ?? 0;
+    return trackingRank > orderRank ? trackingStatus : orderStatus;
+  }
+
+  private mapTrackingToOrderStatus(status?: string): string | null {
+    if (!status) return null;
+
+    switch (status) {
+      case 'Delivered':
+        return 'Delivered';
+      case 'OutForDelivery':
+        return 'OutForDelivery';
+      case 'InTransit':
+      case 'PickedUp':
+      case 'VehicleBreakdown':
+        return 'InTransit';
+      case 'AgentAssigned':
+        return 'ReadyForDispatch';
+      default:
+        return null;
+    }
+  }
 }

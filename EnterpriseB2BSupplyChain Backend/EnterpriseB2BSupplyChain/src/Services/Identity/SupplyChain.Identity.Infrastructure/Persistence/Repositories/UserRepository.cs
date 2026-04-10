@@ -82,6 +82,22 @@ public class UserRepository : IUserRepository
             .OrderByDescending(t => t.CreatedAt)
             .FirstOrDefaultAsync(t => t.TokenHash == tokenHash, ct);
 
+    public async Task<int> RevokeAllActiveRefreshTokensAsync(Guid userId, CancellationToken ct = default)
+    {
+        var now = DateTime.UtcNow;
+        return await _context.RefreshTokens
+            .Where(t => t.UserId == userId && !t.IsRevoked)
+            .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(t => t.IsRevoked, true)
+                    .SetProperty(t => t.RevokedAt, now),
+                ct);
+    }
+
+    public async Task<int> CleanupStaleRefreshTokensAsync(DateTime utcNow, DateTime revokedBeforeUtc, CancellationToken ct = default)
+        => await _context.RefreshTokens
+            .Where(t => t.ExpiresAt <= utcNow || (t.IsRevoked && t.RevokedAt != null && t.RevokedAt <= revokedBeforeUtc))
+            .ExecuteDeleteAsync(ct);
+
     public async Task SaveChangesAsync(CancellationToken ct = default)
         => await _context.SaveChangesAsync(ct);
 

@@ -74,15 +74,6 @@ export class ErrorInterceptor implements HttpInterceptor {
     originalError: HttpErrorResponse,
     skipErrorToast: boolean
   ): Observable<HttpEvent<any>> {
-    const refreshToken = this.authService.getRefreshToken();
-    if (!refreshToken) {
-      this.authService.logout();
-      if (!skipErrorToast) {
-        this.toast.error('Your session has expired. Please sign in again.');
-      }
-      return throwError(() => originalError);
-    }
-
     if (this.isRefreshing) {
       return this.refreshAccessToken$.pipe(
         filter((token): token is string => !!token),

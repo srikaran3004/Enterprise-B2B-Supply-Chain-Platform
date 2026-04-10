@@ -18,6 +18,8 @@ public interface IUserRepository
     Task<OtpRecord?> GetLatestActiveOtpAsync(string email, OtpPurpose purpose, CancellationToken ct = default);
     Task AddRefreshTokenAsync(RefreshToken refreshToken, CancellationToken ct = default);
     Task<RefreshToken?> GetRefreshTokenByHashAsync(string tokenHash, CancellationToken ct = default);
+    Task<int> RevokeAllActiveRefreshTokensAsync(Guid userId, CancellationToken ct = default);
+    Task<int> CleanupStaleRefreshTokensAsync(DateTime utcNow, DateTime revokedBeforeUtc, CancellationToken ct = default);
     Task SaveChangesAsync(CancellationToken ct = default);
     void Delete(User user);
 }

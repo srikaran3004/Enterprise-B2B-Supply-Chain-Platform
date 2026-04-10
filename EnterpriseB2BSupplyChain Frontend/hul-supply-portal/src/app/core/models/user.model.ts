@@ -41,7 +41,7 @@ export interface LoginRequest {
 export interface LoginResponse {
   accessToken: string;
   expiresInSeconds: number;
-  refreshToken: string;
+  refreshToken?: string | null;
   role: string;
   fullName: string;
   userId: string;
@@ -65,7 +65,7 @@ export interface RegisterDealerDto {
 export interface AuthResult {
   accessToken: string;
   expiresInSeconds: number;
-  refreshToken: string;
+  refreshToken?: string | null;
   role: string;
   fullName: string;
   userId: string;

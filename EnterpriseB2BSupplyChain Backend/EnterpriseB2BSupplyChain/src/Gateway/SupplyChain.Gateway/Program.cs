@@ -50,7 +50,8 @@ builder.Services.AddCors(opt =>
     opt.AddPolicy("AllowAngular", p =>
         p.WithOrigins("http://localhost:4200")
          .AllowAnyHeader()
-         .AllowAnyMethod()));
+         .AllowAnyMethod()
+         .AllowCredentials()));
 
 builder.Services.AddOcelot(builder.Configuration)
     .AddPolly();

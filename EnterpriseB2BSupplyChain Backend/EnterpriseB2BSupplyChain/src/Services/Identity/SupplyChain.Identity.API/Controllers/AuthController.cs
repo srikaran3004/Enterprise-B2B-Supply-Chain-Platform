@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SupplyChain.Identity.Application.Commands.Login;
@@ -11,6 +11,9 @@ namespace SupplyChain.Identity.API.Controllers;
 [Route("api/auth")]
 public class AuthController : ControllerBase
 {
+    private const string RefreshTokenCookieName = "hul_refresh_token";
+    private const int RefreshTokenExpiryDays = 7;
+
     private readonly IMediator _mediator;
 
     public AuthController(IMediator mediator)
@@ -29,7 +32,9 @@ public class AuthController : ControllerBase
         return Ok(new { Message = message });
     }
 
-public record ResetPasswordRequest(string CurrentPassword, string NewPassword);
+    public record ResetPasswordRequest(string CurrentPassword, string NewPassword);
+    public record RefreshTokenRequest(string? RefreshToken);
+    public record LogoutRequest(string? RefreshToken);
 
     /// <summary>Dealer registration step-2: verify OTP and complete registration.</summary>
     [HttpPost("register/verify-otp")]
@@ -57,7 +62,8 @@ public record ResetPasswordRequest(string CurrentPassword, string NewPassword);
         CancellationToken ct)
     {
         var result = await _mediator.Send(command, ct);
-        return Ok(result);
+        SetRefreshCookie(result.RefreshToken);
+        return Ok(result with { RefreshToken = null });
     }
 
     [HttpPost("login/verify-otp")]
@@ -68,18 +74,60 @@ public record ResetPasswordRequest(string CurrentPassword, string NewPassword);
         CancellationToken ct)
     {
         var result = await _mediator.Send(command, ct);
-        return Ok(result);
+        SetRefreshCookie(result.RefreshToken);
+        return Ok(result with { RefreshToken = null });
     }
 
     [HttpPost("refresh")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Refresh(
-        [FromBody] RefreshAccessTokenCommand command,
+        [FromBody] RefreshTokenRequest? request,
         CancellationToken ct)
     {
-        var result = await _mediator.Send(command, ct);
-        return Ok(result);
+        var refreshToken = request?.RefreshToken;
+        if (string.IsNullOrWhiteSpace(refreshToken))
+        {
+            refreshToken = Request.Cookies[RefreshTokenCookieName];
+        }
+
+        if (string.IsNullOrWhiteSpace(refreshToken))
+        {
+            throw new UnauthorizedAccessException("Refresh token is required.");
+        }
+
+        var result = await _mediator.Send(new RefreshAccessTokenCommand(refreshToken), ct);
+        SetRefreshCookie(result.RefreshToken);
+        return Ok(result with { RefreshToken = null });
+    }
+
+    [HttpPost("logout")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> Logout(
+        [FromBody] LogoutRequest? request,
+        CancellationToken ct)
+    {
+        var refreshToken = request?.RefreshToken;
+        if (string.IsNullOrWhiteSpace(refreshToken))
+        {
+            refreshToken = Request.Cookies[RefreshTokenCookieName];
+        }
+
+        await _mediator.Send(new LogoutCommand(refreshToken), ct);
+        ClearRefreshCookie();
+        return Ok(new { Message = "Logged out successfully." });
+    }
+
+    [Authorize]
+    [HttpPost("logout-all")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> LogoutAll(CancellationToken ct)
+    {
+        var userId = GetCurrentUserId();
+        await _mediator.Send(new RevokeAllSessionsCommand(userId), ct);
+        ClearRefreshCookie();
+        return Ok(new { Message = "All sessions revoked successfully." });
     }
 
     [HttpPost("forgot-password")]
@@ -122,5 +170,38 @@ public record ResetPasswordRequest(string CurrentPassword, string NewPassword);
                ?? User.FindFirst("sub")?.Value;
 
         return Guid.TryParse(sub, out var id) ? id : Guid.Empty;
+    }
+
+    private void SetRefreshCookie(string? refreshToken)
+    {
+        if (string.IsNullOrWhiteSpace(refreshToken))
+        {
+            return;
+        }
+
+        Response.Cookies.Append(
+            RefreshTokenCookieName,
+            refreshToken,
+            new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = Request.IsHttps,
+                SameSite = SameSiteMode.Lax,
+                Expires = DateTimeOffset.UtcNow.AddDays(RefreshTokenExpiryDays),
+                Path = "/api/auth"
+            });
+    }
+
+    private void ClearRefreshCookie()
+    {
+        Response.Cookies.Delete(
+            RefreshTokenCookieName,
+            new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = Request.IsHttps,
+                SameSite = SameSiteMode.Lax,
+                Path = "/api/auth"
+            });
     }
 }

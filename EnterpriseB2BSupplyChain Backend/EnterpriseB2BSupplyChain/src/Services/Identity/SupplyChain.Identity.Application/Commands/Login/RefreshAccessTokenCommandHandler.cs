@@ -23,7 +23,13 @@ public class RefreshAccessTokenCommandHandler : IRequestHandler<RefreshAccessTok
         var existingToken = await _userRepository.GetRefreshTokenByHashAsync(tokenHash, ct)
             ?? throw new UnauthorizedAccessException("Invalid refresh token.");
 
-        if (!existingToken.IsValid())
+        if (existingToken.IsRevoked)
+        {
+            await _userRepository.RevokeAllActiveRefreshTokensAsync(existingToken.UserId, ct);
+            throw new UnauthorizedAccessException("Refresh token reuse detected. Please sign in again.");
+        }
+
+        if (existingToken.ExpiresAt <= DateTime.UtcNow)
             throw new UnauthorizedAccessException("Refresh token is expired or revoked.");
 
         var user = await _userRepository.GetByIdAsync(existingToken.UserId, ct)

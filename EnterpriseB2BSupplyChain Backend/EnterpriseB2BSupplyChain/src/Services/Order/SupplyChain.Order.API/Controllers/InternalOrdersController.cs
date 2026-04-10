@@ -80,34 +80,82 @@ public class InternalOrdersController : ControllerBase
     [HttpPut("{orderId:guid}/mark-in-transit")]
     public async Task<IActionResult> MarkInTransit(Guid orderId, CancellationToken ct)
     {
-        var order = await _orderRepository.GetByIdAsync(orderId, ct);
-        if (order is null) return NotFound();
-
-        if (order.Status == OrderStatus.InTransit || order.Status == OrderStatus.Delivered)
-            return Ok(new { message = "Order already in transit or delivered." });
-
-        if (order.Status != OrderStatus.ReadyForDispatch)
-            return Conflict(new { message = $"Order cannot be marked InTransit from {order.Status}." });
-
         var systemActorId = Guid.Parse("00000000-0000-0000-0000-000000000001");
-        await _mediator.Send(new MarkInTransitCommand(orderId, systemActorId), ct);
+
+        // Heal out-of-sync state transitions so logistics and order timelines stay consistent.
+        while (true)
+        {
+            var order = await _orderRepository.GetByIdAsync(orderId, ct);
+            if (order is null) return NotFound();
+
+            if (order.Status == OrderStatus.InTransit || order.Status == OrderStatus.Delivered)
+                return Ok(new { message = "Order already in transit or delivered." });
+
+            if (order.Status == OrderStatus.Placed || order.Status == OrderStatus.OnHold)
+            {
+                await _mediator.Send(new ApproveOrderCommand(orderId, systemActorId), ct);
+                continue;
+            }
+
+            if (order.Status == OrderStatus.Processing)
+            {
+                await _mediator.Send(new MarkReadyForDispatchCommand(orderId, systemActorId), ct);
+                continue;
+            }
+
+            if (order.Status == OrderStatus.ReadyForDispatch)
+            {
+                await _mediator.Send(new MarkInTransitCommand(orderId, systemActorId), ct);
+                break;
+            }
+
+            return Conflict(new { message = $"Order cannot be marked InTransit from {order.Status}." });
+        }
+
         return Ok(new { message = "Order marked as InTransit." });
     }
 
     [HttpPut("{orderId:guid}/mark-delivered")]
     public async Task<IActionResult> MarkDelivered(Guid orderId, CancellationToken ct)
     {
-        var order = await _orderRepository.GetByIdAsync(orderId, ct);
-        if (order is null) return NotFound();
-
-        if (order.Status == OrderStatus.Delivered)
-            return Ok(new { message = "Order already delivered." });
-
-        if (order.Status != OrderStatus.InTransit)
-            return Conflict(new { message = $"Order cannot be marked Delivered from {order.Status}." });
-
         var systemActorId = Guid.Parse("00000000-0000-0000-0000-000000000001");
-        await _mediator.Send(new MarkDeliveredCommand(orderId, systemActorId), ct);
+
+        // Ensure delivery completion is eventually reflected in Order service state.
+        while (true)
+        {
+            var order = await _orderRepository.GetByIdAsync(orderId, ct);
+            if (order is null) return NotFound();
+
+            if (order.Status == OrderStatus.Delivered)
+                return Ok(new { message = "Order already delivered." });
+
+            if (order.Status == OrderStatus.Placed || order.Status == OrderStatus.OnHold)
+            {
+                await _mediator.Send(new ApproveOrderCommand(orderId, systemActorId), ct);
+                continue;
+            }
+
+            if (order.Status == OrderStatus.Processing)
+            {
+                await _mediator.Send(new MarkReadyForDispatchCommand(orderId, systemActorId), ct);
+                continue;
+            }
+
+            if (order.Status == OrderStatus.ReadyForDispatch)
+            {
+                await _mediator.Send(new MarkInTransitCommand(orderId, systemActorId), ct);
+                continue;
+            }
+
+            if (order.Status == OrderStatus.InTransit)
+            {
+                await _mediator.Send(new MarkDeliveredCommand(orderId, systemActorId), ct);
+                break;
+            }
+
+            return Conflict(new { message = $"Order cannot be marked Delivered from {order.Status}." });
+        }
+
         return Ok(new { message = "Order marked as Delivered." });
     }
 }
