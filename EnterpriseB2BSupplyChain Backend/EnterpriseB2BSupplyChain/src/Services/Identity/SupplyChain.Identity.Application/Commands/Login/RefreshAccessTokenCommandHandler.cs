@@ -25,8 +25,15 @@ public class RefreshAccessTokenCommandHandler : IRequestHandler<RefreshAccessTok
 
         if (existingToken.IsRevoked)
         {
-            await _userRepository.RevokeAllActiveRefreshTokensAsync(existingToken.UserId, ct);
-            throw new UnauthorizedAccessException("Refresh token reuse detected. Please sign in again.");
+            var revokedAt = existingToken.RevokedAt ?? DateTime.UtcNow;
+            var isLikelyConcurrentRefresh = revokedAt >= DateTime.UtcNow.AddSeconds(-10);
+
+            if (!isLikelyConcurrentRefresh)
+            {
+                await _userRepository.RevokeAllActiveRefreshTokensAsync(existingToken.UserId, ct);
+            }
+
+            throw new UnauthorizedAccessException("Your session has expired. Please sign in again.");
         }
 
         if (existingToken.ExpiresAt <= DateTime.UtcNow)
