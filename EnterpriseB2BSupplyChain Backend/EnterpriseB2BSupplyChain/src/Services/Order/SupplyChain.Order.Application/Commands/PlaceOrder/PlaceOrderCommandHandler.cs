@@ -43,7 +43,10 @@ public class PlaceOrderCommandHandler : IRequestHandler<PlaceOrderCommand, Place
 
         // Credit check against Payment Service (subtotal + shipping)
         var totalWithShipping = subtotal + shippingFee;
-        var creditCheck = await _paymentClient.CheckCreditAsync(command.DealerId, totalWithShipping, ct);
+        var isCreditOrder = string.Equals(command.PaymentMode, "Credit", StringComparison.OrdinalIgnoreCase);
+        var creditCheck = isCreditOrder
+            ? await _paymentClient.CheckCreditAsync(command.DealerId, totalWithShipping, ct)
+            : new CreditCheckResult(true, decimal.MaxValue);
 
         // Commit inventory for the ordered quantities.
         var inventoryCommitted = await _inventoryClient.CommitOrderInventoryAsync(
@@ -90,26 +93,43 @@ public class PlaceOrderCommandHandler : IRequestHandler<PlaceOrderCommand, Place
         if (!creditCheck.Approved)
             order.PlaceOnHold($"Order exceeds available credit. Available: ₹{creditCheck.AvailableCredit:N2}");
 
-        await _orderRepository.AddAsync(order, ct);
-
-        // Write Outbox event in same logical save — both persist together
-        var eventPayload = JsonSerializer.Serialize(new
+        var creditReserved = false;
+        try
         {
-            OrderId     = order.OrderId,
-            OrderNumber = order.OrderNumber,
-            DealerId    = order.DealerId,
-            dealerEmail = command.DealerEmail,
-            TotalAmount = order.TotalAmount,
-            ShippingFee = shippingFee,
-            Status      = order.Status.ToString(),
-            PlacedAt    = order.PlacedAt
-        });
+            if (isCreditOrder && creditCheck.Approved)
+            {
+                creditReserved = await _paymentClient.ReserveCreditAsync(order.OrderId, command.DealerId, totalWithShipping, ct);
+                if (!creditReserved)
+                    throw new DomainException("CREDIT_RESERVE_FAILED", "Unable to reserve credit limit for this order. Please try again.");
+            }
 
-        var eventType = creditCheck.Approved ? "OrderPlaced" : "AdminApprovalRequired";
-        var outbox    = OutboxMessage.Create(eventType, eventPayload);
+            await _orderRepository.AddAsync(order, ct);
 
-        await _outboxRepository.AddAsync(outbox, ct);
-        await _orderRepository.SaveChangesAsync(ct);
+            // Write Outbox event in same logical save — both persist together
+            var eventPayload = JsonSerializer.Serialize(new
+            {
+                OrderId     = order.OrderId,
+                OrderNumber = order.OrderNumber,
+                DealerId    = order.DealerId,
+                dealerEmail = command.DealerEmail,
+                TotalAmount = order.TotalAmount,
+                ShippingFee = shippingFee,
+                Status      = order.Status.ToString(),
+                PlacedAt    = order.PlacedAt
+            });
+
+            var eventType = creditCheck.Approved ? "OrderPlaced" : "AdminApprovalRequired";
+            var outbox    = OutboxMessage.Create(eventType, eventPayload);
+
+            await _outboxRepository.AddAsync(outbox, ct);
+            await _orderRepository.SaveChangesAsync(ct);
+        }
+        catch
+        {
+            if (creditReserved)
+                await _paymentClient.ReleaseCreditAsync(order.OrderId, command.DealerId, totalWithShipping, ct);
+            throw;
+        }
 
         return new PlaceOrderResult(order.OrderId, order.OrderNumber, order.Status.ToString(), shippingFee);
     }

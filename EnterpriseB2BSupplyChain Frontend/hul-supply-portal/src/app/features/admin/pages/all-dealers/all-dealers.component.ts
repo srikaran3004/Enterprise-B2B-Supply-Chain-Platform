@@ -186,7 +186,7 @@ import { environment } from '../../../../../environments/environment';
                     <tr *ngFor="let invoice of dealerInvoices">
                       <td><strong>{{ invoice.invoiceNumber }}</strong></td>
                       <td>{{ invoice.createdAt | date:'shortDate' }}</td>
-                      <td><strong>₹{{ formatNum(invoice.totalAmount) }}</strong></td>
+                      <td><strong>₹{{ formatNum(invoice.totalAmount ?? invoice.grandTotal ?? 0) }}</strong></td>
                       <td><hul-status-badge [status]="invoice.status"></hul-status-badge></td>
                       <td>{{ invoice.dueDate | date:'shortDate' }}</td>
                       <td>
@@ -501,7 +501,7 @@ export class AllDealersComponent implements OnInit {
     { key: 'reactivate', label: 'Reactivate', variant: 'primary', condition: (row: any) => row.status !== 'Active' },
   ];
 
-  constructor(private http: ZoneHttpService, private toast: ToastService, private sanitizer: DomSanitizer) {}
+  constructor(private http: ZoneHttpService, private toast: ToastService, private sanitizer: DomSanitizer) { }
 
   ngOnInit(): void { this.load(); }
 
@@ -612,14 +612,24 @@ export class AllDealersComponent implements OnInit {
     // Load invoices
     this.http.get<any[]>(API_ENDPOINTS.payment.invoicesByDealer(this.getDealerFinancialId(dealer))).subscribe({
       next: (invoices: any) => {
-        this.dealerInvoices = Array.isArray(invoices) ? invoices : [];
+        const rawInvoices = Array.isArray(invoices) ? invoices : [];
+
+        this.dealerInvoices = rawInvoices.map(inv => ({
+          ...inv,
+          createdAt: inv.createdAt || inv.generatedAt,
+          totalAmount: inv.totalAmount ?? inv.grandTotal ?? 0,
+          status: inv.status || inv.paymentStatus || (inv.paidAt ? 'Paid' : 'Unpaid'),
+          paymentMethod: inv.paymentMethod || inv.paymentMode,
+          dueDate: inv.dueDate || null
+        }));
+
         this.dealerPayments = this.dealerInvoices.filter(inv => inv.paidAt).map(inv => ({
           invoiceId: inv.invoiceId,
           invoiceNumber: inv.invoiceNumber,
-          amount: inv.totalAmount,
+          amount: inv.totalAmount ?? inv.grandTotal ?? 0,
           paidAt: inv.paidAt,
-          paymentMethod: inv.paymentMethod || 'Credit',
-          status: 'Paid'
+          paymentMethod: inv.paymentMethod || inv.paymentMode || 'Prepaid',
+          status: inv.paymentStatus || 'Paid'
         }));
       },
       error: () => { this.dealerInvoices = []; this.dealerPayments = []; }

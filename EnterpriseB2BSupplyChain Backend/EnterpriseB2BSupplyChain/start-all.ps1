@@ -1,3 +1,23 @@
+$servicePorts = @(5000, 5002, 5004, 5006, 5008, 5010, 5012)
+
+function Stop-SupplyChainProcesses {
+    param([int[]]$Ports)
+
+    foreach ($port in $Ports) {
+        $listeners = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue
+        foreach ($listener in $listeners) {
+            try {
+                Stop-Process -Id $listener.OwningProcess -Force -ErrorAction Stop
+                Write-Host "Stopped existing process on port $port (PID: $($listener.OwningProcess))."
+            } catch {
+                Write-Warning "Could not stop process on port $port (PID: $($listener.OwningProcess)). $_"
+            }
+        }
+    }
+}
+
+Stop-SupplyChainProcesses -Ports $servicePorts
+
 $services = @(
     "src\Gateway\SupplyChain.Gateway\SupplyChain.Gateway.csproj",
     "src\Services\Identity\SupplyChain.Identity.API\SupplyChain.Identity.API.csproj",
@@ -12,7 +32,7 @@ foreach ($service in $services) {
     if (Test-Path $service) {
         $name = (Get-Item $service).BaseName
         Write-Host "Starting $name..."
-        Start-Process -FilePath "dotnet" -ArgumentList "run --project `"$service`"" -NoNewWindow -RedirectStandardOutput "$name-out.log" -RedirectStandardError "$name-err.log"
+        Start-Process -FilePath "dotnet" -ArgumentList "run --project `"$service`"" -WindowStyle Hidden
     } else {
         Write-Warning "Could not find $service"
     }

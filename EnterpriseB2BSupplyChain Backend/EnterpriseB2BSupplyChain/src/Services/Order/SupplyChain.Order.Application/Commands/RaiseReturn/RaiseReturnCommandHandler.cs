@@ -27,6 +27,12 @@ public class RaiseReturnCommandHandler : IRequestHandler<RaiseReturnCommand>
             if (order.DealerId != command.DealerId)
                 throw new UnauthorizedAccessException("You can only raise returns for your own orders.");
 
+            if (order.ReturnRequest is not null)
+                return;
+
+            if (order.Status != Domain.Enums.OrderStatus.Delivered)
+                throw new InvalidOperationException($"Returns can only be raised on delivered orders. Current status: {order.Status}.");
+
             order.RaiseReturnRequest(command.DealerId, command.Reason, command.PhotoUrl);
 
             var outbox = OutboxMessage.Create("ReturnRequested", JsonSerializer.Serialize(new

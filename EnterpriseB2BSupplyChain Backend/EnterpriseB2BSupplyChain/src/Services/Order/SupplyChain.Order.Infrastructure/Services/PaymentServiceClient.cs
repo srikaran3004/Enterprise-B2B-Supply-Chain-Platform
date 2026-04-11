@@ -1,3 +1,4 @@
+using System.Net.Http.Json;
 using SupplyChain.Order.Application.Abstractions;
 using SupplyChain.SharedInfrastructure.Results;
 
@@ -32,6 +33,34 @@ public class PaymentServiceClient : IPaymentServiceClient
         catch
         {
             return new CreditCheckResult(false, 0);
+        }
+    }
+
+    public async Task<bool> ReserveCreditAsync(Guid orderId, Guid dealerId, decimal amount, CancellationToken ct = default)
+    {
+        try
+        {
+            var url = $"/api/payment/internal/orders/{orderId}/reserve-credit";
+            var response = await _httpClient.PostAsJsonAsync(url, new { dealerId, amount }, ct);
+            return response.IsSuccessStatusCode;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public async Task<bool> ReleaseCreditAsync(Guid orderId, Guid dealerId, decimal amount, CancellationToken ct = default)
+    {
+        try
+        {
+            var url = $"/api/payment/internal/orders/{orderId}/release-credit";
+            var response = await _httpClient.PostAsJsonAsync(url, new { dealerId, amount }, ct);
+            return response.IsSuccessStatusCode;
+        }
+        catch
+        {
+            return false;
         }
     }
 

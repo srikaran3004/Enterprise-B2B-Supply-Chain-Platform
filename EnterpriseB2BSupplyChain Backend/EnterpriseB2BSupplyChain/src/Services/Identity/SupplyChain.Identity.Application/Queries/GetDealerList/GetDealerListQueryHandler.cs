@@ -35,8 +35,10 @@ public class GetDealerListQueryHandler : IRequestHandler<GetDealerListQuery, Lis
             Status: u.Status.ToString(),
             BusinessName: u.DealerProfile?.BusinessName ?? "—",
             GstNumber: u.DealerProfile?.GstNumber ?? "—",
+            AddressLine1: u.DealerProfile?.AddressLine1 ?? "—",
             City: u.DealerProfile?.City ?? "—",
             State: u.DealerProfile?.State ?? "—",
+            PinCode: u.DealerProfile?.PinCode ?? "—",
             CreatedAt: u.CreatedAt,
             ApprovedAt: u.DealerProfile?.ApprovedAt,
             ApprovedByAdminId: u.DealerProfile?.ApprovedByAdminId

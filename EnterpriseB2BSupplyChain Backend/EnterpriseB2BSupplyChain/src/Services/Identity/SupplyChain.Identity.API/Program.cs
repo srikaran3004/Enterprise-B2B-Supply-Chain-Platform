@@ -14,20 +14,18 @@ using SupplyChain.Identity.Infrastructure.Persistence.Seed;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// â”€â”€ Serilog â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 builder.Host.UseSharedSerilog("identity-service");
 
 // Shared infrastructure (correlation, exception handling, etc.)
 builder.Services.AddSharedInfrastructure();
 
-// â”€â”€ Application + Infrastructure (Clean Architecture DI) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
-// â”€â”€ Controllers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
 builder.Services.AddControllers();
 
-// â”€â”€ JWT Authentication â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 var jwtSecret = builder.Configuration["Jwt:Secret"]!;
 var configuredAudiences = builder.Configuration.GetSection("Jwt:Audiences").Get<string[]>();
 var validAudiences = (configuredAudiences ?? Array.Empty<string>())
@@ -64,7 +62,7 @@ builder.Services.AddAuthorization(options =>
               .RequireClaim(InternalAuthDefaults.ClientTypeClaim, InternalAuthDefaults.InternalClientType));
 });
 
-// â”€â”€ OpenAPI + Scalar (replaces Swagger in .NET 10) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
 builder.Services.AddOpenApi(options =>
 {
     options.AddDocumentTransformer((doc, _, _) =>
@@ -76,10 +74,9 @@ builder.Services.AddOpenApi(options =>
     });
 });
 
-// â”€â”€ Health Checks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 builder.Services.AddHealthChecks();
 
-// â”€â”€ CORS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
 builder.Services.AddCors(opt =>
     opt.AddPolicy("AllowAngular", p =>
         p.WithOrigins("http://localhost:4200")
@@ -96,7 +93,6 @@ using (var scope = app.Services.CreateScope())
     await IdentitySeeder.SeedAsync(db, builder.Configuration);
 }
 
-// â”€â”€ Middleware Pipeline â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();

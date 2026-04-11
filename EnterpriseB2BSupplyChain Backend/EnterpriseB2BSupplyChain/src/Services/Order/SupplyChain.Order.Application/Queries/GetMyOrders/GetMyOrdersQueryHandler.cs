@@ -13,17 +13,14 @@ public class GetMyOrdersQueryHandler : IRequestHandler<GetMyOrdersQuery, PagedRe
 
     public async Task<PagedResult<OrderSummaryDto>> Handle(GetMyOrdersQuery query, CancellationToken ct)
     {
-        var orders = await _orderRepository.GetByDealerIdAsync(query.DealerId, ct);
-
-        if (query.StatusFilter.HasValue)
-            orders = orders.Where(o => o.Status == query.StatusFilter.Value).ToList();
-
-        var totalCount = orders.Count;
+        var (orders, totalCount) = await _orderRepository.GetByDealerPagedAsync(
+            query.DealerId,
+            query.StatusFilter,
+            query.Page,
+            query.PageSize,
+            ct);
 
         var items = orders
-            .OrderByDescending(o => o.PlacedAt)
-            .Skip((query.Page - 1) * query.PageSize)
-            .Take(query.PageSize)
             .Select(o => new OrderSummaryDto(
                 OrderId:     o.OrderId,
                 OrderNumber: o.OrderNumber,

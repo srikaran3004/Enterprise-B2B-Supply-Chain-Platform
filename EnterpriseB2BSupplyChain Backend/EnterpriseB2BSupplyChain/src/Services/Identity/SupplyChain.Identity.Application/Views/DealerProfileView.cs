@@ -11,8 +11,10 @@ public record DealerProfileView(
     string Status,
     string BusinessName,
     string GstNumber,
+    string AddressLine1,
     string City,
     string State,
+    string PinCode,
     DateTime CreatedAt,
     DateTime? ApprovedAt,
     Guid? ApprovedByAdminId
@@ -28,8 +30,10 @@ public record DealerProfileView(
             dto.Status,
             dto.BusinessName,
             dto.GstNumber,
+            dto.AddressLine1,
             dto.City,
             dto.State,
+            dto.PinCode,
             dto.CreatedAt,
             dto.ApprovedAt,
             dto.ApprovedByAdminId

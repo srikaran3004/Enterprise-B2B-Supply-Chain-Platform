@@ -11,6 +11,7 @@ public class CancelOrderCommandHandler : IRequestHandler<CancelOrderCommand>
 {
     private readonly IOrderRepository  _orderRepository;
     private readonly IOutboxRepository _outboxRepository;
+    private readonly IPaymentServiceClient _paymentServiceClient;
     private readonly IIdentityServiceClient _identityServiceClient;
     private readonly IInventoryServiceClient _inventoryServiceClient;
     private readonly ILogger<CancelOrderCommandHandler> _logger;
@@ -18,12 +19,14 @@ public class CancelOrderCommandHandler : IRequestHandler<CancelOrderCommand>
     public CancelOrderCommandHandler(
         IOrderRepository orderRepository,
         IOutboxRepository outboxRepository,
+        IPaymentServiceClient paymentServiceClient,
         IIdentityServiceClient identityServiceClient,
         IInventoryServiceClient inventoryServiceClient,
         ILogger<CancelOrderCommandHandler> logger)
     {
         _orderRepository  = orderRepository;
         _outboxRepository = outboxRepository;
+        _paymentServiceClient = paymentServiceClient;
         _identityServiceClient = identityServiceClient;
         _inventoryServiceClient = inventoryServiceClient;
         _logger = logger;
@@ -70,6 +73,23 @@ public class CancelOrderCommandHandler : IRequestHandler<CancelOrderCommand>
                 "Order cancelled but inventory restore call failed for OrderId={OrderId}, DealerId={DealerId}",
                 order.OrderId,
                 order.DealerId);
+        }
+
+        if (string.Equals(order.PaymentMode, "Credit", StringComparison.OrdinalIgnoreCase))
+        {
+            var released = await _paymentServiceClient.ReleaseCreditAsync(
+                order.OrderId,
+                order.DealerId,
+                order.TotalAmount,
+                ct);
+
+            if (!released)
+            {
+                _logger.LogWarning(
+                    "Order cancelled but credit release call failed for OrderId={OrderId}, DealerId={DealerId}",
+                    order.OrderId,
+                    order.DealerId);
+            }
         }
 
         var dealerContact = string.IsNullOrWhiteSpace(command.DealerEmail)

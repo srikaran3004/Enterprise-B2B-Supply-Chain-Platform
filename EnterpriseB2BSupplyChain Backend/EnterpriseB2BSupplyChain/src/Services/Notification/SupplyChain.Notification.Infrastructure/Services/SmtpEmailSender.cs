@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using MimeKit;
 using MimeKit.Text;
 using SupplyChain.Notification.Application.Abstractions;
+using System.Linq;
 
 namespace SupplyChain.Notification.Infrastructure.Services;
 
@@ -39,12 +40,39 @@ public class SmtpEmailSender : IEmailSender
         string htmlBody,
         CancellationToken ct = default)
     {
-        var host        = _config["Email:SmtpHost"];
-        var port        = int.TryParse(_config["Email:SmtpPort"], out var p) ? p : 587;
-        var username    = _config["Email:Username"];
-        var password    = _config["Email:Password"]?.Replace(" ", string.Empty);
-        var fromAddress = _config["Email:FromAddress"] ?? username;
-        var fromName    = _config["Email:FromName"]    ?? "HUL Supply Chain";
+        var host = FirstNonEmpty(
+            _config["Email:SmtpHost"],
+            Environment.GetEnvironmentVariable("EMAIL_SMTP_HOST"),
+            Environment.GetEnvironmentVariable("SMTP_HOST"));
+
+        var portText = FirstNonEmpty(
+            _config["Email:SmtpPort"],
+            Environment.GetEnvironmentVariable("EMAIL_SMTP_PORT"),
+            Environment.GetEnvironmentVariable("SMTP_PORT"));
+        var port = int.TryParse(portText, out var p) ? p : 587;
+
+        var username = FirstNonEmpty(
+            _config["Email:Username"],
+            Environment.GetEnvironmentVariable("EMAIL_USERNAME"),
+            Environment.GetEnvironmentVariable("SMTP_USERNAME"),
+            Environment.GetEnvironmentVariable("SMTP_USER"));
+
+        var password = FirstNonEmpty(
+            _config["Email:Password"],
+            Environment.GetEnvironmentVariable("EMAIL_PASSWORD"),
+            Environment.GetEnvironmentVariable("SMTP_PASSWORD"));
+        password = password?.Replace(" ", string.Empty);
+
+        var fromAddress = FirstNonEmpty(
+            _config["Email:FromAddress"],
+            Environment.GetEnvironmentVariable("EMAIL_FROM"),
+            Environment.GetEnvironmentVariable("SMTP_FROM"),
+            username);
+
+        var fromName = FirstNonEmpty(
+            _config["Email:FromName"],
+            Environment.GetEnvironmentVariable("EMAIL_FROM_NAME"),
+            "HUL Supply Chain");
 
         if (string.IsNullOrWhiteSpace(host)
          || string.IsNullOrWhiteSpace(username)
@@ -93,4 +121,7 @@ public class SmtpEmailSender : IEmailSender
                 "and that SMTP authentication is enabled for the account.", ex);
         }
     }
+
+    private static string? FirstNonEmpty(params string?[] values)
+        => values.FirstOrDefault(v => !string.IsNullOrWhiteSpace(v));
 }

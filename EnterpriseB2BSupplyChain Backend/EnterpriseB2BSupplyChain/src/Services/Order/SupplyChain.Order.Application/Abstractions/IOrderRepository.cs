@@ -9,6 +9,17 @@ public interface IOrderRepository
     Task<Domain.Entities.Order?> GetByOrderNumberAsync(string orderNumber, CancellationToken ct = default);
     Task<List<Domain.Entities.Order>> GetByDealerIdAsync(Guid dealerId, CancellationToken ct = default);
     Task<List<Domain.Entities.Order>> GetAllAsync(OrderStatus? statusFilter = null, CancellationToken ct = default);
+    Task<(List<Domain.Entities.Order> Orders, int TotalCount)> GetByDealerPagedAsync(
+        Guid dealerId,
+        OrderStatus? statusFilter,
+        int page,
+        int pageSize,
+        CancellationToken ct = default);
+    Task<(List<Domain.Entities.Order> Orders, int TotalCount)> GetAllPagedAsync(
+        OrderStatus? statusFilter,
+        int page,
+        int pageSize,
+        CancellationToken ct = default);
     Task<bool> TryApproveOrderAsync(Guid orderId, Guid adminId, string fromStatus, CancellationToken ct = default);
     Task<bool> TryTransitionStatusAsync(
         Guid orderId,

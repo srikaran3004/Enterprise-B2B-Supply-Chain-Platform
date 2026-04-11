@@ -61,8 +61,8 @@ import { TableColumn } from '../../../../shared/ui/table/hul-table.component';
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17V7"/></svg>
           </div>
           <div class="kpi-card__content">
-            <span class="kpi-card__value">{{ pendingInvoices }}</span>
-            <span class="kpi-card__label">Pending Invoices</span>
+            <span class="kpi-card__value">{{ availableCredit | inrCurrency }}</span>
+            <span class="kpi-card__label">Available Credit ({{ creditUtilization }}% used)</span>
           </div>
         </div>
       </div>
@@ -332,7 +332,8 @@ export class DashboardComponent implements OnInit {
   totalOrders = 0;
   activeOrders = 0;
   totalSpent = 0;
-  pendingInvoices = 0;
+  availableCredit = 0;
+  creditUtilization = 0;
 
   orderColumns: TableColumn[] = [
     { key: 'orderNumber', label: 'Order #', type: 'text' },
@@ -373,6 +374,28 @@ export class DashboardComponent implements OnInit {
 
     this.store.select(selectProducts).subscribe(products => {
       this.featuredProducts = products.slice(0, 8);
+    });
+
+    this.loadCreditSnapshot();
+  }
+
+  private loadCreditSnapshot(): void {
+    const dealerId = this.authService.getDealerId();
+    if (!dealerId) {
+      this.availableCredit = 0;
+      this.creditUtilization = 0;
+      return;
+    }
+
+    this.http.get<any>(API_ENDPOINTS.payment.creditAccount(dealerId)).subscribe({
+      next: (credit) => {
+        this.availableCredit = credit?.available ?? 0;
+        this.creditUtilization = credit?.utilization ?? 0;
+      },
+      error: () => {
+        this.availableCredit = 0;
+        this.creditUtilization = 0;
+      }
     });
   }
 

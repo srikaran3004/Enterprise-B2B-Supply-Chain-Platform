@@ -26,6 +26,7 @@ public class OrderRepository : IOrderRepository
 
     public async Task<List<Domain.Entities.Order>> GetByDealerIdAsync(Guid dealerId, CancellationToken ct = default)
         => await _context.Orders
+            .AsNoTracking()
             .Include(o => o.Lines)
             .Where(o => o.DealerId == dealerId)
             .OrderByDescending(o => o.PlacedAt)
@@ -33,12 +34,75 @@ public class OrderRepository : IOrderRepository
 
     public async Task<List<Domain.Entities.Order>> GetAllAsync(OrderStatus? statusFilter = null, CancellationToken ct = default)
     {
-        var query = _context.Orders.Include(o => o.Lines).AsQueryable();
+        var query = _context.Orders
+            .AsNoTracking()
+            .Include(o => o.Lines)
+            .AsQueryable();
 
         if (statusFilter.HasValue)
             query = query.Where(o => o.Status == statusFilter.Value);
 
         return await query.OrderByDescending(o => o.PlacedAt).ToListAsync(ct);
+    }
+
+    public async Task<(List<Domain.Entities.Order> Orders, int TotalCount)> GetByDealerPagedAsync(
+        Guid dealerId,
+        OrderStatus? statusFilter,
+        int page,
+        int pageSize,
+        CancellationToken ct = default)
+    {
+        var safePage = Math.Max(1, page);
+        var safePageSize = Math.Max(1, pageSize);
+
+        var query = _context.Orders
+            .AsNoTracking()
+            .Where(o => o.DealerId == dealerId)
+            .AsQueryable();
+
+        if (statusFilter.HasValue)
+            query = query.Where(o => o.Status == statusFilter.Value);
+
+        var totalCount = await query.CountAsync(ct);
+
+        var orders = await query
+            .OrderByDescending(o => o.PlacedAt)
+            .Skip((safePage - 1) * safePageSize)
+            .Take(safePageSize)
+            .Include(o => o.Lines)
+            .AsSplitQuery()
+            .ToListAsync(ct);
+
+        return (orders, totalCount);
+    }
+
+    public async Task<(List<Domain.Entities.Order> Orders, int TotalCount)> GetAllPagedAsync(
+        OrderStatus? statusFilter,
+        int page,
+        int pageSize,
+        CancellationToken ct = default)
+    {
+        var safePage = Math.Max(1, page);
+        var safePageSize = Math.Max(1, pageSize);
+
+        var query = _context.Orders
+            .AsNoTracking()
+            .AsQueryable();
+
+        if (statusFilter.HasValue)
+            query = query.Where(o => o.Status == statusFilter.Value);
+
+        var totalCount = await query.CountAsync(ct);
+
+        var orders = await query
+            .OrderByDescending(o => o.PlacedAt)
+            .Skip((safePage - 1) * safePageSize)
+            .Take(safePageSize)
+            .Include(o => o.Lines)
+            .AsSplitQuery()
+            .ToListAsync(ct);
+
+        return (orders, totalCount);
     }
 
     public async Task<bool> TryApproveOrderAsync(Guid orderId, Guid adminId, string fromStatus, CancellationToken ct = default)

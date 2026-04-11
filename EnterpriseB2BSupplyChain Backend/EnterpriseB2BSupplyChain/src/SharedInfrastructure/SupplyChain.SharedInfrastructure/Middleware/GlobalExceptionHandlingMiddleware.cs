@@ -59,6 +59,16 @@ public sealed class GlobalExceptionHandlingMiddleware
         {
             if (context.Response.HasStarted)
             {
+                if (ex is OperationCanceledException || context.RequestAborted.IsCancellationRequested)
+                {
+                    _logger.LogInformation(
+                        "Request {Method} {Path} was canceled after response started. CorrelationId={CorrelationId}",
+                        context.Request.Method,
+                        context.Request.Path.Value,
+                        context.Items.TryGetValue(CorrelationIdMiddleware.ItemKey, out var cid) ? cid as string : null);
+                    return;
+                }
+
                 _logger.LogWarning(ex,
                     "An exception occurred after the response had already started writing. " +
                     "Re-throwing for the ASP.NET pipeline to handle.");

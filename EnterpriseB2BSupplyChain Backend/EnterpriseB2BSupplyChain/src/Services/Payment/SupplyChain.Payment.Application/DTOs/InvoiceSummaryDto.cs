@@ -8,5 +8,9 @@ public record InvoiceSummaryDto(
     string   GstType,
     string   PaymentMode,
     DateTime GeneratedAt,
-    bool     IsSentToDealer
+    bool     IsSentToDealer,
+    string?  PaymentStatus,
+    string?  PaymentMethod,
+    string?  PaymentReference,
+    DateTime? PaidAt
 );

@@ -16,6 +16,23 @@ public sealed class PaymentRecordRepository : IPaymentRecordRepository
     public Task<PaymentRecord?> GetByOrderIdAsync(Guid orderId, CancellationToken ct = default)
         => _context.PaymentRecords.FirstOrDefaultAsync(p => p.OrderId == orderId, ct);
 
+    public Task<List<PaymentRecord>> GetByDealerIdAsync(Guid dealerId, CancellationToken ct = default)
+        => _context.PaymentRecords
+            .Where(p => p.DealerId == dealerId)
+            .OrderByDescending(p => p.CreatedAt)
+            .ToListAsync(ct);
+
+    public Task<List<PaymentRecord>> GetByOrderIdsAsync(IEnumerable<Guid> orderIds, CancellationToken ct = default)
+    {
+        var orderIdSet = orderIds.Distinct().ToList();
+        if (!orderIdSet.Any())
+            return Task.FromResult(new List<PaymentRecord>());
+
+        return _context.PaymentRecords
+            .Where(p => orderIdSet.Contains(p.OrderId))
+            .ToListAsync(ct);
+    }
+
     public Task AddAsync(PaymentRecord paymentRecord, CancellationToken ct = default)
         => _context.PaymentRecords.AddAsync(paymentRecord, ct).AsTask();
 

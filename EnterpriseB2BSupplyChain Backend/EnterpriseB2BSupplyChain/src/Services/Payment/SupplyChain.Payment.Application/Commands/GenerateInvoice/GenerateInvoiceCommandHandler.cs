@@ -10,15 +10,18 @@ public class GenerateInvoiceCommandHandler : IRequestHandler<GenerateInvoiceComm
 {
     private readonly IInvoiceRepository      _invoiceRepository;
     private readonly ICreditAccountRepository _creditRepository;
+    private readonly IPaymentRecordRepository _paymentRecordRepository;
     private readonly IInvoicePdfService      _pdfService;
 
     public GenerateInvoiceCommandHandler(
         IInvoiceRepository       invoiceRepository,
         ICreditAccountRepository creditRepository,
+        IPaymentRecordRepository paymentRecordRepository,
         IInvoicePdfService       pdfService)
     {
         _invoiceRepository = invoiceRepository;
         _creditRepository  = creditRepository;
+        _paymentRecordRepository = paymentRecordRepository;
         _pdfService        = pdfService;
     }
 
@@ -55,8 +58,13 @@ public class GenerateInvoiceCommandHandler : IRequestHandler<GenerateInvoiceComm
         await _invoiceRepository.AddAsync(invoice, ct);
 
         var account = await _creditRepository.GetByDealerIdAsync(command.DealerId, ct);
+        var existingPaymentRecord = await _paymentRecordRepository.GetByOrderIdAsync(command.OrderId, ct);
+        var hasReservedCredit = existingPaymentRecord is not null
+            && string.Equals(existingPaymentRecord.PaymentMode, "Credit", StringComparison.OrdinalIgnoreCase);
+
         if (account is not null &&
-            string.Equals(command.PaymentMode, "Credit", StringComparison.OrdinalIgnoreCase))
+            string.Equals(command.PaymentMode, "Credit", StringComparison.OrdinalIgnoreCase) &&
+            !hasReservedCredit)
         {
             account.AddOutstanding(command.TotalAmount);
         }

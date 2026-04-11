@@ -9,8 +9,10 @@ public record DealerListDto(
     string Status,
     string BusinessName,
     string GstNumber,
+    string AddressLine1,
     string City,
     string State,
+    string PinCode,
     DateTime CreatedAt,
     DateTime? ApprovedAt,
     Guid? ApprovedByAdminId

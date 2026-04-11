@@ -11,6 +11,7 @@ using SupplyChain.Payment.Application.Queries.CheckCredit;
 using SupplyChain.Payment.Application.Queries.ExportSales;
 using SupplyChain.Payment.Application.Queries.GetInvoiceById;
 using SupplyChain.Payment.Application.Queries.GetInvoices;
+using SupplyChain.Payment.Domain.Entities;
 
 namespace SupplyChain.Payment.API.Controllers;
 
@@ -21,11 +22,19 @@ public class PaymentController : ControllerBase
 {
     private readonly IMediator _mediator;
     private readonly ICreditAccountRepository _creditRepository;
+    private readonly IInvoiceRepository _invoiceRepository;
+    private readonly IPaymentRecordRepository _paymentRecordRepository;
 
-    public PaymentController(IMediator mediator, ICreditAccountRepository creditRepository)
+    public PaymentController(
+        IMediator mediator,
+        ICreditAccountRepository creditRepository,
+        IInvoiceRepository invoiceRepository,
+        IPaymentRecordRepository paymentRecordRepository)
     {
         _mediator = mediator;
         _creditRepository = creditRepository;
+        _invoiceRepository = invoiceRepository;
+        _paymentRecordRepository = paymentRecordRepository;
     }
 
     [HttpGet("dealers/{dealerId:guid}/credit-check")]
@@ -53,35 +62,115 @@ public class PaymentController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("internal/orders/{orderId:guid}/reserve-credit")]
+    [Authorize(Policy = InternalAuthDefaults.InternalPolicy)]
+    public async Task<IActionResult> ReserveCreditForOrder(
+        Guid orderId,
+        [FromBody] InternalCreditAdjustmentRequest request,
+        CancellationToken ct)
+    {
+        if (request.Amount <= 0)
+            return BadRequest(new { error = "Amount must be greater than zero." });
+
+        var existingPayment = await _paymentRecordRepository.GetByOrderIdAsync(orderId, ct);
+        if (existingPayment is not null)
+            return Ok(new { message = "Credit already reserved for order.", available = (decimal?)null });
+
+        var account = await _creditRepository.GetByDealerIdAsync(request.DealerId, ct);
+        if (account is null)
+        {
+            account = DealerCreditAccount.Create(request.DealerId);
+            await _creditRepository.AddAsync(account, ct);
+        }
+
+        if (!account.CanAccommodate(request.Amount))
+            return BadRequest(new { error = "Insufficient available credit.", available = account.AvailableCredit });
+
+        account.AddOutstanding(request.Amount);
+
+        var paymentRecord = PaymentRecord.Create(
+            orderId: orderId,
+            dealerId: request.DealerId,
+            amount: request.Amount,
+            paymentMode: "Credit");
+
+        await _paymentRecordRepository.AddAsync(paymentRecord, ct);
+        await _paymentRecordRepository.SaveChangesAsync(ct);
+
+        return Ok(new { message = "Credit reserved.", available = account.AvailableCredit });
+    }
+
+    [HttpPost("internal/orders/{orderId:guid}/release-credit")]
+    [Authorize(Policy = InternalAuthDefaults.InternalPolicy)]
+    public async Task<IActionResult> ReleaseCreditForOrder(
+        Guid orderId,
+        [FromBody] InternalCreditAdjustmentRequest request,
+        CancellationToken ct)
+    {
+        if (request.Amount <= 0)
+            return BadRequest(new { error = "Amount must be greater than zero." });
+
+        var account = await _creditRepository.GetByDealerIdAsync(request.DealerId, ct);
+        if (account is null)
+            return Ok(new { message = "No credit account found. Nothing to release." });
+
+        account.ReduceOutstanding(request.Amount);
+        await _paymentRecordRepository.SaveChangesAsync(ct);
+
+        return Ok(new { message = "Credit released.", available = account.AvailableCredit });
+    }
+
     [HttpGet("dealers/{dealerId:guid}/credit-account")]
-    [Authorize(Roles = "Admin,SuperAdmin")]
+    [Authorize(Roles = "Admin,SuperAdmin,Dealer")]
     public async Task<IActionResult> GetCreditAccount(Guid dealerId, CancellationToken ct)
     {
+        if (User.IsInRole("Dealer") && dealerId != GetDealerId())
+            return Forbid();
+
         var account = await _creditRepository.GetByDealerIdAsync(dealerId, ct);
+        var invoices = await _invoiceRepository.GetByDealerIdAsync(dealerId, ct);
+        var payments = await _paymentRecordRepository.GetByOrderIdsAsync(invoices.Select(i => i.OrderId), ct);
+
+        var paidOrderIds = payments
+            .Where(p => string.Equals(p.Status, "Paid", StringComparison.OrdinalIgnoreCase))
+            .Select(p => p.OrderId)
+            .ToHashSet();
+
+        var liveOutstanding = invoices
+            .Where(i => !paidOrderIds.Contains(i.OrderId))
+            .Sum(i => i.GrandTotal);
 
         if (account is null)
         {
+            var defaultLimit = 500_000m;
+            var available = Math.Max(0, defaultLimit - liveOutstanding);
+            var utilizationDefault = defaultLimit > 0
+                ? (int)Math.Round(liveOutstanding / defaultLimit * 100)
+                : 0;
+
             return Ok(new CreditAccountDto(
                 AccountId: Guid.Empty,
                 DealerId: dealerId,
-                CreditLimit: 500_000m,
-                Outstanding: 0m,
-                Available: 500_000m,
-                Utilization: 0,
+                CreditLimit: defaultLimit,
+                Outstanding: liveOutstanding,
+                Available: available,
+                Utilization: utilizationDefault,
                 LastUpdatedAt: null
             ));
         }
 
+        var effectiveOutstanding = Math.Max(account.CurrentOutstanding, liveOutstanding);
+
         var utilization = account.CreditLimit > 0
-            ? (int)Math.Round(account.CurrentOutstanding / account.CreditLimit * 100)
+            ? (int)Math.Round(effectiveOutstanding / account.CreditLimit * 100)
             : 0;
 
         return Ok(new CreditAccountDto(
             AccountId: account.AccountId,
             DealerId: account.DealerId,
             CreditLimit: account.CreditLimit,
-            Outstanding: account.CurrentOutstanding,
-            Available: account.AvailableCredit,
+            Outstanding: effectiveOutstanding,
+            Available: Math.Max(0, account.CreditLimit - effectiveOutstanding),
             Utilization: utilization,
             LastUpdatedAt: account.LastUpdatedAt
         ));
@@ -196,4 +285,5 @@ public class PaymentController : ControllerBase
 }
 
 public record UpdateLimitRequest(decimal NewLimit);
+public record InternalCreditAdjustmentRequest(Guid DealerId, decimal Amount);
 

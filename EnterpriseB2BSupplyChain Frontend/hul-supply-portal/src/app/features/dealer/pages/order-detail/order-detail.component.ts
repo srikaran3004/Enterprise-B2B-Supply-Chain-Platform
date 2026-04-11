@@ -238,7 +238,7 @@ interface OrderStage {
               </div>
               <div class="od-info-row">
                 <span class="od-info-label">Status</span>
-                <span class="od-pay-status" [class.od-pay-status--paid]="order.paymentStatus === 'Paid'">{{ order.paymentStatus || 'Pending' }}</span>
+                <span class="od-pay-status" [class.od-pay-status--paid]="paymentStatus === 'Paid'">{{ paymentStatus }}</span>
               </div>
               <div class="od-info-row od-info-row--total">
                 <span class="od-info-label">Total</span>
@@ -455,6 +455,7 @@ interface OrderStage {
 export class OrderDetailComponent implements OnInit, OnDestroy {
   loading = true;
   order: any = null;
+  paymentStatus = 'Pending';
   tracking: any = null;
   activityEvents: Array<{ status: string; timestamp: string; note?: string | null }> = [];
   ratingValue = 0;
@@ -465,14 +466,14 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   private refreshHandle: ReturnType<typeof setInterval> | null = null;
 
   readonly orderStages: OrderStage[] = [
-    { key: 'Placed',            label: 'Order Placed',         icon: '📋' },
-    { key: 'OnHold',            label: 'Order Received',       icon: '📥' },
-    { key: 'Processing',        label: 'Processing & Packing', icon: '📦' },
-    { key: 'ReadyForDispatch',  label: 'Ready for Dispatch',   icon: '✅' },
-    { key: 'AgentAssigned',     label: 'Agent Assigned',       icon: '🚚' },
-    { key: 'InTransit',         label: 'In Transit',           icon: '🛣️' },
-    { key: 'OutForDelivery',    label: 'Out for Delivery',     icon: '🏠' },
-    { key: 'Delivered',         label: 'Delivered',            icon: '🎉' },
+    { key: 'Placed', label: 'Order Placed', icon: '📋' },
+    { key: 'OnHold', label: 'Order Received', icon: '📥' },
+    { key: 'Processing', label: 'Processing & Packing', icon: '📦' },
+    { key: 'ReadyForDispatch', label: 'Ready for Dispatch', icon: '✅' },
+    { key: 'AgentAssigned', label: 'Agent Assigned', icon: '🚚' },
+    { key: 'InTransit', label: 'In Transit', icon: '🛣️' },
+    { key: 'OutForDelivery', label: 'Out for Delivery', icon: '🏠' },
+    { key: 'Delivered', label: 'Delivered', icon: '🎉' },
   ];
 
   // Maps order status → which stage is active (and which stages before it are complete)
@@ -486,7 +487,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     private router: Router,
     private http: ZoneHttpService,
     private toast: ToastService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.orderId = this.route.snapshot.paramMap.get('orderId');
@@ -522,6 +523,8 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     this.http.get<any>(API_ENDPOINTS.orders.orderById(orderId)).subscribe({
       next: o => {
         this.order = o;
+        this.paymentStatus = o?.paymentStatus || 'Pending';
+        this.loadPaymentStatus(orderId);
         if (!silent) {
           this.loading = false;
         }
@@ -531,6 +534,18 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
         if (!silent) {
           this.loading = false;
         }
+      }
+    });
+  }
+
+  private loadPaymentStatus(orderId: string): void {
+    this.http.get<any>(API_ENDPOINTS.payment.invoiceByOrderId(orderId)).subscribe({
+      next: invoice => {
+        const resolvedStatus = invoice?.status || invoice?.paymentStatus || (invoice?.paidAt ? 'Paid' : 'Pending');
+        this.paymentStatus = resolvedStatus || this.paymentStatus || 'Pending';
+      },
+      error: () => {
+        this.paymentStatus = this.order?.paymentStatus || this.paymentStatus || 'Pending';
       }
     });
   }
@@ -616,18 +631,18 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
 
     // Map order status
     switch (orderStatus) {
-      case 'Delivered':        return this.stageOrder.indexOf('Delivered');
-      case 'InTransit':        return this.stageOrder.indexOf('InTransit');
+      case 'Delivered': return this.stageOrder.indexOf('Delivered');
+      case 'InTransit': return this.stageOrder.indexOf('InTransit');
       case 'ReadyForDispatch': {
         // Check if agent is assigned
         if (this.tracking && this.tracking.agentName) return this.stageOrder.indexOf('AgentAssigned');
         return this.stageOrder.indexOf('ReadyForDispatch');
       }
-      case 'Processing':       return this.stageOrder.indexOf('Processing');
-      case 'OnHold':           return this.stageOrder.indexOf('OnHold');
-      case 'Placed':           return this.stageOrder.indexOf('Placed');
-      case 'Cancelled':        return -1;
-      default:                 return 0;
+      case 'Processing': return this.stageOrder.indexOf('Processing');
+      case 'OnHold': return this.stageOrder.indexOf('OnHold');
+      case 'Placed': return this.stageOrder.indexOf('Placed');
+      case 'Cancelled': return -1;
+      default: return 0;
     }
   }
 
@@ -648,13 +663,13 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   getStageDate(key: string): string | null {
     if (!this.order?.statusHistory && !this.tracking?.history) return null;
     const map: Record<string, string[]> = {
-      'Placed':           ['Placed'],
-      'OnHold':           ['OnHold'],
-      'Processing':       ['Processing'],
+      'Placed': ['Placed'],
+      'OnHold': ['OnHold'],
+      'Processing': ['Processing'],
       'ReadyForDispatch': ['ReadyForDispatch'],
-      'InTransit':        ['InTransit'],
-      'OutForDelivery':   ['OutForDelivery'],
-      'Delivered':        ['Delivered'],
+      'InTransit': ['InTransit'],
+      'OutForDelivery': ['OutForDelivery'],
+      'Delivered': ['Delivered'],
     };
     const statuses = map[key] || [key];
     for (const ev of (this.order?.statusHistory || [])) {
@@ -682,29 +697,29 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
 
   getStatusClass(status: string): string {
     const map: Record<string, string> = {
-      Placed:           'od-status-pill--placed',
-      OnHold:           'od-status-pill--hold',
-      Processing:       'od-status-pill--processing',
+      Placed: 'od-status-pill--placed',
+      OnHold: 'od-status-pill--hold',
+      Processing: 'od-status-pill--processing',
       ReadyForDispatch: 'od-status-pill--ready',
-      InTransit:        'od-status-pill--transit',
-      Delivered:        'od-status-pill--delivered',
-      Cancelled:        'od-status-pill--cancelled',
+      InTransit: 'od-status-pill--transit',
+      Delivered: 'od-status-pill--delivered',
+      Cancelled: 'od-status-pill--cancelled',
     };
     return map[status] || 'od-status-pill--placed';
   }
 
   formatStatus(status: string): string {
     const map: Record<string, string> = {
-      Placed:           'Order Placed',
-      OnHold:           'On Hold',
-      Processing:       'Processing',
+      Placed: 'Order Placed',
+      OnHold: 'On Hold',
+      Processing: 'Processing',
       ReadyForDispatch: 'Ready for Dispatch',
-      InTransit:        'In Transit',
-      OutForDelivery:   'Out for Delivery',
-      Delivered:        'Delivered',
-      Cancelled:        'Cancelled',
-      AgentAssigned:    'Agent Assigned',
-      PickedUp:         'Picked Up',
+      InTransit: 'In Transit',
+      OutForDelivery: 'Out for Delivery',
+      Delivered: 'Delivered',
+      Cancelled: 'Cancelled',
+      AgentAssigned: 'Agent Assigned',
+      PickedUp: 'Picked Up',
       VehicleBreakdown: 'Vehicle Breakdown',
     };
     return map[status] || status;
