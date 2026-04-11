@@ -307,7 +307,8 @@ export class ReturnsComponent implements OnInit {
 
       const uploadResponse = await this.http.post<{ url: string }>(
         API_ENDPOINTS.orders.uploadReturnImage(),
-        formData
+        formData,
+        { headers: { 'X-Skip-Error-Toast': '1' } }
       ).toPromise();
 
       const photoUrl = uploadResponse?.url || '';
@@ -322,11 +323,41 @@ export class ReturnsComponent implements OnInit {
       this.loadReturns();
       this.loadMyOrders();
     } catch (error: any) {
-      const message = error?.error?.error || error?.error?.message || 'Failed to submit return request';
+      const message = this.extractErrorMessage(error);
       this.toast.error(message);
     } finally {
       this.submittingReturn = false;
     }
+  }
+
+  private extractErrorMessage(error: any): string {
+    const payload = error?.error;
+
+    if (!payload) {
+      return 'Failed to submit return request';
+    }
+
+    if (typeof payload === 'string') {
+      return payload;
+    }
+
+    if (typeof payload.message === 'string') {
+      return payload.message;
+    }
+
+    if (typeof payload.Message === 'string') {
+      return payload.Message;
+    }
+
+    if (typeof payload.error === 'string') {
+      return payload.error;
+    }
+
+    if (typeof payload.error?.message === 'string') {
+      return payload.error.message;
+    }
+
+    return 'Failed to submit return request';
   }
 
   getStatusClass(status: string) {

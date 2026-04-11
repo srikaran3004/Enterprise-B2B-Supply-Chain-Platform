@@ -17,9 +17,9 @@ public class RaiseReturnCommandValidator : AbstractValidator<RaiseReturnCommand>
             .MaximumLength(500).WithMessage("Return reason must not exceed 500 characters.");
 
         RuleFor(x => x.PhotoUrl)
-            .MaximumLength(2048).WithMessage("Photo URL must not exceed 2048 characters.")
+            .MaximumLength(7_500_000).WithMessage("Photo payload must not exceed the allowed size.")
             .Must(BeValidPhotoUrl)
-            .WithMessage("Photo URL must be a valid absolute HTTP/HTTPS URL or a valid API image path.")
+            .WithMessage("Photo URL must be a valid absolute HTTP/HTTPS URL, a valid API image path, or a valid image data URI.")
             .When(x => !string.IsNullOrWhiteSpace(x.PhotoUrl));
     }
 
@@ -33,6 +33,11 @@ public class RaiseReturnCommandValidator : AbstractValidator<RaiseReturnCommand>
         if (url.StartsWith("/api/orders/return-images/", StringComparison.OrdinalIgnoreCase))
         {
             return true;
+        }
+
+        if (url.StartsWith("data:image/", StringComparison.OrdinalIgnoreCase))
+        {
+            return url.Contains(";base64,", StringComparison.OrdinalIgnoreCase);
         }
 
         return Uri.TryCreate(url, UriKind.Absolute, out var uri)

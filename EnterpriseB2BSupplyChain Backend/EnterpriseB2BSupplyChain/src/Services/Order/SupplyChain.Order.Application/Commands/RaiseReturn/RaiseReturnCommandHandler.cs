@@ -18,7 +18,7 @@ public class RaiseReturnCommandHandler : IRequestHandler<RaiseReturnCommand>
 
     public async Task Handle(RaiseReturnCommand command, CancellationToken ct)
     {
-        const int maxAttempts = 2;
+        const int maxAttempts = 3;
         for (var attempt = 1; attempt <= maxAttempts; attempt++)
         {
             var order = await _orderRepository.GetByIdAsync(command.OrderId, ct)
@@ -28,6 +28,9 @@ public class RaiseReturnCommandHandler : IRequestHandler<RaiseReturnCommand>
                 throw new UnauthorizedAccessException("You can only raise returns for your own orders.");
 
             if (order.ReturnRequest is not null)
+                return;
+
+            if (order.Status == Domain.Enums.OrderStatus.ReturnRequested)
                 return;
 
             if (order.Status != Domain.Enums.OrderStatus.Delivered)
@@ -56,6 +59,14 @@ public class RaiseReturnCommandHandler : IRequestHandler<RaiseReturnCommand>
             }
             catch (Exception ex) when (IsDbConcurrencyException(ex))
             {
+                // One last read to make the command idempotent even if another in-flight request already raised the return.
+                var latestOrder = await _orderRepository.GetByIdAsync(command.OrderId, ct);
+                if (latestOrder?.ReturnRequest is not null || latestOrder?.Status == Domain.Enums.OrderStatus.ReturnRequested)
+                    return;
+
+                if (latestOrder is not null && latestOrder.Status != Domain.Enums.OrderStatus.Delivered)
+                    throw new InvalidOperationException($"Returns can only be raised on delivered orders. Current status: {latestOrder.Status}.");
+
                 throw new InvalidOperationException("Order was updated by another operation. Please refresh and try return request again.");
             }
         }

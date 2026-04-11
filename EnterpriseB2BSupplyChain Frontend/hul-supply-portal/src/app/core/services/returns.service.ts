@@ -23,7 +23,11 @@ export class ReturnsService {
   private http = inject(HttpClient);
 
   raiseReturn(orderId: string, reason: string, photoUrl?: string): Observable<{ returnId: string }> {
-    return this.http.post<{ returnId: string }>(API_ENDPOINTS.returns.raiseReturn(orderId), { reason, photoUrl });
+    return this.http.post<{ returnId: string }>(
+      API_ENDPOINTS.returns.raiseReturn(orderId),
+      { reason, photoUrl },
+      { headers: { 'X-Skip-Error-Toast': '1' } }
+    );
   }
 
   getMyReturns(): Observable<ReturnRequest[]> {
