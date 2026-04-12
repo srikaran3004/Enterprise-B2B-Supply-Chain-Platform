@@ -1,4 +1,4 @@
-﻿import { Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ZoneHttpService } from '../../../../core/services/zone-http.service';
 import { API_ENDPOINTS } from '../../../../shared/constants/api-endpoints';
 import { ToastService } from '../../../../shared/ui/toast/toast.service';
@@ -56,10 +56,18 @@ export class UpdateStatusComponent implements OnInit {
   private statusFlow: Record<string, string[]> = {
     'AgentAssigned': ['PickedUp'],
     'PickedUp': ['InTransit'],
-    'InTransit': ['OutForDelivery'],
+    'InTransit': ['OutForDelivery', 'VehicleBreakdown'],
     'OutForDelivery': ['Delivered'],
+    'VehicleBreakdown': ['InTransit'],
   };
-  private labels: Record<string, string> = { 'PickedUp': '📦 Picked Up', 'InTransit': '🚚 In Transit', 'OutForDelivery': '📍 Out for Delivery', 'Delivered': '✅ Delivered' };
+  private labels: Record<string, string> = {
+    'PickedUp': '📦 Picked Up',
+    'InTransit': '🚚 In Transit',
+    'OutForDelivery': '📍 Out for Delivery',
+    'Delivered': '✅ Delivered',
+    'VehicleBreakdown': '🚨 Vehicle Breakdown',
+  };
+
   constructor(private http: ZoneHttpService, private toast: ToastService) {}
   ngOnInit(): void { this.load(); }
   load(): void {

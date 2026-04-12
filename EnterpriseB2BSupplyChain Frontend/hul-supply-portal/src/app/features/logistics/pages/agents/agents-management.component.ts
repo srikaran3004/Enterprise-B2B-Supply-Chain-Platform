@@ -336,7 +336,7 @@ export class AgentsManagementComponent implements OnInit {
 
   load(): void {
     this.loading = true;
-    this.http.get<any[]>(API_ENDPOINTS.logistics.allAgents()).subscribe({
+    this.http.get<any[]>(API_ENDPOINTS.logistics.agents()).subscribe({
       next: a => {
         this.allAgents = a;
         this.applyFilters();

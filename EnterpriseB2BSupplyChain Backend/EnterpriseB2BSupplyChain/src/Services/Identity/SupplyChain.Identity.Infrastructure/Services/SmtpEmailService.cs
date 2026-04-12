@@ -96,8 +96,12 @@ public class SmtpEmailService : IEmailService
         {
             if (_environment.IsDevelopment())
             {
+                // Log the full context (includes the OTP code) so devs can use it
+                // from the console without needing a real SMTP server.
                 _logger.LogWarning(
-                    "SMTP settings missing. DEV email fallback for {Email} ({Subject}). Context: {Context}",
+                    "SMTP settings missing — skipping real email delivery in Development.");
+                _logger.LogInformation(
+                    "[DEV] Email to {Email} | Subject: {Subject} | Context: {Context}",
                     toEmail, subject, fallbackContext);
                 return;
             }

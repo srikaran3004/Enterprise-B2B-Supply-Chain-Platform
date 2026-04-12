@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using SupplyChain.Identity.Application.Abstractions;
 using SupplyChain.Identity.Application.DTOs;
 using SupplyChain.Identity.Domain.Enums;
@@ -80,7 +80,8 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResultDto>
 
         return new AuthResultDto(
             AccessToken: accessToken,
-            ExpiresInSeconds: 3600,  // 1 hour
+            // Use configured JWT lifetime so ExpiresInSeconds stays in sync with the real token expiry
+            ExpiresInSeconds: _tokenService.GetTokenExpirySeconds(),
             RefreshToken: refreshToken,
             Role: user.Role.ToString(),
             FullName: user.FullName,

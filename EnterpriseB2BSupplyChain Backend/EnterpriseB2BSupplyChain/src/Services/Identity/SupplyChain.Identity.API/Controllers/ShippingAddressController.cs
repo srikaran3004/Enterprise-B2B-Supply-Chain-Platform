@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SupplyChain.SharedInfrastructure.Security;
@@ -33,9 +33,17 @@ public class ShippingAddressController : ControllerBase
     }
 
     [HttpGet("dealer/{dealerId:guid}")]
-    [Authorize] // Any authorized service/user can fetch for order resolving
+    [Authorize(Roles = "Dealer,Admin,SuperAdmin")]
     public async Task<IActionResult> GetAddressesByDealerId(Guid dealerId, CancellationToken ct)
     {
+        // Dealers can only read their own addresses; admins can read any dealer's addresses
+        if (User.IsInRole("Dealer"))
+        {
+            var requestingDealerId = GetDealerId();
+            if (requestingDealerId == Guid.Empty || requestingDealerId != dealerId)
+                return Forbid();
+        }
+
         var result = await _mediator.Send(new GetShippingAddressesQuery(dealerId), ct);
         return Ok(result);
     }

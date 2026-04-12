@@ -42,20 +42,26 @@ public class PlaceOrderCommandHandler : IRequestHandler<PlaceOrderCommand, Place
         var subtotal = command.Lines.Sum(l => l.UnitPrice * l.Quantity);
 
         // Credit check against Payment Service (subtotal + shipping)
+        // MUST happen BEFORE inventory commit so we know if the order goes OnHold.
         var totalWithShipping = subtotal + shippingFee;
         var isCreditOrder = string.Equals(command.PaymentMode, "Credit", StringComparison.OrdinalIgnoreCase);
         var creditCheck = isCreditOrder
             ? await _paymentClient.CheckCreditAsync(command.DealerId, totalWithShipping, ct)
             : new CreditCheckResult(true, decimal.MaxValue);
 
-        // Commit inventory for the ordered quantities.
-        var inventoryCommitted = await _inventoryClient.CommitOrderInventoryAsync(
-            command.DealerId,
-            command.Lines.Select(l => new InventoryOrderLine(l.ProductId, l.Quantity)).ToList(),
-            ct);
+        // Only commit inventory when credit is approved (or payment mode is not Credit).
+        // This avoids permanently reducing stock for orders that go OnHold and may be cancelled later.
+        var inventoryCommitted = false;
+        if (creditCheck.Approved)
+        {
+            inventoryCommitted = await _inventoryClient.CommitOrderInventoryAsync(
+                command.DealerId,
+                command.Lines.Select(l => new InventoryOrderLine(l.ProductId, l.Quantity)).ToList(),
+                ct);
 
-        if (!inventoryCommitted)
-            throw new DomainException("INVENTORY_COMMIT_FAILED", "Unable to commit inventory for one or more products.");
+            if (!inventoryCommitted)
+                throw new DomainException("INVENTORY_COMMIT_FAILED", "Unable to commit inventory for one or more products.");
+        }
 
         // Generate a new OrderId upfront so Lines can reference it
         var orderId     = Guid.NewGuid();
@@ -89,7 +95,7 @@ public class PlaceOrderCommandHandler : IRequestHandler<PlaceOrderCommand, Place
             dealerEmail: command.DealerEmail
         );
 
-        // If credit check fails — put order on hold immediately
+        // If credit check fails — put order on hold (no inventory committed in this path)
         if (!creditCheck.Approved)
             order.PlaceOnHold($"Order exceeds available credit. Available: ₹{creditCheck.AvailableCredit:N2}");
 
@@ -126,8 +132,16 @@ public class PlaceOrderCommandHandler : IRequestHandler<PlaceOrderCommand, Place
         }
         catch
         {
+            // Roll back credit reservation if it was done
             if (creditReserved)
                 await _paymentClient.ReleaseCreditAsync(order.OrderId, command.DealerId, totalWithShipping, ct);
+
+            // Roll back inventory if it was committed
+            if (inventoryCommitted)
+                await _inventoryClient.RestoreOrderInventoryAsync(
+                    command.DealerId,
+                    command.Lines.Select(l => new InventoryOrderLine(l.ProductId, l.Quantity)).ToList(),
+                    ct);
             throw;
         }
 

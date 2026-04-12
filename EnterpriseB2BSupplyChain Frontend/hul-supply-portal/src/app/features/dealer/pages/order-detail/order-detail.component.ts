@@ -529,6 +529,13 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
           this.loading = false;
         }
         this.loadTracking(orderId);
+
+        // Stop polling for terminal states — they will never change again
+        const terminalStatuses = ['Delivered', 'Cancelled'];
+        if (terminalStatuses.includes(o?.status) && this.refreshHandle) {
+          clearInterval(this.refreshHandle);
+          this.refreshHandle = null;
+        }
       },
       error: () => {
         if (!silent) {
@@ -537,6 +544,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
       }
     });
   }
+
 
   private loadPaymentStatus(orderId: string): void {
     this.http.get<any>(API_ENDPOINTS.payment.invoiceByOrderId(orderId)).subscribe({

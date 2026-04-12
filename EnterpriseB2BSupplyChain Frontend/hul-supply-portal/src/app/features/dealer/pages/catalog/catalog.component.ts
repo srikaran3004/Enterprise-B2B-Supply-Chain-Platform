@@ -421,7 +421,6 @@ export class CatalogComponent implements OnInit, OnDestroy {
   }
 
   applyFilters(): void {
-    this.selectedBrands.clear(); // reset brand filter when category/search changes
     this.store.dispatch(CatalogActions.applyFilter({
       filters: {
         searchTerm: this.searchTerm,
@@ -430,6 +429,7 @@ export class CatalogComponent implements OnInit, OnDestroy {
       }
     }));
   }
+
 
   onBrandChange(brand: string, event: Event): void {
     const checked = (event.target as HTMLInputElement).checked;

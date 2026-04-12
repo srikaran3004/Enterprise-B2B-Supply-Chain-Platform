@@ -1,4 +1,4 @@
-﻿using SupplyChain.Identity.Domain.Entities;
+using SupplyChain.Identity.Domain.Entities;
 
 namespace SupplyChain.Identity.Application.Abstractions;
 
@@ -10,4 +10,7 @@ public interface ITokenService
     Guid? GetUserIdFromToken(string token);
     string? GetJtiFromToken(string token);
     DateTime GetTokenExpiry(string token);
+
+    /// <summary>Returns the configured JWT lifetime in seconds (Jwt:ExpiryMinutes × 60).</summary>
+    int GetTokenExpirySeconds();
 }

@@ -207,8 +207,10 @@ export class ReturnsComponent implements OnInit {
   submittingReturn = false;
 
   ngOnInit(): void {
+    // loadReturns() internally calls loadMyOrders() on success,
+    // so we must NOT call loadMyOrders() here to avoid a double API call
+    // and to ensure orders are filtered against already-loaded return data.
     this.loadReturns();
-    this.loadMyOrders();
   }
 
   loadReturns() {
@@ -360,17 +362,10 @@ export class ReturnsComponent implements OnInit {
     return 'Failed to submit return request';
   }
 
-  getStatusClass(status: string) {
-    switch (status) {
-      case 'Pending': return 'bg-yellow-100 text-yellow-800';
-      case 'Approved': return 'bg-green-100 text-green-800';
-      case 'Rejected': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  }
 
   openImage(url: string) {
     window.open(url, '_blank');
   }
+
 
 }

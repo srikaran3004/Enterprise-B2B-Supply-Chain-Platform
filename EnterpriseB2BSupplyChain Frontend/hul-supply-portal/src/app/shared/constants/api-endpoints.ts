@@ -10,7 +10,7 @@ export const API_ENDPOINTS = {
     loginVerifyOtp: () => `${getBaseUrl(environment.identityServiceUrl)}/api/auth/login/verify-otp`,
     refresh: () => `${getBaseUrl(environment.identityServiceUrl)}/api/auth/refresh`,
     logout: () => `${getBaseUrl(environment.identityServiceUrl)}/api/auth/logout`,
-    logoutAll: () => `${getBaseUrl(environment.identityServiceUrl)}/api/auth/logout-all`,
+    // NOTE: logoutAll removed — no backend endpoint exists for /api/auth/logout-all
     register: () => `${getBaseUrl(environment.identityServiceUrl)}/api/auth/register`,
     registerVerifyOtp: () => `${getBaseUrl(environment.identityServiceUrl)}/api/auth/register/verify-otp`,
     forgotPassword: () => `${getBaseUrl(environment.identityServiceUrl)}/api/auth/forgot-password`,
@@ -66,12 +66,14 @@ export const API_ENDPOINTS = {
     rateShipment: (shipmentId: string) => `${getBaseUrl(environment.logisticsServiceUrl)}/api/logistics/shipments/${shipmentId}/rate`,
     vehicles: () => `${getBaseUrl(environment.logisticsServiceUrl)}/api/logistics/vehicles`,
     myShipments: () => `${getBaseUrl(environment.logisticsServiceUrl)}/api/logistics/shipments/mine`,
-    allAgents: () => `${getBaseUrl(environment.logisticsServiceUrl)}/api/logistics/agents`,
+    // NOTE: allAgents removed — was a duplicate of agents(). Use agents() instead.
     agentMe: () => `${getBaseUrl(environment.logisticsServiceUrl)}/api/logistics/agents/me`,
   },
   payment: {
+    // GET /api/payment/invoices supports Dealer,Admin,SuperAdmin and auto-filters by dealer JWT claim
     invoices: () => `${getBaseUrl(environment.paymentServiceUrl)}/api/payment/invoices`,
-    myInvoices: () => `${getBaseUrl(environment.paymentServiceUrl)}/api/payment/invoices/my`,
+    // NOTE: myInvoices (/api/payment/invoices/my) removed — does not exist on backend.
+    //       Use invoices() instead — it auto-scopes for Dealer role.
     invoiceByOrderId: (orderId: string) => `${getBaseUrl(environment.paymentServiceUrl)}/api/payment/invoices/order/${orderId}`,
     invoicesByDealer: (dealerId: string) => `${getBaseUrl(environment.paymentServiceUrl)}/api/payment/invoices/dealer/${dealerId}`,
     invoiceById: (id: string) => `${getBaseUrl(environment.paymentServiceUrl)}/api/payment/invoices/${id}`,
@@ -108,6 +110,8 @@ export const API_ENDPOINTS = {
   inventory: {
     base: () => `${getBaseUrl(environment.catalogServiceUrl)}/api/inventory`,
     restock: () => `${getBaseUrl(environment.catalogServiceUrl)}/api/inventory/restock`,
-    snapshot: () => `${getBaseUrl(environment.catalogServiceUrl)}/api/inventory/snapshot`,
+    // NOTE: /api/inventory/snapshot does not exist on the backend.
+    // The admin inventory view reads from GET /api/products directly.
+    products: () => `${getBaseUrl(environment.catalogServiceUrl)}/api/products`,
   },
 };

@@ -102,11 +102,10 @@ public class CancelOrderCommandHandler : IRequestHandler<CancelOrderCommand>
             order.OrderId,
             order.OrderNumber,
             order.DealerId,
-            order_number = order.OrderNumber,
             Reason = reason,
-            reason,
             dealerEmail
         }));
+
 
         await _outboxRepository.AddAsync(outbox, ct);
         await _orderRepository.SaveChangesAsync(ct);

@@ -42,9 +42,18 @@ public class OutboxPollerJob
         {
             try
             {
-                var routingKey = message.EventType.ToLower()
-                    .Replace("order", "order.")
-                    .TrimEnd('.');
+                // Use an explicit mapping so every event type has a predictable,
+                // well-formed routing key. The old string-replace approach broke
+                // for events like "AdminApprovalRequired" (no "order" substring).
+                var routingKey = message.EventType switch
+                {
+                    "OrderPlaced"           => "order.placed",
+                    "AdminApprovalRequired" => "order.adminapprovalrequired",
+                    "OrderDelivered"        => "order.delivered",
+                    "OrderCancelled"        => "order.cancelled",
+                    "ReturnRequested"       => "order.returnrequested",
+                    _                       => message.EventType.ToLower().Replace(" ", "-")
+                };
 
                 var payloadElement = DeserializePayload(message.Payload);
                 var correlationId = ResolveCorrelationId(payloadElement, message.MessageId);
@@ -78,8 +87,8 @@ public class OutboxPollerJob
                     body:       body);
 
                 message.MarkPublished();
-                _logger.LogInformation("Published outbox message {MessageId} — {EventType}",
-                    message.MessageId, message.EventType);
+                _logger.LogInformation("Published outbox message {MessageId} — {EventType} → {RoutingKey}",
+                    message.MessageId, message.EventType, routingKey);
             }
             catch (Exception ex)
             {

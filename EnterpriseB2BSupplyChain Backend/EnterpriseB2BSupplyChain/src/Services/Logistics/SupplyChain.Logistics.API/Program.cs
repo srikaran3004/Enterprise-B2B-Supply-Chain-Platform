@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -87,7 +87,6 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.MapScalarApiReference(opt =>
         opt.WithTitle("Logistics & Tracking Service").WithTheme(ScalarTheme.DeepSpace));
-    app.UseHangfireDashboard("/hangfire");
 }
 
 app.UseSharedInfrastructure();
@@ -95,6 +94,11 @@ app.UseCors("AllowAngular");
 app.UseSerilogRequestLogging();
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Hangfire Dashboard — placed AFTER authentication/authorization middleware so it is protected
+if (app.Environment.IsDevelopment())
+    app.UseHangfireDashboard("/hangfire");
+
 app.MapControllers();
 app.MapHealthChecks("/health");
 
@@ -104,5 +108,3 @@ RecurringJob.AddOrUpdate<SlaMonitorJob>(
     "*/5 * * * *"); // Every 5 minutes
 
 app.Run();
-
-

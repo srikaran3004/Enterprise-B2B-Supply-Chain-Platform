@@ -117,4 +117,10 @@ public class JwtTokenService : ITokenService
         var jwt = handler.ReadJwtToken(token);
         return jwt.ValidTo;
     }
-}
+
+    public int GetTokenExpirySeconds()
+    {
+        var expiryMinutes = int.TryParse(_config["Jwt:ExpiryMinutes"], out var mins) ? mins : 60;
+        return expiryMinutes * 60;
+    }
+}
