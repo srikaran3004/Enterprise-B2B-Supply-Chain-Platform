@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using StackExchange.Redis;
 using SupplyChain.Identity.Application.Abstractions;
 using SupplyChain.Identity.Infrastructure.Jobs;
 using SupplyChain.Identity.Infrastructure.Persistence;
@@ -28,10 +29,17 @@ public static class DependencyInjection
         services.AddScoped<ITokenService, JwtTokenService>();
         services.AddScoped<IEmailService, SmtpEmailService>();
 
-        // Redis cache
+        // Redis cache (fail-fast so user-facing requests do not stall when Redis is unavailable)
         var redisConn = configuration.GetConnectionString("Redis") ?? "localhost:6379,abortConnect=false";
-        services.AddSingleton<StackExchange.Redis.IConnectionMultiplexer>(sp => 
-            StackExchange.Redis.ConnectionMultiplexer.Connect(redisConn));
+        var redisOptions = ConfigurationOptions.Parse(redisConn);
+        redisOptions.AbortOnConnectFail = false;
+        redisOptions.ConnectTimeout = 1000;
+        redisOptions.SyncTimeout = 1000;
+        redisOptions.AsyncTimeout = 1000;
+        redisOptions.ConnectRetry = 0;
+
+        services.AddSingleton<IConnectionMultiplexer>(sp =>
+            ConnectionMultiplexer.Connect(redisOptions));
         services.AddSingleton<ICacheService, RedisCacheService>();
         services.AddHostedService<OtpCleanupBackgroundService>();
         services.AddHostedService<RefreshTokenCleanupBackgroundService>();

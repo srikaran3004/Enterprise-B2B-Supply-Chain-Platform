@@ -23,7 +23,7 @@ public class VerifyDealerLoginOtpCommandHandler : IRequestHandler<VerifyDealerLo
 
     public async Task<AuthResultDto> Handle(VerifyDealerLoginOtpCommand command, CancellationToken ct)
     {
-        var user = await _userRepository.GetByEmailAsync(command.Email, ct)
+        var user = await _userRepository.GetByEmailForAuthAsync(command.Email, ct)
             ?? throw new UnauthorizedAccessException("Invalid login verification request.");
 
         if (user.Role != UserRole.Dealer)

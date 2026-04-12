@@ -23,7 +23,7 @@ public class RequestForgotPasswordOtpCommandHandler : IRequestHandler<RequestFor
 
     public async Task<string> Handle(RequestForgotPasswordOtpCommand command, CancellationToken ct)
     {
-        var user = await _userRepository.GetByEmailAsync(command.Email, ct);
+        var user = await _userRepository.GetByEmailForAuthAsync(command.Email, ct);
 
         if (user is null || user.Role != UserRole.Dealer)
             return "If the account exists, an OTP has been sent to the registered email.";

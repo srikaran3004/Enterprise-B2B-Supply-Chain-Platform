@@ -32,8 +32,15 @@ public class AdminDealerController : ControllerBase
         if (!string.IsNullOrWhiteSpace(status) && Enum.TryParse<UserStatus>(status, true, out var s))
             parsedStatus = s;
 
-        var dealers = await _mediator.Send(new GetDealerListQuery(parsedStatus), ct);
-        return Ok(dealers.Select(DealerProfileView.FromDto).ToList());
+        try
+        {
+            var dealers = await _mediator.Send(new GetDealerListQuery(parsedStatus), ct);
+            return Ok(dealers.Select(DealerProfileView.FromDto).ToList());
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            return StatusCode(499, new { Message = "Request cancelled by client." });
+        }
     }
 
     /// <summary>Approve a pending dealer.</summary>

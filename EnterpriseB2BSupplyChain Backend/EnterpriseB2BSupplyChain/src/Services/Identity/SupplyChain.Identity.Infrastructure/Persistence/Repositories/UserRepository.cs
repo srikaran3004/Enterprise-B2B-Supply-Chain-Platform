@@ -31,6 +31,11 @@ public class UserRepository : IUserRepository
             .Include(u => u.DealerProfile)
             .FirstOrDefaultAsync(u => u.Email == email.ToLowerInvariant(), ct);
 
+    public async Task<User?> GetByEmailForAuthAsync(string email, CancellationToken ct = default)
+        => await _context.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Email == email.ToLowerInvariant(), ct);
+
     public async Task<bool> EmailExistsAsync(string email, CancellationToken ct = default)
         => await _context.Users
             .AnyAsync(u => u.Email == email.ToLowerInvariant(), ct);
@@ -48,6 +53,7 @@ public class UserRepository : IUserRepository
     public async Task<List<User>> GetDealersByStatusAsync(UserStatus? status, CancellationToken ct = default)
     {
         var query = _context.Users
+            .AsNoTracking()
             .Include(u => u.DealerProfile)
             .Where(u => u.Role == UserRole.Dealer);
 
@@ -61,9 +67,22 @@ public class UserRepository : IUserRepository
 
     public async Task<List<User>> GetUsersByRoleAsync(UserRole role, CancellationToken ct = default)
         => await _context.Users
+            .AsNoTracking()
             .Where(u => u.Role == role)
             .OrderByDescending(u => u.CreatedAt)
             .ToListAsync(ct);
+
+    public async Task<List<User>> GetUsersByRolesAsync(UserRole[] roles, CancellationToken ct = default)
+    {
+        if (roles is null || roles.Length == 0)
+            return [];
+
+        return await _context.Users
+            .AsNoTracking()
+            .Where(u => roles.Contains(u.Role))
+            .OrderByDescending(u => u.CreatedAt)
+            .ToListAsync(ct);
+    }
 
     public async Task AddOtpRecordAsync(OtpRecord otpRecord, CancellationToken ct = default)
         => await _context.OtpRecords.AddAsync(otpRecord, ct);

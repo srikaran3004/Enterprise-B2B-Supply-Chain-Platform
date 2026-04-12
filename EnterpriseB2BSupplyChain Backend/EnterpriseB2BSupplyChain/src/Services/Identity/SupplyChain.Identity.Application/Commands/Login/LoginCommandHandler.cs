@@ -26,7 +26,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResultDto>
 
     public async Task<AuthResultDto> Handle(LoginCommand command, CancellationToken ct)
     {
-        var user = await _userRepository.GetByEmailAsync(command.Email, ct)
+        var user = await _userRepository.GetByEmailForAuthAsync(command.Email, ct)
             ?? throw new UnauthorizedAccessException("Invalid email or password.");
 
         if (user.Status == UserStatus.Pending)

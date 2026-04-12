@@ -28,7 +28,14 @@ public class SuperAdminController : ControllerBase
     [HttpGet("view-admins")]
     public async Task<IActionResult> ViewAdmins(CancellationToken ct)
     {
-        var admins = await _mediator.Send(new GetAdminListQuery(), ct);
-        return Ok(admins);
+        try
+        {
+            var admins = await _mediator.Send(new GetAdminListQuery(), ct);
+            return Ok(admins);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            return StatusCode(499, new { Message = "Request cancelled by client." });
+        }
     }
 }

@@ -65,6 +65,8 @@ import { API_ENDPOINTS } from '../../../../shared/constants/api-endpoints';
   `]
 })
 export class SuperAdminDashboardComponent implements OnInit {
+  private static readonly DASHBOARD_TIMEOUT_MS = 12000;
+
   loading = true;
   staffCount = 0;
   dealerCount = 0;
@@ -76,50 +78,50 @@ export class SuperAdminDashboardComponent implements OnInit {
   activeOrders = 0;
   deliveredOrders = 0;
 
-  constructor(private http: ZoneHttpService, private cdr: ChangeDetectorRef) {}
+  constructor(private http: ZoneHttpService, private cdr: ChangeDetectorRef) { }
 
   /** Silent options: suppress the global error-toast for background dashboard calls */
   private get silentOpts() { return { headers: new HttpHeaders({ 'X-Skip-Error-Toast': '1' }) }; }
 
   ngOnInit(): void {
     forkJoin({
-      staff: this.http.get<any[]>(API_ENDPOINTS.superAdmin.viewAdmins(), this.silentOpts).pipe(timeout(10000), catchError((err) => { console.error('Staff err:', err); return of([]); })),
-      dealers: this.http.get<any[]>(API_ENDPOINTS.admin.dealers(), this.silentOpts).pipe(timeout(10000), catchError((err) => { console.error('Dealer err:', err); return of([]); })),
-      agents: this.http.get<any[]>(API_ENDPOINTS.logistics.availableAgents(), this.silentOpts).pipe(timeout(10000), catchError((err) => { console.error('Agent err:', err); return of([]); })),
-      products: this.http.get<any[]>(API_ENDPOINTS.catalog.products(), this.silentOpts).pipe(timeout(10000), catchError((err) => { console.error('Catalog err:', err); return of([]); })),
-      orders: this.http.get<any>(API_ENDPOINTS.orders.base() + '?pageSize=500', this.silentOpts).pipe(timeout(10000), catchError((err) => { console.error('Order err:', err); return of({ items: [] }); })),
+      staff: this.http.get<any[]>(API_ENDPOINTS.superAdmin.viewAdmins(), this.silentOpts).pipe(timeout(SuperAdminDashboardComponent.DASHBOARD_TIMEOUT_MS), catchError((err) => { console.error('Staff err:', err); return of([]); })),
+      dealers: this.http.get<any[]>(API_ENDPOINTS.admin.dealers(), this.silentOpts).pipe(timeout(SuperAdminDashboardComponent.DASHBOARD_TIMEOUT_MS), catchError((err) => { console.error('Dealer err:', err); return of([]); })),
+      agents: this.http.get<any[]>(API_ENDPOINTS.logistics.availableAgents(), this.silentOpts).pipe(timeout(SuperAdminDashboardComponent.DASHBOARD_TIMEOUT_MS), catchError((err) => { console.error('Agent err:', err); return of([]); })),
+      products: this.http.get<any[]>(API_ENDPOINTS.catalog.products(), this.silentOpts).pipe(timeout(SuperAdminDashboardComponent.DASHBOARD_TIMEOUT_MS), catchError((err) => { console.error('Catalog err:', err); return of([]); })),
+      orders: this.http.get<any>(API_ENDPOINTS.orders.base() + '?pageSize=500', this.silentOpts).pipe(timeout(SuperAdminDashboardComponent.DASHBOARD_TIMEOUT_MS), catchError((err) => { console.error('Order err:', err); return of({ items: [] }); })),
     })
-    .pipe(finalize(() => {
-      this.loading = false;
-      this.cdr.detectChanges();
-    }))
-    .subscribe({
-      next: (data) => {
-        try {
-          const staffArr = Array.isArray(data.staff) ? data.staff : [];
-          const dealersArr = Array.isArray(data.dealers) ? data.dealers : [];
-          const agentsArr = Array.isArray(data.agents) ? data.agents : [];
-          const productsArr = Array.isArray(data.products) ? data.products : [];
-          const ordersArr = Array.isArray(data.orders?.items) ? data.orders.items : (Array.isArray(data.orders) ? data.orders : []);
+      .pipe(finalize(() => {
+        this.loading = false;
+        this.cdr.detectChanges();
+      }))
+      .subscribe({
+        next: (data) => {
+          try {
+            const staffArr = Array.isArray(data.staff) ? data.staff : [];
+            const dealersArr = Array.isArray(data.dealers) ? data.dealers : [];
+            const agentsArr = Array.isArray(data.agents) ? data.agents : [];
+            const productsArr = Array.isArray(data.products) ? data.products : [];
+            const ordersArr = Array.isArray(data.orders?.items) ? data.orders.items : (Array.isArray(data.orders) ? data.orders : []);
 
-          this.staffCount = staffArr.length;
-          this.dealerCount = dealersArr.length;
-          this.pendingDealers = dealersArr.filter((d: any) => d.status === 'Pending').length;
-          this.agentCount = agentsArr.length;
-          this.productCount = productsArr.length;
+            this.staffCount = staffArr.length;
+            this.dealerCount = dealersArr.length;
+            this.pendingDealers = dealersArr.filter((d: any) => d.status === 'Pending').length;
+            this.agentCount = agentsArr.length;
+            this.productCount = productsArr.length;
 
-          this.totalOrders = ordersArr.length;
-          this.networkRevenue = ordersArr.reduce((sum: number, o: any) => sum + (o.totalAmount || 0), 0);
-          this.activeOrders = ordersArr.filter((o: any) => ['Placed', 'OnHold', 'Processing', 'ReadyForDispatch', 'InTransit'].includes(o?.status)).length;
-          this.deliveredOrders = ordersArr.filter((o: any) => o?.status === 'Delivered').length;
-        } catch (e) {
-          console.error('Error parsing dashboard data:', e);
+            this.totalOrders = ordersArr.length;
+            this.networkRevenue = ordersArr.reduce((sum: number, o: any) => sum + (o.totalAmount || 0), 0);
+            this.activeOrders = ordersArr.filter((o: any) => ['Placed', 'OnHold', 'Processing', 'ReadyForDispatch', 'InTransit'].includes(o?.status)).length;
+            this.deliveredOrders = ordersArr.filter((o: any) => o?.status === 'Delivered').length;
+          } catch (e) {
+            console.error('Error parsing dashboard data:', e);
+          }
+        },
+        error: (e) => {
+          console.error('Critical forkJoin error:', e);
         }
-      },
-      error: (e) => {
-        console.error('Critical forkJoin error:', e);
-      }
-    });
+      });
   }
 
   formatNum(val: number): string {

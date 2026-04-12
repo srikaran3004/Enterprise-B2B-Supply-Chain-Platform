@@ -7,23 +7,14 @@ namespace SupplyChain.Identity.Application.Queries.GetDealerList;
 public class GetDealerListQueryHandler : IRequestHandler<GetDealerListQuery, List<DealerListDto>>
 {
     private readonly IUserRepository _userRepository;
-    private readonly ICacheService _cache;
 
-    public GetDealerListQueryHandler(IUserRepository userRepository, ICacheService cache)
+    public GetDealerListQueryHandler(IUserRepository userRepository)
     {
         _userRepository = userRepository;
-        _cache = cache;
     }
 
     public async Task<List<DealerListDto>> Handle(GetDealerListQuery query, CancellationToken ct)
     {
-        var statusSuffix = query.Status?.ToString() ?? "all";
-        var cacheKey = $"dealers:list:{statusSuffix}";
-        
-        var cachedDealers = await _cache.GetAsync<List<DealerListDto>>(cacheKey, ct);
-        if (cachedDealers is not null)
-            return cachedDealers;
-
         var users = await _userRepository.GetDealersByStatusAsync(query.Status, ct);
 
         var result = users.Select(u => new DealerListDto(
@@ -43,8 +34,6 @@ public class GetDealerListQueryHandler : IRequestHandler<GetDealerListQuery, Lis
             ApprovedAt: u.DealerProfile?.ApprovedAt,
             ApprovedByAdminId: u.DealerProfile?.ApprovedByAdminId
         )).ToList();
-
-        await _cache.SetAsync(cacheKey, result, TimeSpan.FromMinutes(10), ct);
 
         return result;
     }
