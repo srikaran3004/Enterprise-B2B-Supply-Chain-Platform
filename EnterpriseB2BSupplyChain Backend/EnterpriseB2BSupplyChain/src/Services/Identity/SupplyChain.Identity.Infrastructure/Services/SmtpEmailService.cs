@@ -7,6 +7,7 @@ using MimeKit;
 using MimeKit.Text;
 using SupplyChain.Identity.Application.Abstractions;
 using SupplyChain.Identity.Application.Email;
+using System.Linq;
 
 namespace SupplyChain.Identity.Infrastructure.Services;
 
@@ -83,12 +84,45 @@ public class SmtpEmailService : IEmailService
     private async Task SendInternalAsync(
         string toEmail, string subject, string htmlBody, CancellationToken ct, string fallbackContext)
     {
-        var host        = _configuration["Email:SmtpHost"];
-        var port        = int.TryParse(_configuration["Email:SmtpPort"], out var p) ? p : 587;
-        var username    = _configuration["Email:Username"];
-        var password    = _configuration["Email:Password"]?.Replace(" ", string.Empty);
-        var fromAddress = _configuration["Email:FromAddress"] ?? username;
-        var fromName    = _configuration["Email:FromName"]    ?? "HUL Supply Chain";
+        var host = FirstNonEmpty(
+            Environment.GetEnvironmentVariable("EMAIL_SMTP_HOST"),
+            Environment.GetEnvironmentVariable("SMTP_HOST"),
+            _configuration["Email:SmtpHost"]);
+
+        var portText = FirstNonEmpty(
+            Environment.GetEnvironmentVariable("EMAIL_SMTP_PORT"),
+            Environment.GetEnvironmentVariable("SMTP_PORT"),
+            _configuration["Email:SmtpPort"]);
+        var port = int.TryParse(portText, out var p) ? p : 587;
+
+        var username = FirstNonEmpty(
+            Environment.GetEnvironmentVariable("EMAIL_USERNAME"),
+            Environment.GetEnvironmentVariable("SMTP_USERNAME"),
+            Environment.GetEnvironmentVariable("SMTP_USER"),
+            _configuration["Email:Username"]);
+
+        var password = FirstNonEmpty(
+            Environment.GetEnvironmentVariable("EMAIL_PASSWORD"),
+            Environment.GetEnvironmentVariable("SMTP_PASSWORD"),
+            _configuration["Email:Password"]);
+        password = password?.Replace(" ", string.Empty);
+
+        var fromAddress = FirstNonEmpty(
+            Environment.GetEnvironmentVariable("EMAIL_FROM"),
+            Environment.GetEnvironmentVariable("SMTP_FROM"),
+            _configuration["Email:FromAddress"],
+            username);
+
+        var fromName = FirstNonEmpty(
+            Environment.GetEnvironmentVariable("EMAIL_FROM_NAME"),
+            _configuration["Email:FromName"],
+            "HUL Supply Chain");
+
+        if (LooksLikePlaceholder(username) || LooksLikePlaceholder(password))
+        {
+            username = null;
+            password = null;
+        }
 
         if (string.IsNullOrWhiteSpace(host)
          || string.IsNullOrWhiteSpace(username)
@@ -143,6 +177,20 @@ public class SmtpEmailService : IEmailService
                 "Failed to send email. Verify SMTP credentials (use a Gmail App Password if using Gmail) " +
                 "and that SMTP authentication is enabled for the account.", ex);
         }
+    }
+
+    private static string? FirstNonEmpty(params string?[] values)
+        => values.FirstOrDefault(v => !string.IsNullOrWhiteSpace(v));
+
+    private static bool LooksLikePlaceholder(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return true;
+
+        var normalized = value.Trim().ToLowerInvariant();
+        return normalized is "your-email@gmail.com" or "your-app-password"
+            || normalized.Contains("your-email")
+            || normalized.Contains("your-app-password");
     }
 
     // ──────────────────────────────────────────────────────────────────────

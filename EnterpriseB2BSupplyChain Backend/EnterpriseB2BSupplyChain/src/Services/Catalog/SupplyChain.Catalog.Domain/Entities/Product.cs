@@ -106,8 +106,11 @@ public class Product
 
     public void AddStock(int quantity)
     {
-        if (quantity <= 0)
-            throw new DomainException("INVALID_QTY", "Restock quantity must be positive.");
+        if (quantity == 0)
+            throw new DomainException("INVALID_QTY", "Stock adjustment quantity cannot be zero.");
+
+        if (TotalStock + quantity < 0)
+            throw new DomainException("INVALID_QTY", "Stock cannot become negative.");
 
         TotalStock += quantity;
         UpdatedAt = DateTime.UtcNow;

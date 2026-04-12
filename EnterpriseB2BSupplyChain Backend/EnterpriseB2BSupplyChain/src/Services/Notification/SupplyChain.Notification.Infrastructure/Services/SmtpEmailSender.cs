@@ -41,38 +41,44 @@ public class SmtpEmailSender : IEmailSender
         CancellationToken ct = default)
     {
         var host = FirstNonEmpty(
-            _config["Email:SmtpHost"],
             Environment.GetEnvironmentVariable("EMAIL_SMTP_HOST"),
-            Environment.GetEnvironmentVariable("SMTP_HOST"));
+            Environment.GetEnvironmentVariable("SMTP_HOST"),
+            _config["Email:SmtpHost"]);
 
         var portText = FirstNonEmpty(
-            _config["Email:SmtpPort"],
             Environment.GetEnvironmentVariable("EMAIL_SMTP_PORT"),
-            Environment.GetEnvironmentVariable("SMTP_PORT"));
+            Environment.GetEnvironmentVariable("SMTP_PORT"),
+            _config["Email:SmtpPort"]);
         var port = int.TryParse(portText, out var p) ? p : 587;
 
         var username = FirstNonEmpty(
-            _config["Email:Username"],
             Environment.GetEnvironmentVariable("EMAIL_USERNAME"),
             Environment.GetEnvironmentVariable("SMTP_USERNAME"),
-            Environment.GetEnvironmentVariable("SMTP_USER"));
+            Environment.GetEnvironmentVariable("SMTP_USER"),
+            _config["Email:Username"]);
 
         var password = FirstNonEmpty(
-            _config["Email:Password"],
             Environment.GetEnvironmentVariable("EMAIL_PASSWORD"),
-            Environment.GetEnvironmentVariable("SMTP_PASSWORD"));
+            Environment.GetEnvironmentVariable("SMTP_PASSWORD"),
+            _config["Email:Password"]);
         password = password?.Replace(" ", string.Empty);
 
         var fromAddress = FirstNonEmpty(
-            _config["Email:FromAddress"],
             Environment.GetEnvironmentVariable("EMAIL_FROM"),
             Environment.GetEnvironmentVariable("SMTP_FROM"),
+            _config["Email:FromAddress"],
             username);
 
         var fromName = FirstNonEmpty(
-            _config["Email:FromName"],
             Environment.GetEnvironmentVariable("EMAIL_FROM_NAME"),
+            _config["Email:FromName"],
             "HUL Supply Chain");
+
+        if (LooksLikePlaceholder(username) || LooksLikePlaceholder(password))
+        {
+            username = null;
+            password = null;
+        }
 
         if (string.IsNullOrWhiteSpace(host)
          || string.IsNullOrWhiteSpace(username)
@@ -124,4 +130,15 @@ public class SmtpEmailSender : IEmailSender
 
     private static string? FirstNonEmpty(params string?[] values)
         => values.FirstOrDefault(v => !string.IsNullOrWhiteSpace(v));
+
+    private static bool LooksLikePlaceholder(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return true;
+
+        var normalized = value.Trim().ToLowerInvariant();
+        return normalized is "your-email@gmail.com" or "your-app-password"
+            || normalized.Contains("your-email")
+            || normalized.Contains("your-app-password");
+    }
 }

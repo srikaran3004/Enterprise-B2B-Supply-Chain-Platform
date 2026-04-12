@@ -374,7 +374,7 @@ export class AdminOrderDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private http: ZoneHttpService
-  ) {}
+  ) { }
 
   get hasAddress(): boolean {
     return !!(this.order?.shippingAddressLine || this.order?.shippingCity || this.order?.shippingState);
@@ -403,27 +403,27 @@ export class AdminOrderDetailComponent implements OnInit {
 
   getShipmentStatusLabel(status: string): string {
     const map: Record<string, string> = {
-      Pending:          'Pending',
-      AgentAssigned:    'Agent Assigned',
-      PickedUp:         'Picked Up',
-      InTransit:        'In Transit',
-      OutForDelivery:   'Out for Delivery',
-      Delivered:        'Delivered',
+      Pending: 'Pending',
+      AgentAssigned: 'Agent Assigned',
+      PickedUp: 'Picked Up',
+      InTransit: 'In Transit',
+      OutForDelivery: 'Out for Delivery',
+      Delivered: 'Delivered',
       VehicleBreakdown: 'Vehicle Breakdown',
-      Failed:           'Failed',
+      Failed: 'Failed',
     };
     return map[status] || status;
   }
 
   getShipmentStatusClass(status: string): string {
     const map: Record<string, string> = {
-      AgentAssigned:    'agent-pill--orange',
-      PickedUp:         'agent-pill--blue',
-      InTransit:        'agent-pill--blue',
-      OutForDelivery:   'agent-pill--blue',
-      Delivered:        'agent-pill--green',
+      AgentAssigned: 'agent-pill--orange',
+      PickedUp: 'agent-pill--blue',
+      InTransit: 'agent-pill--blue',
+      OutForDelivery: 'agent-pill--blue',
+      Delivered: 'agent-pill--green',
       VehicleBreakdown: 'agent-pill--red',
-      Failed:           'agent-pill--red',
+      Failed: 'agent-pill--red',
     };
     return map[status] || 'agent-pill--gray';
   }
@@ -444,7 +444,9 @@ export class AdminOrderDetailComponent implements OnInit {
           sublabel: this.formatIST(s.changedAt || s.timestamp),
           timestamp: s.changedAt || s.timestamp,
           notes: s.notes,
-          variant: i === arr.length - 1 ? 'active' as const : 'completed' as const
+          variant: ((s.toStatus || s.status) === 'Delivered' || i < arr.length - 1)
+            ? 'completed' as const
+            : 'active' as const
         }));
         if (this.timelineEvents.length === 0) {
           this.timelineEvents = [{ label: o.status, timestamp: o.placedAt, variant: 'active' }];
@@ -458,7 +460,7 @@ export class AdminOrderDetailComponent implements OnInit {
 
   loadTracking(orderId: string): void {
     this.http.get<any>(API_ENDPOINTS.logistics.tracking(orderId)).subscribe({
-      next: t  => { this.tracking = t; },
+      next: t => { this.tracking = t; },
       error: () => { this.tracking = null; }
     });
   }

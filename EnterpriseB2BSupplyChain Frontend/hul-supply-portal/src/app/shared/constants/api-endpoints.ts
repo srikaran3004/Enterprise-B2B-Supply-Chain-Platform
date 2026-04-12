@@ -111,6 +111,7 @@ export const API_ENDPOINTS = {
   inventory: {
     base: () => `${getBaseUrl(environment.catalogServiceUrl)}/api/inventory`,
     restock: () => `${getBaseUrl(environment.catalogServiceUrl)}/api/inventory/restock`,
+    subscribe: () => `${getBaseUrl(environment.catalogServiceUrl)}/api/inventory/subscribe`,
     // NOTE: /api/inventory/snapshot does not exist on the backend.
     // The admin inventory view reads from GET /api/products directly.
     products: () => `${getBaseUrl(environment.catalogServiceUrl)}/api/products`,

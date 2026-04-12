@@ -13,7 +13,6 @@ public class ProductRepository : IProductRepository
 
     public async Task<Product?> GetByIdAsync(Guid productId, CancellationToken ct = default)
         => await _context.Products
-            .AsNoTracking()
             .Include(p => p.Category)
             .AsSplitQuery()
             .FirstOrDefaultAsync(p => p.ProductId == productId, ct);

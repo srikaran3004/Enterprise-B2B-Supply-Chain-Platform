@@ -228,6 +228,7 @@ public class RabbitMqNotificationConsumer : BackgroundService
             var agentUserIdStr = data.TryGetValue("AgentUserId", out var aui) ? aui?.ToString() : null;
             var status      = data.TryGetValue("Status", out var st) ? st?.ToString() : null;
             var place       = data.TryGetValue("Place", out var pl) ? pl?.ToString() : null;
+            var productName = FirstValue(data, "ProductName", "productName", "product_name", "Name") ?? "Selected product";
 
             Guid? dealerId = Guid.TryParse(dealerIdStr, out var did) ? did : null;
             Guid? agentId  = Guid.TryParse(agentIdStr,  out var aid) ? aid : null;
@@ -282,6 +283,11 @@ public class RabbitMqNotificationConsumer : BackgroundService
                     ($"Delivery Update — {orderNumber}",
                      $"Your order {orderNumber} may experience a slight delay. We are working to deliver it as soon as possible.",
                      "Logistics"),
+
+                "StockRestored" =>
+                    ($"Back in Stock - {productName}",
+                     $"Good news. {productName} is back in stock and available to order.",
+                     "Catalog"),
 
                 _ => (null, null, null)
             };

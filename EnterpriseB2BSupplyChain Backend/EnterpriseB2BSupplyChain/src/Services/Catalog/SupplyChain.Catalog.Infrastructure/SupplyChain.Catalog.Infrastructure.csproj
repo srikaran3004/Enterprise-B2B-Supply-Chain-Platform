@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SupplyChain.Catalog.Application\SupplyChain.Catalog.Application.csproj" />
+    <ProjectReference Include="..\..\..\SharedInfrastructure\SupplyChain.SharedInfrastructure\SupplyChain.SharedInfrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

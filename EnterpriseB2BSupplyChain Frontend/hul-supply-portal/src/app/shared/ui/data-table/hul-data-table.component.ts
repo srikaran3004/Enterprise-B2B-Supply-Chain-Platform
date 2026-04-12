@@ -179,7 +179,7 @@ export interface DataTableAction {
     .dt-action-btn {
       padding: 5px 12px; border-radius: var(--radius-md); font-size: 12px; font-weight: 500;
       cursor: pointer; border: 1px solid var(--border-default); background: var(--bg-card);
-      color: var(--text-secondary); transition: all var(--duration-fast);
+      color: var(--text-secondary); transition: all var(--duration-fast); font-family: var(--font-body);
     }
     .dt-action-btn:hover { background: var(--bg-muted); color: var(--text-primary); }
     .dt-action-btn--danger { color: var(--hul-danger); border-color: var(--hul-danger); }

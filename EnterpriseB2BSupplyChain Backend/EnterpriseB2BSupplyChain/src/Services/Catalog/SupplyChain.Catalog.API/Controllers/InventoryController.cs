@@ -7,6 +7,7 @@ using SupplyChain.Catalog.Application.Commands.RestockProduct;
 using SupplyChain.Catalog.Application.Commands.ReserveInventory;
 using SupplyChain.Catalog.Application.Commands.ReleaseInventory;
 using SupplyChain.Catalog.Application.Commands.RestoreOrderInventory;
+using SupplyChain.Catalog.Application.Commands.SubscribeToProduct;
 using System.Security.Claims;
 
 namespace SupplyChain.Catalog.API.Controllers;
@@ -29,7 +30,21 @@ public class InventoryController : ControllerBase
         await _mediator.Send(
             new RestockProductCommand(request.ProductId, request.Quantity, request.Notes), ct);
 
-        return Ok(new { Message = $"{request.Quantity} units added to stock." });
+        return Ok(new { Message = $"Stock adjusted by {request.Quantity} units." });
+    }
+
+    [HttpPost("subscribe")]
+    [Authorize(Roles = "Dealer")]
+    public async Task<IActionResult> SubscribeToStock(
+        [FromBody] SubscribeInventoryRequest request,
+        CancellationToken ct)
+    {
+        var dealerId = GetDealerId();
+        if (dealerId == Guid.Empty)
+            return Unauthorized(new { Message = "Dealer identity is missing in token." });
+
+        await _mediator.Send(new SubscribeToProductCommand(dealerId, request.ProductId), ct);
+        return Ok(new { Message = "You will be notified when this product is back in stock." });
     }
 
     /// <summary>
@@ -92,6 +107,17 @@ public class InventoryController : ControllerBase
         return Ok(new { Message = "All reservations released successfully" });
     }
 
+    private Guid GetDealerId()
+    {
+        var dealerIdClaim = User.FindFirst("dealerId")?.Value;
+        if (Guid.TryParse(dealerIdClaim, out var dealerId))
+            return dealerId;
+
+        var subClaim = User.FindFirstValue(ClaimTypes.NameIdentifier)
+            ?? User.FindFirstValue("sub");
+        return Guid.TryParse(subClaim, out var fallbackId) ? fallbackId : Guid.Empty;
+    }
+
     /// <summary>
     /// Internal endpoint: convert dealer cart reservations into committed stock deduction
     /// when an order is successfully created.
@@ -133,5 +159,6 @@ public class InventoryController : ControllerBase
 public record RestockRequest(Guid ProductId, int Quantity, string? Notes);
 public record ReserveInventoryRequest(Guid ProductId, int Quantity);
 public record ReleaseInventoryRequest(Guid? ProductId);
+public record SubscribeInventoryRequest(Guid ProductId);
 public record CommitOrderInventoryRequest(Guid DealerId, List<CommitOrderInventoryLineRequest> Lines);
 public record CommitOrderInventoryLineRequest(Guid ProductId, int Quantity);

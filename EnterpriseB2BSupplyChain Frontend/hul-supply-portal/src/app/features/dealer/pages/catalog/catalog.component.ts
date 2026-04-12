@@ -108,8 +108,8 @@ import { environment } from '../../../../../environments/environment';
                   </div>
                   <hul-button variant="primary" size="sm" (click)="addToCart(product)">Add to Cart</hul-button>
                 </div>
-                <hul-button *ngIf="!product.isInStock" variant="outline" size="sm" [fullWidth]="true" style="margin-top: 8px;">
-                  Notify Me
+                <hul-button *ngIf="!product.isInStock" variant="outline" size="sm" [fullWidth]="true" style="margin-top: 8px;" (click)="subscribeBackInStock(product)">
+                  {{ isSubscribed(product.productId) ? 'Subscribed' : 'Notify Me' }}
                 </hul-button>
               </div>
             </div>
@@ -371,6 +371,7 @@ export class CatalogComponent implements OnInit, OnDestroy {
   selectedBrands: Set<string> = new Set();
   quantities: Record<string, number> = {};
   favorites: Set<string> = new Set();
+  subscribedProducts: Set<string> = new Set();
 
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
@@ -406,7 +407,7 @@ export class CatalogComponent implements OnInit, OnDestroy {
       next: (favorites: any[]) => {
         this.favorites = new Set(favorites.map((f: any) => f.productId));
       },
-      error: () => {}
+      error: () => { }
     });
   }
 
@@ -490,7 +491,7 @@ export class CatalogComponent implements OnInit, OnDestroy {
 
   toggleFavorite(product: any, event: Event): void {
     event.stopPropagation();
-    this.http.post<{isFavorited: boolean, message: string}>(
+    this.http.post<{ isFavorited: boolean, message: string }>(
       API_ENDPOINTS.catalog.toggleFavorite(product.productId),
       {}
     ).subscribe({
@@ -506,6 +507,25 @@ export class CatalogComponent implements OnInit, OnDestroy {
         this.toast.error('Failed to update favorite');
       }
     });
+  }
+
+  subscribeBackInStock(product: any): void {
+    if (this.isSubscribed(product.productId)) {
+      this.toast.success(`You are already subscribed for ${product.name}`);
+      return;
+    }
+
+    this.http.post(API_ENDPOINTS.inventory.subscribe(), { productId: product.productId }).subscribe({
+      next: () => {
+        this.subscribedProducts.add(product.productId);
+        this.toast.success(`We'll notify you when ${product.name} is back in stock`);
+      },
+      error: () => this.toast.error('Failed to subscribe for stock notification')
+    });
+  }
+
+  isSubscribed(productId: string): boolean {
+    return this.subscribedProducts.has(productId);
   }
 
   resolveImageUrl(url: string): string {
