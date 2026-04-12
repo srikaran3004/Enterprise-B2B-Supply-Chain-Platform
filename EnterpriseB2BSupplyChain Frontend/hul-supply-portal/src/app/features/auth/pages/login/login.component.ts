@@ -174,7 +174,17 @@ export class LoginComponent {
       next: (response) => {
         this.loading = false;
         if (response.accessToken) {
+          if (!this.authService.isAuthenticated()) {
+            this.serverError = 'Login response did not contain a valid token. Please try again.';
+            return;
+          }
+
           const route = this.authService.getRoleDashboardRoute();
+          if (route === '/auth/login') {
+            this.serverError = 'Unable to determine your account role. Please contact support.';
+            return;
+          }
+
           this.router.navigate([route]);
           this.toast.success(`Welcome back, ${response.fullName}!`);
         } else {

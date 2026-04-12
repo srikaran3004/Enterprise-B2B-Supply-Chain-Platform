@@ -108,6 +108,16 @@ public class Order
         UpdatedAt = DateTime.UtcNow;
     }
 
+    public void AutoApproveForPurchaseLimit()
+    {
+        if (Status != OrderStatus.Placed)
+            throw new DomainException("INVALID_TRANSITION", "Only Placed orders can be auto-approved.");
+
+        RecordTransition(Status, OrderStatus.Processing, null, "Auto-approved: within monthly purchase limit");
+        Status = OrderStatus.Processing;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
     public void MarkReadyForDispatch(Guid warehouseManagerId)
     {
         if (Status != OrderStatus.Processing)

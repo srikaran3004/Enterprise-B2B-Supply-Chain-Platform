@@ -10,9 +10,10 @@ public class DealerCreditAccountConfiguration : IEntityTypeConfiguration<DealerC
     {
         builder.HasKey(a => a.AccountId);
         builder.HasIndex(a => a.DealerId).IsUnique();
-        builder.Property(a => a.CreditLimit).HasColumnType("decimal(18,2)");
-        builder.Property(a => a.CurrentOutstanding).HasColumnType("decimal(18,2)");
+        builder.Property(a => a.CreditLimit).HasColumnType("decimal(18,2)").HasColumnName("PurchaseLimit");
+        builder.Property(a => a.CurrentOutstanding).HasColumnType("decimal(18,2)").HasColumnName("CurrentUtilized");
+        builder.Property(a => a.LastMonthlyResetAt).HasColumnType("datetime2");
         builder.Ignore(a => a.AvailableCredit);
-        builder.ToTable("DealerCreditAccounts");
+        builder.ToTable("DealerPurchaseLimitAccounts");
     }
 }

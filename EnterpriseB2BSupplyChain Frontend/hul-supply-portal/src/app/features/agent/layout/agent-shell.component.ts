@@ -189,6 +189,14 @@ import { ThemeService } from '../../../core/services/theme.service';
     .agent-layout {
       display: flex; min-height: 100vh;
       background: var(--bg-subtle);
+      font-family: var(--font-body);
+    }
+
+    .agent-layout button,
+    .agent-layout input,
+    .agent-layout textarea,
+    .agent-layout select {
+      font: inherit;
     }
 
     /* ── Sidebar ─────────────────────────────────────────────── */
@@ -368,7 +376,7 @@ export class AgentShellComponent implements OnInit {
     private authService: AuthService,
     private router: Router,
     public themeService: ThemeService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     const name = this.authService.getUserName() || 'Agent';

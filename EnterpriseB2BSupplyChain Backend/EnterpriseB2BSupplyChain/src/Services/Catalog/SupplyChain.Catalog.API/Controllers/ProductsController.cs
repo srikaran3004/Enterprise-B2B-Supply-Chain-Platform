@@ -33,11 +33,19 @@ public class ProductsController : ControllerBase
         [FromQuery] bool includeInactive = false,
         CancellationToken ct = default)
     {
-        // Only Admin/SuperAdmin can request inactive products
-        var canSeeInactive = User.IsInRole("Admin") || User.IsInRole("SuperAdmin");
-        var products = await _mediator.Send(
-            new GetProductsQuery(categoryId, inStockOnly, searchTerm, includeInactive && canSeeInactive), ct);
-        return Ok(products);
+        try
+        {
+            // Only Admin/SuperAdmin can request inactive products
+            var canSeeInactive = User.IsInRole("Admin") || User.IsInRole("SuperAdmin");
+            var products = await _mediator.Send(
+                new GetProductsQuery(categoryId, inStockOnly, searchTerm, includeInactive && canSeeInactive), ct);
+            return Ok(products);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            // Client aborted/navigated away while query was running.
+            return StatusCode(499, new { error = "Request cancelled by client." });
+        }
     }
 
     [HttpGet("{productId:guid}")]

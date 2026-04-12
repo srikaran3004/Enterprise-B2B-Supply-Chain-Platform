@@ -12,21 +12,15 @@ public class ConfirmRazorpayPaymentCommandHandler : IRequestHandler<ConfirmRazor
 {
     private readonly IConfiguration _configuration;
     private readonly IPaymentRecordRepository _paymentRecordRepository;
-    private readonly IInvoiceRepository _invoiceRepository;
-    private readonly ICreditAccountRepository _creditAccountRepository;
     private readonly ILogger<ConfirmRazorpayPaymentCommandHandler> _logger;
 
     public ConfirmRazorpayPaymentCommandHandler(
         IConfiguration configuration,
         IPaymentRecordRepository paymentRecordRepository,
-        IInvoiceRepository invoiceRepository,
-        ICreditAccountRepository creditAccountRepository,
         ILogger<ConfirmRazorpayPaymentCommandHandler> logger)
     {
         _configuration = configuration;
         _paymentRecordRepository = paymentRecordRepository;
-        _invoiceRepository = invoiceRepository;
-        _creditAccountRepository = creditAccountRepository;
         _logger = logger;
     }
 
@@ -67,22 +61,7 @@ public class ConfirmRazorpayPaymentCommandHandler : IRequestHandler<ConfirmRazor
                     await _paymentRecordRepository.AddAsync(paymentRecord, ct);
                 }
 
-                var wasAlreadyPaid = string.Equals(paymentRecord.Status, "Paid", StringComparison.OrdinalIgnoreCase);
-
                 paymentRecord.MarkPaid(command.RazorpayPaymentId);
-
-                if (!wasAlreadyPaid && command.DealerId.HasValue)
-                {
-                    var invoice = await _invoiceRepository.GetByOrderIdAsync(orderId, ct);
-                    if (invoice is not null)
-                    {
-                        var account = await _creditAccountRepository.GetByDealerIdAsync(command.DealerId.Value, ct);
-                        if (account is not null)
-                        {
-                            account.ReduceOutstanding(invoice.GrandTotal);
-                        }
-                    }
-                }
 
                 await _paymentRecordRepository.SaveChangesAsync(ct);
             }

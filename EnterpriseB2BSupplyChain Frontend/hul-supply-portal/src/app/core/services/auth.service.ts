@@ -9,6 +9,8 @@ import { API_ENDPOINTS } from '../../shared/constants/api-endpoints';
 export class AuthService {
   // Access token is intentionally in-memory only for stronger XSS posture.
   private accessToken: string | null = null;
+  private currentRole: UserRole | null = null;
+  private currentUserName: string | null = null;
   private refreshInFlight$: Observable<LoginResponse> | null = null;
 
   constructor(private http: HttpClient, private router: Router) { }
@@ -85,6 +87,8 @@ export class AuthService {
     });
 
     this.accessToken = null;
+    this.currentRole = null;
+    this.currentUserName = null;
     this.router.navigate(['/auth/login']);
   }
 
@@ -100,11 +104,12 @@ export class AuthService {
   }
 
   getUserRole(): UserRole | null {
-    return (this.getDecodedToken()?.role as UserRole) ?? null;
+    const decodedRole = this.normalizeRoleValue(this.getDecodedToken()?.role);
+    return decodedRole ?? this.currentRole;
   }
 
   getUserName(): string | null {
-    return this.getDecodedToken()?.fullName ?? null;
+    return this.getDecodedToken()?.fullName ?? this.currentUserName;
   }
 
   isAuthenticated(): boolean {
@@ -138,6 +143,8 @@ export class AuthService {
 
   private storeToken(response: LoginResponse): void {
     this.accessToken = response.accessToken;
+    this.currentRole = this.normalizeRoleValue(response.role);
+    this.currentUserName = response.fullName || null;
   }
 
   ensureAuthenticated(): Observable<boolean> {
@@ -158,7 +165,7 @@ export class AuthService {
       accessToken: payload?.accessToken ?? payload?.AccessToken ?? '',
       expiresInSeconds: payload?.expiresInSeconds ?? payload?.ExpiresInSeconds ?? 0,
       refreshToken: payload?.refreshToken ?? payload?.RefreshToken ?? null,
-      role: payload?.role ?? payload?.Role ?? '',
+      role: payload?.role ?? payload?.Role ?? payload?.userRole ?? payload?.UserRole ?? '',
       fullName: payload?.fullName ?? payload?.FullName ?? '',
       userId: payload?.userId ?? payload?.UserId ?? '',
     };
@@ -172,18 +179,23 @@ export class AuthService {
         .replace(/_/g, '/')
         .padEnd(payload.length + ((4 - payload.length % 4) % 4), '=');
       const decoded = JSON.parse(atob(normalizedPayload));
-      const rawRole = decoded.role || decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+      const rawRole =
+        decoded.role
+        || decoded.roles
+        || decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']
+        || decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role'];
       let primaryRole = rawRole;
       if (Array.isArray(rawRole)) {
         if (rawRole.includes('SuperAdmin')) primaryRole = 'SuperAdmin';
         else if (rawRole.includes('Admin')) primaryRole = 'Admin';
         else primaryRole = rawRole[0];
       }
+      const normalizedRole = this.normalizeRoleValue(primaryRole);
 
       return {
         sub: decoded.sub || decoded.nameid,
         email: decoded.email,
-        role: primaryRole,
+        role: normalizedRole as UserRole,
         fullName: decoded.fullName || decoded.unique_name,
         dealerId: decoded.dealerId,
         jti: decoded.jti,
@@ -199,6 +211,28 @@ export class AuthService {
       };
     } catch {
       return null;
+    }
+  }
+
+  private normalizeRoleValue(rawRole: unknown): UserRole | null {
+    if (!rawRole || typeof rawRole !== 'string') {
+      return null;
+    }
+
+    const normalized = rawRole.trim().toLowerCase().replace(/[_\-\s]+/g, '');
+
+    switch (normalized) {
+      case 'superadmin':
+        return UserRole.SuperAdmin;
+      case 'admin':
+        return UserRole.Admin;
+      case 'dealer':
+        return UserRole.Dealer;
+      case 'deliveryagent':
+      case 'agent':
+        return UserRole.DeliveryAgent;
+      default:
+        return null;
     }
   }
 }

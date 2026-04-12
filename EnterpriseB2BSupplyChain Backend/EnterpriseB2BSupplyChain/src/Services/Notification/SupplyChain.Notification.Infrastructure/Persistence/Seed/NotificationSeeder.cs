@@ -103,14 +103,14 @@ public static class NotificationSeeder
 
         EmailTemplate.Create(
             "AdminApprovalRequired",
-            "Order On Hold - Credit Limit Exceeded - {{ order_number }}",
+            "Order On Hold - Purchase Limit Exceeded - {{ order_number }}",
             HulEmailLayout.Wrap(
                 title: "Order Requires Approval",
                 preheader: "Order {{ order_number }} is on hold pending admin review.",
                 accentColor: HulEmailLayout.Warning,
                 bodyHtml:
                     HulEmailLayout.Greeting("Admin") +
-                    HulEmailLayout.Paragraph("An order has been placed that exceeds the dealer's available credit limit and is now on hold.") +
+                    HulEmailLayout.Paragraph("An order has been placed that exceeds the dealer's available monthly purchase limit and is now on hold.") +
                     HulEmailLayout.InfoBox(
                         "Order Details",
                         "<strong>Order Number:</strong> {{ order_number }}<br/><strong>Dealer:</strong> {{ dealer_name }}<br/><strong>Amount:</strong> &#8377; {{ total_amount }}",

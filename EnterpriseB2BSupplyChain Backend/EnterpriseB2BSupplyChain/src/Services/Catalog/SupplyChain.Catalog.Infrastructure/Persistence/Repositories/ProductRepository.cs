@@ -13,12 +13,16 @@ public class ProductRepository : IProductRepository
 
     public async Task<Product?> GetByIdAsync(Guid productId, CancellationToken ct = default)
         => await _context.Products
+            .AsNoTracking()
             .Include(p => p.Category)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(p => p.ProductId == productId, ct);
 
     public async Task<Product?> GetBySkuAsync(string sku, CancellationToken ct = default)
         => await _context.Products
+            .AsNoTracking()
             .Include(p => p.Category)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(p => p.SKU == sku.ToUpperInvariant(), ct);
 
     public async Task<bool> SkuExistsAsync(string sku, CancellationToken ct = default)
@@ -26,27 +30,35 @@ public class ProductRepository : IProductRepository
 
     public async Task<List<Product>> GetAllActiveAsync(CancellationToken ct = default)
         => await _context.Products
+            .AsNoTracking()
             .Include(p => p.Category)
+            .AsSplitQuery()
             .Where(p => p.Status == ProductStatus.Active)
             .OrderBy(p => p.Name)
             .ToListAsync(ct);
 
     public async Task<List<Product>> GetAllAsync(CancellationToken ct = default)
         => await _context.Products
+            .AsNoTracking()
             .Include(p => p.Category)
+            .AsSplitQuery()
             .OrderBy(p => p.Name)
             .ToListAsync(ct);
 
     public async Task<List<Product>> GetByCategoryAsync(Guid categoryId, CancellationToken ct = default)
         => await _context.Products
+            .AsNoTracking()
             .Include(p => p.Category)
+            .AsSplitQuery()
             .Where(p => p.CategoryId == categoryId && p.Status == ProductStatus.Active)
             .OrderBy(p => p.Name)
             .ToListAsync(ct);
 
     public async Task<List<Product>> GetAllByCategoryAsync(Guid categoryId, CancellationToken ct = default)
         => await _context.Products
+            .AsNoTracking()
             .Include(p => p.Category)
+            .AsSplitQuery()
             .Where(p => p.CategoryId == categoryId)
             .OrderBy(p => p.Name)
             .ToListAsync(ct);
@@ -55,7 +67,9 @@ public class ProductRepository : IProductRepository
     {
         var term = searchTerm.ToLower();
         return await _context.Products
+            .AsNoTracking()
             .Include(p => p.Category)
+            .AsSplitQuery()
             .Where(p => p.Status == ProductStatus.Active &&
                        (p.Name.ToLower().Contains(term) ||
                         p.SKU.ToLower().Contains(term) ||

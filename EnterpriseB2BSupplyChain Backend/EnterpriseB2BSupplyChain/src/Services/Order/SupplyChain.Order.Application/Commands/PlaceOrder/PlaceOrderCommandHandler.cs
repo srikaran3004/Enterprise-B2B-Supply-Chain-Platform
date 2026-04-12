@@ -38,18 +38,15 @@ public class PlaceOrderCommandHandler : IRequestHandler<PlaceOrderCommand, Place
         // Calculate state-based shipping fee
         var shippingFee = ShippingFeeService.Calculate(shippingAddress?.State);
 
-        // Calculate subtotal for credit check (before shipping)
+        // Calculate subtotal for purchase limit check (before shipping)
         var subtotal = command.Lines.Sum(l => l.UnitPrice * l.Quantity);
 
-        // Credit check against Payment Service (subtotal + shipping)
+        // Purchase limit check against Payment Service (subtotal + shipping)
         // MUST happen BEFORE inventory commit so we know if the order goes OnHold.
         var totalWithShipping = subtotal + shippingFee;
-        var isCreditOrder = string.Equals(command.PaymentMode, "Credit", StringComparison.OrdinalIgnoreCase);
-        var creditCheck = isCreditOrder
-            ? await _paymentClient.CheckCreditAsync(command.DealerId, totalWithShipping, ct)
-            : new CreditCheckResult(true, decimal.MaxValue);
+        var creditCheck = await _paymentClient.CheckCreditAsync(command.DealerId, totalWithShipping, ct);
 
-        // Only commit inventory when credit is approved (or payment mode is not Credit).
+        // Only commit inventory when purchase limit is approved (or payment mode is not Credit).
         // This avoids permanently reducing stock for orders that go OnHold and may be cancelled later.
         var inventoryCommitted = false;
         if (creditCheck.Approved)
@@ -95,18 +92,25 @@ public class PlaceOrderCommandHandler : IRequestHandler<PlaceOrderCommand, Place
             dealerEmail: command.DealerEmail
         );
 
-        // If credit check fails — put order on hold (no inventory committed in this path)
+        // If purchase limit check fails — put order on hold (no inventory committed in this path)
         if (!creditCheck.Approved)
-            order.PlaceOnHold($"Order exceeds available credit. Available: ₹{creditCheck.AvailableCredit:N2}");
+        {
+            order.PlaceOnHold($"Purchase limit exceeded and waiting for admin approval. Remaining purchase limit: ₹{creditCheck.AvailableLimit:N2}");
+        }
+        else
+        {
+            // Within purchase limit: skip admin approval and move straight to fulfillment.
+            order.AutoApproveForPurchaseLimit();
+        }
 
         var creditReserved = false;
         try
         {
-            if (isCreditOrder && creditCheck.Approved)
+            if (creditCheck.Approved)
             {
                 creditReserved = await _paymentClient.ReserveCreditAsync(order.OrderId, command.DealerId, totalWithShipping, ct);
                 if (!creditReserved)
-                    throw new DomainException("CREDIT_RESERVE_FAILED", "Unable to reserve credit limit for this order. Please try again.");
+                    throw new DomainException("CREDIT_RESERVE_FAILED", "Unable to reserve monthly purchase limit for this order. Please try again.");
             }
 
             await _orderRepository.AddAsync(order, ct);

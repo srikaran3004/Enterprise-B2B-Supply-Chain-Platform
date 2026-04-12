@@ -28,6 +28,9 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
             .HasMaxLength(30)
             .IsRequired();
 
+        builder.HasIndex(p => new { p.Status, p.Name });
+        builder.HasIndex(p => new { p.CategoryId, p.Status, p.Name });
+
         builder.Ignore(p => p.AvailableStock);
         builder.Ignore(p => p.IsInStock);
 

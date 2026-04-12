@@ -25,14 +25,14 @@ import { environment } from '../../../../../environments/environment';
             <option value="Suspended">Suspended</option>
             <option value="Rejected">Rejected</option>
           </select>
-          <!-- Outstanding Filter -->
-          <select class="filter-select" [(ngModel)]="outstandingFilter" (change)="applyFilters()">
-            <option value="">All Outstanding</option>
-            <option value="has_outstanding">Has Outstanding</option>
-            <option value="no_outstanding">No Outstanding</option>
-            <option value="high_outstanding">High Outstanding (&gt;80% util)</option>
+          <!-- Purchase Volume Filter -->
+          <select class="filter-select" [(ngModel)]="purchaseFilter" (change)="applyFilters()">
+            <option value="">All Purchases</option>
+            <option value="high_volume">High Volume (> ₹1L)</option>
+            <option value="regular_volume">Regular (> ₹10k)</option>
+            <option value="no_purchase">New / No Purchase</option>
           </select>
-          <button class="btn-clear-filters" *ngIf="stateFilter || statusFilter || outstandingFilter" (click)="clearFilters()">Clear Filters</button>
+          <button class="btn-clear-filters" *ngIf="stateFilter || statusFilter || purchaseFilter" (click)="clearFilters()">Clear Filters</button>
         </div>
       </hul-page-header>
 
@@ -49,7 +49,7 @@ import { environment } from '../../../../../environments/environment';
             <button class="tab" [class.tab--active]="activeTab === 'overview'" (click)="activeTab = 'overview'">Overview</button>
             <button class="tab" [class.tab--active]="activeTab === 'orders'" (click)="activeTab = 'orders'">Orders</button>
             <button class="tab" [class.tab--active]="activeTab === 'payments'" (click)="activeTab = 'payments'">Payments</button>
-            <button class="tab" [class.tab--active]="activeTab === 'credit'" (click)="activeTab = 'credit'">Credit</button>
+            <button class="tab" [class.tab--active]="activeTab === 'credit'" (click)="activeTab = 'credit'">Purchase Limit</button>
           </div>
 
           <div *ngIf="loadingDetails" class="loading-state">
@@ -141,30 +141,30 @@ import { environment } from '../../../../../environments/environment';
             </table>
           </div>
 
-          <!-- Credit Tab -->
+          <!-- Purchase Limit Tab -->
           <div *ngIf="activeTab === 'credit' && !loadingDetails" class="tab-content">
             <!-- Suspended banner -->
             <div *ngIf="viewingDealer?.status === 'Suspended'" class="suspended-banner">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
               <div class="suspended-banner__text">
                 <strong>Account Suspended</strong>
-                <span>Credit management is disabled for suspended dealers. Reactivate this dealer to manage credit.</span>
+                <span>Purchase limit management is disabled for suspended dealers. Reactivate this dealer to manage limits.</span>
               </div>
             </div>
             <div class="credit-overview" *ngIf="dealerCredit" [class.credit-overview--disabled]="viewingDealer?.status === 'Suspended'">
               <div class="credit-card">
                 <div class="credit-header">
-                  <h3 class="section-title">Credit Account</h3>
+                  <h3 class="section-title">Purchase Limit Account</h3>
                   <button class="btn btn--sm btn--primary" (click)="editCreditLimit(viewingDealer)" [disabled]="viewingDealer?.status === 'Suspended'">Edit Limit</button>
                 </div>
                 <div class="credit-stats">
-                  <div class="credit-stat"><label class="detail-label">Credit Limit</label><span class="detail-value">₹{{ formatNum(dealerCredit.creditLimit) }}</span></div>
+                  <div class="credit-stat"><label class="detail-label">Monthly Purchase Limit</label><span class="detail-value">₹{{ formatNum(dealerCredit.creditLimit) }}</span></div>
                   <div class="credit-stat"><label class="detail-label">Outstanding</label><span class="detail-value" [style.color]="dealerCredit.outstanding > 0 ? 'var(--hul-danger)' : 'var(--text-primary)'">₹{{ formatNum(dealerCredit.outstanding) }}</span></div>
-                  <div class="credit-stat"><label class="detail-label">Available Credit</label><span class="detail-value" style="color:var(--hul-success)">₹{{ formatNum(dealerCredit.available) }}</span></div>
+                  <div class="credit-stat"><label class="detail-label">Available Purchase Limit</label><span class="detail-value" style="color:var(--hul-success)">₹{{ formatNum(dealerCredit.available) }}</span></div>
                 </div>
                 <div class="credit-utilization">
                   <div class="utilization-header">
-                    <span class="detail-label">Credit Utilization</span>
+                    <span class="detail-label">Purchase Limit Utilization</span>
                     <span class="detail-value">{{ dealerCredit.utilization }}%</span>
                   </div>
                   <div class="progress-bar">
@@ -195,6 +195,32 @@ import { environment } from '../../../../../environments/environment';
                           PDF
                         </button>
                       </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="invoices-section">
+                <div class="invoices-header" style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+                  <h3 class="section-title">Purchase Limit Change History ({{ filteredPurchaseLimitHistory.length }})</h3>
+                  <select class="filter-select" [(ngModel)]="purchaseLimitHistoryMonthFilter" (change)="applyPurchaseLimitHistoryFilter()">
+                    <option value="">All Months</option>
+                    <option *ngFor="let month of purchaseLimitHistoryMonths" [value]="month">{{ month }}</option>
+                  </select>
+                </div>
+                <div *ngIf="filteredPurchaseLimitHistory.length === 0" class="empty-state">
+                  <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  <p>No purchase-limit change history found</p>
+                </div>
+                <table *ngIf="filteredPurchaseLimitHistory.length > 0" class="data-table">
+                  <thead><tr><th>Changed At</th><th>Previous Limit</th><th>New Limit</th><th>Changed By</th><th>Reason</th></tr></thead>
+                  <tbody>
+                    <tr *ngFor="let row of filteredPurchaseLimitHistory">
+                      <td>{{ row.changedAt | date:'medium' }}</td>
+                      <td>₹{{ formatNum(row.previousLimit || 0) }}</td>
+                      <td><strong>₹{{ formatNum(row.newLimit || 0) }}</strong></td>
+                      <td>{{ row.changedByRole || 'System' }}</td>
+                      <td>{{ row.reason || '—' }}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -261,8 +287,8 @@ import { environment } from '../../../../../environments/environment';
         </div>
       </hul-modal>
 
-      <!-- Edit Credit Limit Modal -->
-      <hul-modal *ngIf="showCreditModal" [open]="showCreditModal" title="Update Credit Limit" size="sm" (close)="showCreditModal = false">
+      <!-- Edit Purchase Limit Modal -->
+      <hul-modal *ngIf="showCreditModal" [open]="showCreditModal" title="Update Monthly Purchase Limit" size="sm" (close)="showCreditModal = false">
         <div class="action-form" *ngIf="editingCreditDealer">
           <div class="dealer-info">
             <div class="dealer-avatar">{{ editingCreditDealer.fullName?.charAt(0)?.toUpperCase() }}</div>
@@ -276,7 +302,7 @@ import { environment } from '../../../../../environments/environment';
             <div class="cstat-box"><span class="cstat-lbl">Outstanding</span><span class="cstat-val cstat-val--danger">₹{{ formatNum(dealerCredit?.outstanding || 0) }}</span></div>
           </div>
           <div class="form-group">
-            <label>New Credit Limit <span class="req">*</span></label>
+            <label>New Monthly Purchase Limit <span class="req">*</span></label>
             <div class="input-wrap">
               <span class="input-prefix">₹</span>
               <input type="number" [(ngModel)]="newCreditLimit" placeholder="0" min="0" step="1000" class="form-input form-input--prefix" />
@@ -407,7 +433,7 @@ import { environment } from '../../../../../environments/environment';
     .form-textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border-default); border-radius: var(--radius-lg); background: var(--bg-card); color: var(--text-primary); font-family: var(--font-body); font-size: 14px; min-height: 88px; resize: none; box-sizing: border-box; }
     .form-textarea:focus { outline: none; border-color: var(--border-focus); box-shadow: 0 0 0 3px var(--hul-primary-light); }
 
-    /* Credit limit in modal */
+    /* Purchase limit in modal */
     .dealer-info { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-subtle); border-radius: var(--radius-lg); border: 1px solid var(--border-default); }
     .dealer-avatar { width: 40px; height: 40px; border-radius: var(--radius-md); background: var(--hul-primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 700; font-family: var(--font-display); flex-shrink: 0; }
     .dealer-name { font-size: 14px; font-weight: 600; color: var(--text-primary); }
@@ -453,7 +479,7 @@ export class AllDealersComponent implements OnInit {
   // Filters
   stateFilter = '';
   statusFilter = '';
-  outstandingFilter = '';
+  purchaseFilter = '';
   searchTerm = '';
   availableStates: string[] = [];
 
@@ -466,6 +492,10 @@ export class AllDealersComponent implements OnInit {
   dealerCredit: any = null;
   dealerInvoices: any[] = [];
   dealerPayments: any[] = [];
+  purchaseLimitHistory: any[] = [];
+  filteredPurchaseLimitHistory: any[] = [];
+  purchaseLimitHistoryMonths: string[] = [];
+  purchaseLimitHistoryMonthFilter = '';
   loadingDetails = false;
   activeTab = 'overview';
 
@@ -491,6 +521,7 @@ export class AllDealersComponent implements OnInit {
     { key: 'gstNumber', label: 'GST', type: 'text' },
     { key: 'state', label: 'State', type: 'text', sortable: true },
     { key: 'status', label: 'Status', type: 'badge', sortable: true, width: '110px', align: 'center', badgeMap: { 'Pending': 'warning', 'Active': 'success', 'Rejected': 'danger', 'Suspended': 'default' } },
+    { key: 'totalSpent', label: 'Total Purchased', type: 'currency-inr', sortable: true },
     { key: 'createdAt', label: 'Registered', type: 'date', sortable: true },
     { key: 'actions', label: 'Actions', type: 'actions-menu' },
   ];
@@ -507,14 +538,40 @@ export class AllDealersComponent implements OnInit {
 
   load(): void {
     this.loading = true;
+    // Step 1: Get all dealers
     this.http.get<any[]>(API_ENDPOINTS.admin.dealers()).subscribe({
       next: dealers => {
-        this.allDealers = dealers.map((d, i) => ({ ...d, serial: i + 1 }));
-        // Extract unique states
-        const states = new Set(dealers.map(d => d.state).filter(Boolean));
-        this.availableStates = Array.from(states).sort();
-        this.applyFilters();
-        this.loading = false;
+        // Step 2: Get all orders to calculate spending
+        this.http.get<any>(API_ENDPOINTS.orders.base() + '?pageSize=1000').subscribe({
+          next: (orderResponse: any) => {
+            const allOrders = orderResponse.items || orderResponse || [];
+            
+            this.allDealers = dealers.map((d, i) => {
+              // Calculate total spent for this specific dealer
+              const dealerOrders = allOrders.filter((o: any) => 
+                o.dealerEmail === d.email || o.dealerId === d.userId || o.dealerId === d.dealerProfileId
+              );
+              const totalSpent = dealerOrders.reduce((sum: number, o: any) => sum + (o.totalAmount || 0), 0);
+              
+              return { 
+                ...d, 
+                serial: i + 1,
+                totalSpent: totalSpent
+              };
+            });
+
+            const states = new Set(dealers.map(d => d.state).filter(Boolean));
+            this.availableStates = Array.from(states).sort();
+            this.applyFilters();
+            this.loading = false;
+          },
+          error: () => {
+            // Fallback if orders fail
+            this.allDealers = dealers.map((d, i) => ({ ...d, serial: i + 1, totalSpent: 0 }));
+            this.applyFilters();
+            this.loading = false;
+          }
+        });
       },
       error: () => { this.loading = false; }
     });
@@ -524,9 +581,9 @@ export class AllDealersComponent implements OnInit {
     let filtered = [...this.allDealers];
     if (this.stateFilter) filtered = filtered.filter(d => d.state === this.stateFilter);
     if (this.statusFilter) filtered = filtered.filter(d => d.status === this.statusFilter);
-    if (this.outstandingFilter === 'has_outstanding') filtered = filtered.filter(d => (d.outstanding || 0) > 0);
-    if (this.outstandingFilter === 'no_outstanding') filtered = filtered.filter(d => (d.outstanding || 0) === 0);
-    if (this.outstandingFilter === 'high_outstanding') filtered = filtered.filter(d => d.creditLimit && (d.outstanding || 0) / d.creditLimit > 0.8);
+    if (this.purchaseFilter === 'high_volume') filtered = filtered.filter(d => (d.totalSpent || 0) > 100000);
+    if (this.purchaseFilter === 'regular_volume') filtered = filtered.filter(d => (d.totalSpent || 0) > 10000 && (d.totalSpent || 0) <= 100000);
+    if (this.purchaseFilter === 'no_purchase') filtered = filtered.filter(d => (d.totalSpent || 0) === 0);
     if (this.searchTerm) {
       const s = this.searchTerm.toLowerCase();
       filtered = filtered.filter(d => d.fullName?.toLowerCase().includes(s) || d.email?.toLowerCase().includes(s) || d.gstNumber?.toLowerCase().includes(s));
@@ -537,7 +594,7 @@ export class AllDealersComponent implements OnInit {
   clearFilters(): void {
     this.stateFilter = '';
     this.statusFilter = '';
-    this.outstandingFilter = '';
+    this.purchaseFilter = '';
     this.applyFilters();
   }
 
@@ -560,6 +617,10 @@ export class AllDealersComponent implements OnInit {
     this.dealerCredit = null;
     this.dealerInvoices = [];
     this.dealerPayments = [];
+    this.purchaseLimitHistory = [];
+    this.filteredPurchaseLimitHistory = [];
+    this.purchaseLimitHistoryMonths = [];
+    this.purchaseLimitHistoryMonthFilter = '';
     this.activeTab = 'overview';
     this.showViewModal = true;
     this.loadingDetails = true;
@@ -593,15 +654,15 @@ export class AllDealersComponent implements OnInit {
     });
 
     // Load credit
-    this.http.get<any>(API_ENDPOINTS.payment.creditAccount(this.getDealerFinancialId(dealer))).subscribe({
+    this.http.get<any>(API_ENDPOINTS.payment.purchaseLimitAccount(this.getDealerFinancialId(dealer))).subscribe({
       next: (credit: any) => {
-        const limit = credit.creditLimit || 500000;
-        const outstanding = credit.outstanding || 0;
+        const limit = credit.purchaseLimit || 500000;
+        const outstanding = credit.utilizedAmount || 0;
         this.dealerCredit = {
           creditLimit: limit,
           outstanding,
-          available: credit.available ?? (limit - outstanding),
-          utilization: limit ? Math.round(outstanding / limit * 100) : 0
+          available: credit.availableLimit ?? (limit - outstanding),
+          utilization: credit.utilizationPercent ?? (limit ? Math.round(outstanding / limit * 100) : 0)
         };
       },
       error: () => {
@@ -633,6 +694,42 @@ export class AllDealersComponent implements OnInit {
         }));
       },
       error: () => { this.dealerInvoices = []; this.dealerPayments = []; }
+    });
+
+    this.http.get<any[]>(API_ENDPOINTS.payment.purchaseLimitHistoryByDealer(this.getDealerFinancialId(dealer))).subscribe({
+      next: rows => {
+        const data = Array.isArray(rows) ? rows : [];
+        this.purchaseLimitHistory = data;
+        const monthSet = new Set<string>();
+        data.forEach(r => {
+          if (!r?.changedAt) return;
+          const d = new Date(r.changedAt);
+          if (Number.isNaN(d.getTime())) return;
+          const label = d.toLocaleString('en-IN', { month: 'short', year: 'numeric' });
+          monthSet.add(label);
+        });
+        this.purchaseLimitHistoryMonths = Array.from(monthSet);
+        this.applyPurchaseLimitHistoryFilter();
+      },
+      error: () => {
+        this.purchaseLimitHistory = [];
+        this.filteredPurchaseLimitHistory = [];
+      }
+    });
+  }
+
+  applyPurchaseLimitHistoryFilter(): void {
+    if (!this.purchaseLimitHistoryMonthFilter) {
+      this.filteredPurchaseLimitHistory = [...this.purchaseLimitHistory];
+      return;
+    }
+
+    this.filteredPurchaseLimitHistory = this.purchaseLimitHistory.filter(r => {
+      if (!r?.changedAt) return false;
+      const d = new Date(r.changedAt);
+      if (Number.isNaN(d.getTime())) return false;
+      const label = d.toLocaleString('en-IN', { month: 'short', year: 'numeric' });
+      return label === this.purchaseLimitHistoryMonthFilter;
     });
   }
 
@@ -724,21 +821,21 @@ export class AllDealersComponent implements OnInit {
     });
   }
 
-  // ========== Credit Limit ==========
+  // ========== Purchase Limit ==========
   editCreditLimit(dealer: any): void {
     this.editingCreditDealer = dealer;
     this.savingCredit = false;
     // Always fetch fresh credit data before opening the modal so the displayed
     // current limit is never stale or defaulted to a hardcoded value
-    this.http.get<any>(API_ENDPOINTS.payment.creditAccount(this.getDealerFinancialId(dealer))).subscribe({
+    this.http.get<any>(API_ENDPOINTS.payment.purchaseLimitAccount(this.getDealerFinancialId(dealer))).subscribe({
       next: (credit: any) => {
-        const limit = credit.creditLimit || 0;
-        const outstanding = credit.outstanding || 0;
+        const limit = credit.purchaseLimit || 0;
+        const outstanding = credit.utilizedAmount || 0;
         this.dealerCredit = {
           creditLimit: limit,
           outstanding,
-          available: credit.available ?? (limit - outstanding),
-          utilization: limit ? Math.round(outstanding / limit * 100) : 0
+          available: credit.availableLimit ?? (limit - outstanding),
+          utilization: credit.utilizationPercent ?? (limit ? Math.round(outstanding / limit * 100) : 0)
         };
         this.newCreditLimit = limit;
         this.showCreditModal = true;
@@ -757,21 +854,21 @@ export class AllDealersComponent implements OnInit {
     const dealerFinancialId = this.getDealerFinancialId(this.editingCreditDealer);
     const newLimit = this.newCreditLimit;
     // Backend expects { NewLimit: number } — capital N per UpdateLimitRequest record
-    this.http.put(API_ENDPOINTS.payment.creditLimit(dealerFinancialId), { NewLimit: newLimit }).subscribe({
+    this.http.put(API_ENDPOINTS.payment.purchaseLimit(dealerFinancialId), { NewLimit: newLimit }).subscribe({
       next: () => {
-        this.toast.success(`Credit limit updated to ₹${this.formatNum(newLimit)}`);
+        this.toast.success(`Purchase limit updated to ₹${this.formatNum(newLimit)}`);
         this.showCreditModal = false;
         this.savingCredit = false;
         // Re-fetch credit info from DB and patch ALL local state
-        this.http.get<any>(API_ENDPOINTS.payment.creditAccount(dealerFinancialId)).subscribe({
+        this.http.get<any>(API_ENDPOINTS.payment.purchaseLimitAccount(dealerFinancialId)).subscribe({
           next: (credit: any) => {
-            const limit = credit.creditLimit || newLimit;
-            const outstanding = credit.outstanding || 0;
+            const limit = credit.purchaseLimit || newLimit;
+            const outstanding = credit.utilizedAmount || 0;
             this.dealerCredit = {
               creditLimit: limit,
               outstanding,
               available: limit - outstanding,
-              utilization: limit ? Math.round(outstanding / limit * 100) : 0
+              utilization: credit.utilizationPercent ?? (limit ? Math.round(outstanding / limit * 100) : 0)
             };
             // Patch the row in allDealers so the table also reflects the new limit
             const dealerRow = this.allDealers.find(d => this.getDealerFinancialId(d) === dealerFinancialId);
@@ -797,7 +894,7 @@ export class AllDealersComponent implements OnInit {
         });
       },
       error: err => {
-        this.toast.error(err.error?.error || 'Failed to update credit limit');
+        this.toast.error(err.error?.error || 'Failed to update purchase limit');
         this.savingCredit = false;
       }
     });

@@ -25,6 +25,7 @@ public static class DependencyInjection
 
         services.AddScoped<IInvoiceRepository, InvoiceRepository>();
         services.AddScoped<ICreditAccountRepository, CreditAccountRepository>();
+        services.AddScoped<IPurchaseLimitHistoryRepository, PurchaseLimitHistoryRepository>();
         services.AddScoped<IPaymentRecordRepository, PaymentRecordRepository>();
         services.AddScoped<IInvoicePdfService, QuestPdfInvoiceService>();
 

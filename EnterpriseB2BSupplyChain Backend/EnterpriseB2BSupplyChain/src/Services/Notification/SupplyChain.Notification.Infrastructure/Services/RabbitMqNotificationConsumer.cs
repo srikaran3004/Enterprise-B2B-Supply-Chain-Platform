@@ -245,7 +245,7 @@ public class RabbitMqNotificationConsumer : BackgroundService
 
                 "AdminApprovalRequired" =>
                     ($"Order {orderNumber} On Hold",
-                     $"Order {orderNumber} is on hold pending admin approval.",
+                     $"Order {orderNumber} exceeded monthly purchase limit and is waiting for admin approval.",
                      "Order"),
 
                 "AgentAssigned" =>

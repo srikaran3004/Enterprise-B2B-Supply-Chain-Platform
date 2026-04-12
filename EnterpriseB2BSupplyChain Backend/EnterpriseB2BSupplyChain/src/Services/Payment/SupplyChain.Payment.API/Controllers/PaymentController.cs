@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SupplyChain.SharedInfrastructure.Security;
@@ -22,24 +22,24 @@ public class PaymentController : ControllerBase
 {
     private readonly IMediator _mediator;
     private readonly ICreditAccountRepository _creditRepository;
-    private readonly IInvoiceRepository _invoiceRepository;
+    private readonly IPurchaseLimitHistoryRepository _purchaseLimitHistoryRepository;
     private readonly IPaymentRecordRepository _paymentRecordRepository;
 
     public PaymentController(
         IMediator mediator,
         ICreditAccountRepository creditRepository,
-        IInvoiceRepository invoiceRepository,
+        IPurchaseLimitHistoryRepository purchaseLimitHistoryRepository,
         IPaymentRecordRepository paymentRecordRepository)
     {
         _mediator = mediator;
         _creditRepository = creditRepository;
-        _invoiceRepository = invoiceRepository;
+        _purchaseLimitHistoryRepository = purchaseLimitHistoryRepository;
         _paymentRecordRepository = paymentRecordRepository;
     }
 
-    [HttpGet("dealers/{dealerId:guid}/credit-check")]
+    [HttpGet("dealers/{dealerId:guid}/purchase-limit-check")]
     [Authorize(Roles = "Admin,SuperAdmin,Dealer")]
-    public async Task<IActionResult> CheckCredit(
+    public async Task<IActionResult> CheckPurchaseLimit(
         Guid dealerId,
         [FromQuery] decimal amount,
         CancellationToken ct)
@@ -51,9 +51,9 @@ public class PaymentController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("internal/dealers/{dealerId:guid}/credit-check")]
+    [HttpGet("internal/dealers/{dealerId:guid}/purchase-limit-check")]
     [Authorize(Policy = InternalAuthDefaults.InternalPolicy)]
-    public async Task<IActionResult> CheckCreditInternal(
+    public async Task<IActionResult> CheckPurchaseLimitInternal(
         Guid dealerId,
         [FromQuery] decimal amount,
         CancellationToken ct)
@@ -62,9 +62,9 @@ public class PaymentController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPost("internal/orders/{orderId:guid}/reserve-credit")]
+    [HttpPost("internal/orders/{orderId:guid}/reserve-purchase-limit")]
     [Authorize(Policy = InternalAuthDefaults.InternalPolicy)]
-    public async Task<IActionResult> ReserveCreditForOrder(
+    public async Task<IActionResult> ReservePurchaseLimitForOrder(
         Guid orderId,
         [FromBody] InternalCreditAdjustmentRequest request,
         CancellationToken ct)
@@ -74,7 +74,7 @@ public class PaymentController : ControllerBase
 
         var existingPayment = await _paymentRecordRepository.GetByOrderIdAsync(orderId, ct);
         if (existingPayment is not null)
-            return Ok(new { message = "Credit already reserved for order.", available = (decimal?)null });
+            return Ok(new { message = "Purchase limit already reserved for this order.", available = (decimal?)null });
 
         var account = await _creditRepository.GetByDealerIdAsync(request.DealerId, ct);
         if (account is null)
@@ -83,8 +83,10 @@ public class PaymentController : ControllerBase
             await _creditRepository.AddAsync(account, ct);
         }
 
+        account.EnsureMonthlyReset(DateTime.UtcNow);
+
         if (!account.CanAccommodate(request.Amount))
-            return BadRequest(new { error = "Insufficient available credit.", available = account.AvailableCredit });
+            return BadRequest(new { error = "Insufficient remaining purchase limit.", availableLimit = account.AvailableCredit });
 
         account.AddOutstanding(request.Amount);
 
@@ -97,12 +99,12 @@ public class PaymentController : ControllerBase
         await _paymentRecordRepository.AddAsync(paymentRecord, ct);
         await _paymentRecordRepository.SaveChangesAsync(ct);
 
-        return Ok(new { message = "Credit reserved.", available = account.AvailableCredit });
+        return Ok(new { message = "Purchase limit reserved.", availableLimit = account.AvailableCredit });
     }
 
-    [HttpPost("internal/orders/{orderId:guid}/release-credit")]
+    [HttpPost("internal/orders/{orderId:guid}/release-purchase-limit")]
     [Authorize(Policy = InternalAuthDefaults.InternalPolicy)]
-    public async Task<IActionResult> ReleaseCreditForOrder(
+    public async Task<IActionResult> ReleasePurchaseLimitForOrder(
         Guid orderId,
         [FromBody] InternalCreditAdjustmentRequest request,
         CancellationToken ct)
@@ -112,87 +114,133 @@ public class PaymentController : ControllerBase
 
         var account = await _creditRepository.GetByDealerIdAsync(request.DealerId, ct);
         if (account is null)
-            return Ok(new { message = "No credit account found. Nothing to release." });
+            return Ok(new { message = "No purchase account found. Nothing to release." });
 
         account.ReduceOutstanding(request.Amount);
         await _paymentRecordRepository.SaveChangesAsync(ct);
 
-        return Ok(new { message = "Credit released.", available = account.AvailableCredit });
+        return Ok(new { message = "Purchase limit released.", availableLimit = account.AvailableCredit });
     }
 
-    [HttpGet("dealers/{dealerId:guid}/credit-account")]
+    [HttpGet("dealers/{dealerId:guid}/purchase-limit-account")]
     [Authorize(Roles = "Admin,SuperAdmin,Dealer")]
-    public async Task<IActionResult> GetCreditAccount(Guid dealerId, CancellationToken ct)
+    public async Task<IActionResult> GetPurchaseLimitAccount(Guid dealerId, CancellationToken ct)
     {
         if (User.IsInRole("Dealer") && dealerId != GetDealerId())
             return Forbid();
 
         var account = await _creditRepository.GetByDealerIdAsync(dealerId, ct);
-        var invoices = await _invoiceRepository.GetByDealerIdAsync(dealerId, ct);
-        var payments = await _paymentRecordRepository.GetByOrderIdsAsync(invoices.Select(i => i.OrderId), ct);
-
-        var paidOrderIds = payments
-            .Where(p => string.Equals(p.Status, "Paid", StringComparison.OrdinalIgnoreCase))
-            .Select(p => p.OrderId)
-            .ToHashSet();
-
-        var liveOutstanding = invoices
-            .Where(i => !paidOrderIds.Contains(i.OrderId))
-            .Sum(i => i.GrandTotal);
 
         if (account is null)
         {
             var defaultLimit = 500_000m;
-            var available = Math.Max(0, defaultLimit - liveOutstanding);
-            var utilizationDefault = defaultLimit > 0
-                ? (int)Math.Round(liveOutstanding / defaultLimit * 100)
-                : 0;
-
             return Ok(new CreditAccountDto(
                 AccountId: Guid.Empty,
                 DealerId: dealerId,
-                CreditLimit: defaultLimit,
-                Outstanding: liveOutstanding,
-                Available: available,
-                Utilization: utilizationDefault,
+                PurchaseLimit: defaultLimit,
+                UtilizedAmount: 0,
+                AvailableLimit: defaultLimit,
+                UtilizationPercent: 0,
                 LastUpdatedAt: null
             ));
         }
 
-        var effectiveOutstanding = Math.Max(account.CurrentOutstanding, liveOutstanding);
+        if (account.EnsureMonthlyReset(DateTime.UtcNow))
+            await _creditRepository.SaveChangesAsync(ct);
 
         var utilization = account.CreditLimit > 0
-            ? (int)Math.Round(effectiveOutstanding / account.CreditLimit * 100)
+            ? (int)Math.Round(account.CurrentOutstanding / account.CreditLimit * 100)
             : 0;
 
         return Ok(new CreditAccountDto(
             AccountId: account.AccountId,
             DealerId: account.DealerId,
-            CreditLimit: account.CreditLimit,
-            Outstanding: effectiveOutstanding,
-            Available: Math.Max(0, account.CreditLimit - effectiveOutstanding),
-            Utilization: utilization,
+            PurchaseLimit: account.CreditLimit,
+            UtilizedAmount: account.CurrentOutstanding,
+            AvailableLimit: Math.Max(0, account.CreditLimit - account.CurrentOutstanding),
+            UtilizationPercent: utilization,
             LastUpdatedAt: account.LastUpdatedAt
         ));
     }
 
-    [HttpPost("dealers/{dealerId:guid}/credit-account")]
+    [HttpPost("dealers/{dealerId:guid}/purchase-limit-account")]
     [Authorize(Roles = "Admin,SuperAdmin")]
-    public async Task<IActionResult> CreateCreditAccount(Guid dealerId, CancellationToken ct)
+    public async Task<IActionResult> CreatePurchaseLimitAccount(Guid dealerId, CancellationToken ct)
     {
+        var existing = await _creditRepository.GetByDealerIdAsync(dealerId, ct);
+        if (existing is not null)
+            return Ok(new { accountId = existing.AccountId });
+
         var accountId = await _mediator.Send(new CreateCreditAccountCommand(dealerId), ct);
+
+        var now = DateTime.UtcNow;
+        await _purchaseLimitHistoryRepository.AddAsync(
+            PurchaseLimitHistory.Create(
+                dealerId,
+                previousLimit: 0,
+                newLimit: 500_000m,
+                changedAtUtc: now,
+                changedByUserId: TryGetCurrentUserId(),
+                changedByRole: GetHighestRole(),
+                reason: "Initial monthly purchase limit account created"),
+            ct);
+        await _creditRepository.SaveChangesAsync(ct);
+
         return Ok(new { accountId });
     }
 
-    [HttpPut("dealers/{dealerId:guid}/credit-limit")]
+    [HttpPut("dealers/{dealerId:guid}/purchase-limit")]
     [Authorize(Roles = "Admin,SuperAdmin")]
-    public async Task<IActionResult> UpdateCreditLimit(
+    public async Task<IActionResult> UpdatePurchaseLimit(
         Guid dealerId,
         [FromBody] UpdateLimitRequest request,
         CancellationToken ct)
     {
+        var account = await _creditRepository.GetByDealerIdAsync(dealerId, ct);
+        var previousLimit = account?.CreditLimit ?? 0;
+
         await _mediator.Send(new UpdateCreditLimitCommand(dealerId, request.NewLimit), ct);
-        return Ok(new { Message = "Credit limit updated." });
+
+        var now = DateTime.UtcNow;
+        await _purchaseLimitHistoryRepository.AddAsync(
+            PurchaseLimitHistory.Create(
+                dealerId,
+                previousLimit,
+                request.NewLimit,
+                now,
+                TryGetCurrentUserId(),
+                GetHighestRole(),
+                request.Reason),
+            ct);
+        await _creditRepository.SaveChangesAsync(ct);
+
+        return Ok(new { Message = "Monthly purchase limit updated." });
+    }
+
+    [HttpGet("dealers/{dealerId:guid}/purchase-limit-history")]
+    [Authorize(Roles = "Admin,SuperAdmin,Dealer")]
+    public async Task<IActionResult> GetPurchaseLimitHistoryByDealer(
+        Guid dealerId,
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to,
+        CancellationToken ct)
+    {
+        if (User.IsInRole("Dealer") && dealerId != GetDealerId())
+            return Forbid();
+
+        var rows = await _purchaseLimitHistoryRepository.GetByDealerIdAsync(dealerId, from, to, ct);
+        var result = rows.Select(x => new PurchaseLimitHistoryDto(
+            x.HistoryId,
+            x.DealerId,
+            x.PreviousLimit,
+            x.NewLimit,
+            x.ChangedAt,
+            x.ChangedByUserId,
+            x.ChangedByRole,
+            x.Reason
+        ));
+
+        return Ok(result);
     }
 
     [HttpPost("invoices/generate")]
@@ -282,8 +330,25 @@ public class PaymentController : ControllerBase
 
         throw new UnauthorizedAccessException("Dealer token does not contain a valid dealerId claim.");
     }
+
+    private Guid? TryGetCurrentUserId()
+    {
+        var claim = User.FindFirst("sub")?.Value
+            ?? User.FindFirst("userId")?.Value
+            ?? User.FindFirst("nameid")?.Value;
+
+        return Guid.TryParse(claim, out var id) ? id : null;
+    }
+
+    private string GetHighestRole()
+    {
+        if (User.IsInRole("SuperAdmin")) return "SuperAdmin";
+        if (User.IsInRole("Admin")) return "Admin";
+        if (User.IsInRole("Dealer")) return "Dealer";
+        return "System";
+    }
 }
 
-public record UpdateLimitRequest(decimal NewLimit);
+public record UpdateLimitRequest(decimal NewLimit, string? Reason = null);
 public record InternalCreditAdjustmentRequest(Guid DealerId, decimal Amount);
 

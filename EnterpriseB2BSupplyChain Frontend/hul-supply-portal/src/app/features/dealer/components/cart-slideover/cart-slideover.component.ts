@@ -538,7 +538,7 @@ export class CartSlideoverComponent implements OnInit, OnDestroy {
   total$: Observable<number>;
   isOpen$: Observable<boolean>;
   notes$: Observable<string>;
-  
+
   shippingAddresses: any[] = [];
   selectedAddressId = '';
   gstAmount = 0;
@@ -563,7 +563,7 @@ export class CartSlideoverComponent implements OnInit, OnDestroy {
   };
 
   constructor(
-    private store: Store, 
+    private store: Store,
     private authService: AuthService,
     private http: ZoneHttpService,
     private razorpayService: RazorpayService,
@@ -641,14 +641,14 @@ export class CartSlideoverComponent implements OnInit, OnDestroy {
     if (!this.isInlineAddrValid()) return;
     this.savingInlineAddr = true;
     this.http.post<{ addressId: string }>(API_ENDPOINTS.shippingAddress.base(), {
-      label:        this.inlineAddr.label,
+      label: this.inlineAddr.label,
       addressLine1: this.inlineAddr.streetLine1,
-      district:     this.inlineAddr.district || null,
-      city:         this.inlineAddr.city,
-      state:        this.inlineAddr.state,
-      pinCode:      this.inlineAddr.pinCode,
-      phoneNumber:  null,
-      isDefault:    this.shippingAddresses.length === 0,
+      district: this.inlineAddr.district || null,
+      city: this.inlineAddr.city,
+      state: this.inlineAddr.state,
+      pinCode: this.inlineAddr.pinCode,
+      phoneNumber: null,
+      isDefault: this.shippingAddresses.length === 0,
     }).subscribe({
       next: (res) => {
         this.toast.success('Address saved!');
@@ -698,7 +698,7 @@ export class CartSlideoverComponent implements OnInit, OnDestroy {
     try {
       // Create order in backend — response now includes shippingFee
       const orderResp = await firstValueFrom(
-        this.http.post<{ orderId: string; shippingFee?: number }>(API_ENDPOINTS.orders.base(), payload)
+        this.http.post<{ orderId: string; status?: string; shippingFee?: number }>(API_ENDPOINTS.orders.base(), payload)
       );
 
       const orderId = orderResp.orderId;
@@ -708,6 +708,15 @@ export class CartSlideoverComponent implements OnInit, OnDestroy {
         const subtotal = await firstValueFrom(this.total$);
         this.gstAmount = subtotal * 0.18;
         this.grandTotal = subtotal + this.gstAmount + this.shippingFee;
+      }
+
+      if (orderResp.status === 'OnHold') {
+        this.toast.warning('Purchase limit exceeded and waiting for admin approval.');
+        this.store.dispatch(CartActions.clearCart());
+        this.closeCart();
+        this.placing = false;
+        this.router.navigate(['/dealer/orders/', orderId]);
+        return;
       }
 
       await this.handleRazorpay(orderId, this.grandTotal);

@@ -18,7 +18,7 @@ public class PaymentServiceClient : IPaymentServiceClient
     {
         try
         {
-            var url = $"/api/payment/internal/dealers/{dealerId}/credit-check?amount={amount}";
+            var url = $"/api/payment/internal/dealers/{dealerId}/purchase-limit-check?amount={amount}";
             var response = await _httpClient.GetAsync(url, ct);
 
             if (!response.IsSuccessStatusCode)
@@ -28,7 +28,7 @@ public class PaymentServiceClient : IPaymentServiceClient
 
             var result = await ApiResponseReader.ReadDataAsync<CreditCheckResponse>(response.Content, ct);
 
-            return new CreditCheckResult(result?.Approved ?? false, result?.AvailableCredit ?? 0);
+            return new CreditCheckResult(result?.Approved ?? false, result?.AvailableLimit ?? 0);
         }
         catch
         {
@@ -40,7 +40,7 @@ public class PaymentServiceClient : IPaymentServiceClient
     {
         try
         {
-            var url = $"/api/payment/internal/orders/{orderId}/reserve-credit";
+            var url = $"/api/payment/internal/orders/{orderId}/reserve-purchase-limit";
             var response = await _httpClient.PostAsJsonAsync(url, new { dealerId, amount }, ct);
             return response.IsSuccessStatusCode;
         }
@@ -54,7 +54,7 @@ public class PaymentServiceClient : IPaymentServiceClient
     {
         try
         {
-            var url = $"/api/payment/internal/orders/{orderId}/release-credit";
+            var url = $"/api/payment/internal/orders/{orderId}/release-purchase-limit";
             var response = await _httpClient.PostAsJsonAsync(url, new { dealerId, amount }, ct);
             return response.IsSuccessStatusCode;
         }
@@ -64,5 +64,5 @@ public class PaymentServiceClient : IPaymentServiceClient
         }
     }
 
-    private record CreditCheckResponse(bool Approved, decimal AvailableCredit);
+    private record CreditCheckResponse(bool Approved, decimal AvailableLimit);
 }

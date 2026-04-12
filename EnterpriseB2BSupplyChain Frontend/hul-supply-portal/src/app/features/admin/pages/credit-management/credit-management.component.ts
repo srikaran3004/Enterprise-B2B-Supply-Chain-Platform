@@ -10,22 +10,22 @@ import { catchError, map } from 'rxjs/operators';
   selector: 'app-credit-management', standalone: false,
   template: `
     <div class="page-container">
-      <hul-page-header title="Credit Management" subtitle="Manage dealer credit limits and utilization"></hul-page-header>
+      <hul-page-header title="Purchase Limit Management" subtitle="Manage dealer monthly purchase limits and usage"></hul-page-header>
       <div class="kpi-grid">
-        <hul-stat-card title="Total Credit Extended" [value]="'₹' + formatNum(totalCredit)" icon="credit-card" iconColor="blue" [loading]="loading"></hul-stat-card>
-        <hul-stat-card title="Total Outstanding" [value]="'₹' + formatNum(totalOutstanding)" icon="trending-up" iconColor="amber" [loading]="loading"></hul-stat-card>
-        <hul-stat-card title="Over 80% Utilization" [value]="highUtil" icon="alert-triangle" iconColor="red" [loading]="loading"></hul-stat-card>
+        <hul-stat-card title="Total Limit Allocated" [value]="'₹' + formatNum(totalCredit)" icon="credit-card" iconColor="blue" [loading]="loading"></hul-stat-card>
+        <hul-stat-card title="Total Amount Utilized" [value]="'₹' + formatNum(totalOutstanding)" icon="trending-up" iconColor="amber" [loading]="loading"></hul-stat-card>
+        <hul-stat-card title="Over 80% Usage" [value]="highUtil" icon="alert-triangle" iconColor="red" [loading]="loading"></hul-stat-card>
       </div>
       <div style="margin-top:24px">
         <hul-data-table [columns]="columns" [data]="dealers" [loading]="loading" [totalCount]="dealers.length"
           [currentPage]="1" [pageSize]="50" searchPlaceholder="Search by dealer name..."
-          emptyMessage="No credit data found" [actions]="tableActions"
+          emptyMessage="No purchase limit data found" [actions]="tableActions"
           (searchChange)="onSearch($event)" (rowAction)="onAction($event)">
         </hul-data-table>
       </div>
 
-      <!-- Adjust Credit Limit Modal -->
-      <hul-modal *ngIf="showCreditModal" [open]="showCreditModal" title="Adjust Credit Limit" size="sm" (close)="closeModal()">
+      <!-- Adjust Purchase Limit Modal -->
+      <hul-modal *ngIf="showCreditModal" [open]="showCreditModal" title="Adjust Monthly Purchase Limit" size="sm" (close)="closeModal()">
         <div class="credit-form" *ngIf="editDealer">
           <div class="dealer-info">
             <div class="dealer-avatar">{{ editDealer.fullName?.charAt(0)?.toUpperCase() }}</div>
@@ -41,23 +41,23 @@ import { catchError, map } from 'rxjs/operators';
               <span class="cstat-val">₹{{ formatNum(editDealer.creditLimit) }}</span>
             </div>
             <div class="credit-stat-box">
-              <span class="cstat-label">Outstanding</span>
+              <span class="cstat-label">Amount Utilized</span>
               <span class="cstat-val cstat-val--danger">₹{{ formatNum(editDealer.outstanding) }}</span>
             </div>
             <div class="credit-stat-box">
-              <span class="cstat-label">Utilization</span>
+              <span class="cstat-label">Usage</span>
               <span class="cstat-val">{{ editDealer.utilization }}</span>
             </div>
           </div>
 
           <div class="form-group">
-            <label class="form-label">New Credit Limit <span class="req">*</span></label>
+            <label class="form-label">New Monthly Purchase Limit <span class="req">*</span></label>
             <div class="input-prefix-wrap">
               <span class="input-prefix">₹</span>
               <input type="number" [(ngModel)]="newCreditLimit" placeholder="0" min="0" step="1000" class="form-input form-input--prefixed" autofocus />
             </div>
             <p class="form-hint" *ngIf="newCreditLimit && newCreditLimit < editDealer.outstanding">
-              Warning: New limit is less than outstanding balance (₹{{ formatNum(editDealer.outstanding) }})
+              Warning: New limit is less than amount already utilized (₹{{ formatNum(editDealer.outstanding) }})
             </p>
           </div>
 
@@ -130,15 +130,15 @@ export class CreditManagementComponent implements OnInit {
   columns: DataTableColumn[] = [
     { key: 'fullName', label: 'Dealer', type: 'text', sortable: true },
     { key: 'businessName', label: 'Business', type: 'text' },
-    { key: 'creditLimit', label: 'Credit Limit', type: 'currency-inr' },
-    { key: 'outstanding', label: 'Outstanding', type: 'currency-inr' },
-    { key: 'available', label: 'Available', type: 'currency-inr' },
-    { key: 'utilization', label: 'Utilization %', type: 'text' },
+    { key: 'creditLimit', label: 'Monthly Limit', type: 'currency-inr' },
+    { key: 'outstanding', label: 'Amount Utilized', type: 'currency-inr' },
+    { key: 'available', label: 'Remaining Limit', type: 'currency-inr' },
+    { key: 'utilization', label: 'Usage %', type: 'text' },
     { key: 'actions', label: 'Actions', type: 'actions-menu' },
   ];
   tableActions: DataTableAction[] = [{ key: 'adjust', label: 'Adjust Limit', variant: 'primary' }];
 
-  constructor(private http: ZoneHttpService, private toast: ToastService, private cdr: ChangeDetectorRef) {}
+  constructor(private http: ZoneHttpService, private toast: ToastService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void { this.load(); }
 
@@ -147,12 +147,12 @@ export class CreditManagementComponent implements OnInit {
     this.http.get<any[]>(API_ENDPOINTS.admin.dealers() + '?status=Active').subscribe({
       next: dealers => {
         const requests = dealers.map(dealer =>
-          this.http.get<any>(API_ENDPOINTS.payment.creditAccount(this.getDealerFinancialId(dealer))).pipe(
+          this.http.get<any>(API_ENDPOINTS.payment.purchaseLimitAccount(this.getDealerFinancialId(dealer))).pipe(
             map(account => {
-              const creditLimit = account?.creditLimit ?? 500_000;
-              const outstanding = account?.outstanding ?? 0;
-              const available = account?.available ?? (creditLimit - outstanding);
-              const utilization = creditLimit > 0 ? Math.round((outstanding / creditLimit) * 100) : 0;
+              const creditLimit = account?.purchaseLimit ?? 500_000;
+              const outstanding = account?.utilizedAmount ?? 0;
+              const available = account?.availableLimit ?? (creditLimit - outstanding);
+              const utilization = account?.utilizationPercent ?? (creditLimit > 0 ? Math.round((outstanding / creditLimit) * 100) : 0);
 
               return {
                 ...dealer,
@@ -219,16 +219,16 @@ export class CreditManagementComponent implements OnInit {
     this.saving = true;
     const dealerFinancialId = this.getDealerFinancialId(this.editDealer);
     // Backend expects { NewLimit: number } — capital N
-    this.http.put(API_ENDPOINTS.payment.creditLimit(dealerFinancialId), { NewLimit: this.newCreditLimit }).subscribe({
+    this.http.put(API_ENDPOINTS.payment.purchaseLimit(dealerFinancialId), { NewLimit: this.newCreditLimit }).subscribe({
       next: () => {
-        this.toast.success(`Credit limit updated to ₹${this.newCreditLimit!.toLocaleString('en-IN')}`);
+        this.toast.success(`Monthly purchase limit updated to ₹${this.newCreditLimit!.toLocaleString('en-IN')}`);
         this.saving = false;
         this.showCreditModal = false;
         this.editDealer = null;
         this.load(); // Re-fetch from DB to show updated values
       },
       error: err => {
-        this.toast.error(err?.error?.error || 'Failed to update limit');
+        this.toast.error(err?.error?.error || 'Failed to update purchase limit');
         this.saving = false;
       }
     });

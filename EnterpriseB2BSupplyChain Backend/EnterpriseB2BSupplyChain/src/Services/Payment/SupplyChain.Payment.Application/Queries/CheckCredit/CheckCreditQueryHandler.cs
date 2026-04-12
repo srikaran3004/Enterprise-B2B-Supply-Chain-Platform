@@ -7,17 +7,10 @@ namespace SupplyChain.Payment.Application.Queries.CheckCredit;
 public class CheckCreditQueryHandler : IRequestHandler<CheckCreditQuery, CreditCheckDto>
 {
     private readonly ICreditAccountRepository _creditRepository;
-    private readonly IInvoiceRepository _invoiceRepository;
-    private readonly IPaymentRecordRepository _paymentRecordRepository;
 
-    public CheckCreditQueryHandler(
-        ICreditAccountRepository creditRepository,
-        IInvoiceRepository invoiceRepository,
-        IPaymentRecordRepository paymentRecordRepository)
+    public CheckCreditQueryHandler(ICreditAccountRepository creditRepository)
     {
         _creditRepository = creditRepository;
-        _invoiceRepository = invoiceRepository;
-        _paymentRecordRepository = paymentRecordRepository;
     }
 
     public async Task<CreditCheckDto> Handle(CheckCreditQuery query, CancellationToken ct)
@@ -27,26 +20,16 @@ public class CheckCreditQueryHandler : IRequestHandler<CheckCreditQuery, CreditC
         if (account is null)
             return new CreditCheckDto(true, 500_000m, 500_000m, 0);
 
-        var invoices = await _invoiceRepository.GetByDealerIdAsync(query.DealerId, ct);
-        var payments = await _paymentRecordRepository.GetByOrderIdsAsync(invoices.Select(i => i.OrderId), ct);
+        if (account.EnsureMonthlyReset(DateTime.UtcNow))
+            await _creditRepository.SaveChangesAsync(ct);
 
-        var paidOrderIds = payments
-            .Where(p => string.Equals(p.Status, "Paid", StringComparison.OrdinalIgnoreCase))
-            .Select(p => p.OrderId)
-            .ToHashSet();
-
-        var liveOutstanding = invoices
-            .Where(i => !paidOrderIds.Contains(i.OrderId))
-            .Sum(i => i.GrandTotal);
-
-        var effectiveOutstanding = Math.Max(account.CurrentOutstanding, liveOutstanding);
-        var availableCredit = Math.Max(0, account.CreditLimit - effectiveOutstanding);
+        var availableLimit = Math.Max(0, account.CreditLimit - account.CurrentOutstanding);
 
         return new CreditCheckDto(
-            Approved:           availableCredit >= query.Amount,
-            AvailableCredit:    availableCredit,
-            CreditLimit:        account.CreditLimit,
-            CurrentOutstanding: effectiveOutstanding
+            Approved:      availableLimit >= query.Amount,
+            AvailableLimit: availableLimit,
+            PurchaseLimit: account.CreditLimit,
+            UtilizedAmount: account.CurrentOutstanding
         );
     }
 }

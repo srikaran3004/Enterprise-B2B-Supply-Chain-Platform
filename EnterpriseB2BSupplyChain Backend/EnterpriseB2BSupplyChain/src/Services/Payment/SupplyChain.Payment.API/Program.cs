@@ -76,6 +76,38 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<PaymentDbContext>();
     await db.Database.MigrateAsync();
+
+    // Backward-compatible guard that upgrades legacy credit-named DB artifacts.
+    // This prevents runtime failures when older environments still use old table/column names.
+    var sql = @"
+IF OBJECT_ID('dbo.DealerCreditAccounts', 'U') IS NOT NULL
+   AND OBJECT_ID('dbo.DealerPurchaseLimitAccounts', 'U') IS NULL
+BEGIN
+    EXEC sp_rename 'dbo.DealerCreditAccounts', 'DealerPurchaseLimitAccounts';
+END;
+
+IF OBJECT_ID('dbo.DealerPurchaseLimitAccounts', 'U') IS NOT NULL
+   AND COL_LENGTH('DealerPurchaseLimitAccounts', 'CreditLimit') IS NOT NULL
+BEGIN
+    EXEC sp_rename 'dbo.DealerPurchaseLimitAccounts.CreditLimit', 'PurchaseLimit', 'COLUMN';
+END;
+
+IF OBJECT_ID('dbo.DealerPurchaseLimitAccounts', 'U') IS NOT NULL
+   AND COL_LENGTH('DealerPurchaseLimitAccounts', 'CurrentOutstanding') IS NOT NULL
+BEGIN
+    EXEC sp_rename 'dbo.DealerPurchaseLimitAccounts.CurrentOutstanding', 'CurrentUtilized', 'COLUMN';
+END;
+
+IF OBJECT_ID('dbo.DealerPurchaseLimitAccounts', 'U') IS NOT NULL
+   AND COL_LENGTH('DealerPurchaseLimitAccounts', 'LastMonthlyResetAt') IS NULL
+BEGIN
+    ALTER TABLE DealerPurchaseLimitAccounts
+    ADD LastMonthlyResetAt datetime2 NOT NULL
+        CONSTRAINT DF_DealerPurchaseLimitAccounts_LastMonthlyResetAt
+        DEFAULT (DATEFROMPARTS(YEAR(GETUTCDATE()), MONTH(GETUTCDATE()), 1));
+END";
+
+    await db.Database.ExecuteSqlRawAsync(sql);
 }
 
 if (app.Environment.IsDevelopment())

@@ -41,7 +41,7 @@ const EVENT_DESCRIPTIONS: Record<string, string> = {
   'DealerApproved': 'Sent when a dealer registration is approved',
   'DealerRejected': 'Sent when a dealer registration is rejected',
   'DealerSuspended': 'Sent when a dealer account is suspended',
-  'CreditLimitUpdated': 'Sent when a dealer credit limit is changed',
+  'CreditLimitUpdated': 'Sent when a dealer monthly purchase limit is changed',
   'ReturnApproved': 'Sent when a return request is approved',
   'ReturnRejected': 'Sent when a return request is rejected',
   'ShipmentDispatched': 'Sent when a shipment is dispatched for delivery',
@@ -177,7 +177,7 @@ export class NotificationsComponent implements OnInit {
 
   tableActions: DataTableAction[] = [{ key: 'edit', label: 'Edit Template' }];
 
-  constructor(private http: ZoneHttpService, private toast: ToastService) {}
+  constructor(private http: ZoneHttpService, private toast: ToastService) { }
 
   ngOnInit(): void { this.load(); }
 

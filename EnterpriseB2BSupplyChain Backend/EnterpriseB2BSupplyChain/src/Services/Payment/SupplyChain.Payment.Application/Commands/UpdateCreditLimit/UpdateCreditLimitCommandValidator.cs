@@ -10,7 +10,7 @@ public class UpdateCreditLimitCommandValidator : AbstractValidator<UpdateCreditL
             .NotEmpty().WithMessage("DealerId is required.");
 
         RuleFor(x => x.NewLimit)
-            .GreaterThan(0).WithMessage("New credit limit must be greater than zero.")
-            .LessThanOrEqualTo(10_000_000m).WithMessage("New credit limit cannot exceed 1,00,00,000.");
+            .GreaterThan(0).WithMessage("Monthly purchase limit must be greater than zero.")
+            .LessThanOrEqualTo(10_000_000m).WithMessage("Monthly purchase limit cannot exceed ₹1,00,00,000.");
     }
 }

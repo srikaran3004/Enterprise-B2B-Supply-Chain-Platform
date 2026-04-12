@@ -62,9 +62,44 @@ import { TableColumn } from '../../../../shared/ui/table/hul-table.component';
           </div>
           <div class="kpi-card__content">
             <span class="kpi-card__value">{{ availableCredit | inrCurrency }}</span>
-            <span class="kpi-card__label">Available Credit ({{ creditUtilization }}% used)</span>
+            <span class="kpi-card__label">Remaining Monthly Purchase Limit (resets on 1st) - {{ creditUtilization }}% utilized</span>
           </div>
         </div>
+      </div>
+
+      <div class="section">
+        <div class="section__header">
+          <h2 class="section__title">Purchase Limit Change History</h2>
+          <select class="filter-select" [(ngModel)]="historyMonthFilter" (change)="applyHistoryFilter()">
+            <option value="">All Months</option>
+            <option *ngFor="let month of historyMonthOptions" [value]="month">{{ month }}</option>
+          </select>
+        </div>
+        <div class="history-table-wrap" *ngIf="filteredPurchaseLimitHistory.length > 0; else noHistory">
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Previous Limit</th>
+                <th>New Limit</th>
+                <th>Updated By</th>
+                <th>Reason</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of filteredPurchaseLimitHistory">
+                <td>{{ row.changedAt | date:'medium' }}</td>
+                <td>{{ row.previousLimit | inrCurrency }}</td>
+                <td><strong>{{ row.newLimit | inrCurrency }}</strong></td>
+                <td>{{ row.changedByRole || 'System' }}</td>
+                <td>{{ row.reason || '—' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <ng-template #noHistory>
+          <div class="empty-history">No purchase-limit changes found.</div>
+        </ng-template>
       </div>
 
       <!-- Recent Orders -->
@@ -247,6 +282,58 @@ import { TableColumn } from '../../../../shared/ui/table/hul-table.component';
       margin: 0;
     }
 
+    .filter-select {
+      padding: 7px 12px;
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-md);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      font-size: 13px;
+      font-family: var(--font-body);
+    }
+
+    .history-table-wrap {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+    }
+
+    .history-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .history-table thead {
+      background: var(--bg-muted);
+    }
+
+    .history-table th {
+      text-align: left;
+      padding: 10px 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .history-table td {
+      padding: 10px 14px;
+      border-top: 1px solid var(--border-default);
+      color: var(--text-primary);
+    }
+
+    .empty-history {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-card);
+      padding: 16px;
+      color: var(--text-tertiary);
+      font-size: 13px;
+    }
+
     .section__link {
       font-size: 13px;
       font-weight: 600;
@@ -334,6 +421,10 @@ export class DashboardComponent implements OnInit {
   totalSpent = 0;
   availableCredit = 0;
   creditUtilization = 0;
+  purchaseLimitHistory: any[] = [];
+  filteredPurchaseLimitHistory: any[] = [];
+  historyMonthOptions: string[] = [];
+  historyMonthFilter = '';
 
   orderColumns: TableColumn[] = [
     { key: 'orderNumber', label: 'Order #', type: 'text' },
@@ -377,6 +468,7 @@ export class DashboardComponent implements OnInit {
     });
 
     this.loadCreditSnapshot();
+    this.loadPurchaseLimitHistory();
   }
 
   private loadCreditSnapshot(): void {
@@ -387,15 +479,59 @@ export class DashboardComponent implements OnInit {
       return;
     }
 
-    this.http.get<any>(API_ENDPOINTS.payment.creditAccount(dealerId)).subscribe({
+    this.http.get<any>(API_ENDPOINTS.payment.purchaseLimitAccount(dealerId)).subscribe({
       next: (credit) => {
-        this.availableCredit = credit?.available ?? 0;
-        this.creditUtilization = credit?.utilization ?? 0;
+        this.availableCredit = credit?.availableLimit ?? 0;
+        this.creditUtilization = credit?.utilizationPercent ?? 0;
       },
       error: () => {
         this.availableCredit = 0;
         this.creditUtilization = 0;
       }
+    });
+  }
+
+  private loadPurchaseLimitHistory(): void {
+    const dealerId = this.authService.getDealerId();
+    if (!dealerId) {
+      this.purchaseLimitHistory = [];
+      this.filteredPurchaseLimitHistory = [];
+      return;
+    }
+
+    this.http.get<any[]>(API_ENDPOINTS.payment.purchaseLimitHistoryByDealer(dealerId)).subscribe({
+      next: rows => {
+        const data = Array.isArray(rows) ? rows : [];
+        this.purchaseLimitHistory = data;
+        const monthSet = new Set<string>();
+
+        data.forEach(r => {
+          const d = new Date(r.changedAt);
+          if (Number.isNaN(d.getTime())) return;
+          monthSet.add(d.toLocaleString('en-IN', { month: 'short', year: 'numeric' }));
+        });
+
+        this.historyMonthOptions = Array.from(monthSet);
+        this.applyHistoryFilter();
+      },
+      error: () => {
+        this.purchaseLimitHistory = [];
+        this.filteredPurchaseLimitHistory = [];
+      }
+    });
+  }
+
+  applyHistoryFilter(): void {
+    if (!this.historyMonthFilter) {
+      this.filteredPurchaseLimitHistory = [...this.purchaseLimitHistory];
+      return;
+    }
+
+    this.filteredPurchaseLimitHistory = this.purchaseLimitHistory.filter(r => {
+      const d = new Date(r.changedAt);
+      if (Number.isNaN(d.getTime())) return false;
+      const label = d.toLocaleString('en-IN', { month: 'short', year: 'numeric' });
+      return label === this.historyMonthFilter;
     });
   }
 

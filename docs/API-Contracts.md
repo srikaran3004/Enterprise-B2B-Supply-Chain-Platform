@@ -54,25 +54,25 @@ Base path:
 
 ### 2.1 Auth Endpoints
 
-| Method | Endpoint | Purpose |
-|---|---|---|
-| POST | `/api/auth/register` | Start dealer registration with OTP |
-| POST | `/api/auth/register/verify-otp` | Complete dealer registration |
-| POST | `/api/auth/login` | Login initiation |
-| POST | `/api/auth/login/verify-otp` | Dealer OTP login verification |
-| POST | `/api/auth/refresh` | Rotate refresh token and issue new access token |
-| POST | `/api/auth/forgot-password` | Request reset OTP |
-| POST | `/api/auth/forgot-password/reset` | Reset password with OTP |
+| Method | Endpoint                          | Purpose                                         |
+| ------ | --------------------------------- | ----------------------------------------------- |
+| POST   | `/api/auth/register`              | Start dealer registration with OTP              |
+| POST   | `/api/auth/register/verify-otp`   | Complete dealer registration                    |
+| POST   | `/api/auth/login`                 | Login initiation                                |
+| POST   | `/api/auth/login/verify-otp`      | Dealer OTP login verification                   |
+| POST   | `/api/auth/refresh`               | Rotate refresh token and issue new access token |
+| POST   | `/api/auth/forgot-password`       | Request reset OTP                               |
+| POST   | `/api/auth/forgot-password/reset` | Reset password with OTP                         |
 
 ### 2.2 Shipping Address Endpoints
 
-| Method | Endpoint | Purpose |
-|---|---|---|
-| GET | `/api/shipping-addresses` | List addresses for current dealer |
-| POST | `/api/shipping-addresses` | Add new address |
-| PUT | `/api/shipping-addresses/{id}` | Update address |
-| DELETE | `/api/shipping-addresses/{id}` | Delete address |
-| PUT | `/api/shipping-addresses/{id}/set-default` | Set default address |
+| Method | Endpoint                                   | Purpose                           |
+| ------ | ------------------------------------------ | --------------------------------- |
+| GET    | `/api/shipping-addresses`                  | List addresses for current dealer |
+| POST   | `/api/shipping-addresses`                  | Add new address                   |
+| PUT    | `/api/shipping-addresses/{id}`             | Update address                    |
+| DELETE | `/api/shipping-addresses/{id}`             | Delete address                    |
+| PUT    | `/api/shipping-addresses/{id}/set-default` | Set default address               |
 
 ---
 
@@ -86,27 +86,27 @@ Base path:
 
 ### 3.1 Product and Category
 
-| Method | Endpoint | Purpose |
-|---|---|---|
-| GET | `/api/products` | Product search/listing |
-| GET | `/api/products/{id}` | Product detail |
-| POST | `/api/products` | Create product |
-| PUT | `/api/products/{id}` | Update product |
-| PUT | `/api/products/{id}/activate` | Activate product |
-| PUT | `/api/products/{id}/deactivate` | Deactivate product |
-| DELETE | `/api/products/{id}` | Hard delete product |
-| GET | `/api/categories` | List categories |
-| POST | `/api/categories` | Create category |
-| PUT | `/api/categories/{id}` | Update category |
+| Method | Endpoint                        | Purpose                |
+| ------ | ------------------------------- | ---------------------- |
+| GET    | `/api/products`                 | Product search/listing |
+| GET    | `/api/products/{id}`            | Product detail         |
+| POST   | `/api/products`                 | Create product         |
+| PUT    | `/api/products/{id}`            | Update product         |
+| PUT    | `/api/products/{id}/activate`   | Activate product       |
+| PUT    | `/api/products/{id}/deactivate` | Deactivate product     |
+| DELETE | `/api/products/{id}`            | Hard delete product    |
+| GET    | `/api/categories`               | List categories        |
+| POST   | `/api/categories`               | Create category        |
+| PUT    | `/api/categories/{id}`          | Update category        |
 
 ### 3.2 Reservation and Inventory
 
-| Method | Endpoint | Purpose |
-|---|---|---|
-| POST | `/api/inventory/restock/{productId}` | Restock inventory |
-| POST | `/api/inventory/reserve` | Reserve stock for dealer cart |
-| POST | `/api/inventory/release` | Release reservation |
-| POST | `/api/inventory/release-all` | Clear all reservations for dealer |
+| Method | Endpoint                             | Purpose                           |
+| ------ | ------------------------------------ | --------------------------------- |
+| POST   | `/api/inventory/restock/{productId}` | Restock inventory                 |
+| POST   | `/api/inventory/reserve`             | Reserve stock for dealer cart     |
+| POST   | `/api/inventory/release`             | Release reservation               |
+| POST   | `/api/inventory/release-all`         | Clear all reservations for dealer |
 
 ---
 
@@ -119,28 +119,28 @@ Base path:
 
 ### 4.1 Order Lifecycle
 
-| Method | Endpoint | Purpose |
-|---|---|---|
-| POST | `/api/orders` | Place new order |
-| GET | `/api/orders/my` | Dealer order listing |
-| GET | `/api/orders` | Admin order listing |
-| GET | `/api/orders/{id}` | Order detail |
-| PUT | `/api/orders/{id}/approve` | Approve on-hold order |
-| PUT | `/api/orders/{id}/cancel` | Cancel order |
-| PUT | `/api/orders/{id}/ready-for-dispatch` | Mark ready for dispatch |
-| PUT | `/api/orders/{id}/in-transit` | Mark in transit |
-| PUT | `/api/orders/{id}/delivered` | Mark delivered |
+| Method | Endpoint                              | Purpose                 |
+| ------ | ------------------------------------- | ----------------------- |
+| POST   | `/api/orders`                         | Place new order         |
+| GET    | `/api/orders/my`                      | Dealer order listing    |
+| GET    | `/api/orders`                         | Admin order listing     |
+| GET    | `/api/orders/{id}`                    | Order detail            |
+| PUT    | `/api/orders/{id}/approve`            | Approve on-hold order   |
+| PUT    | `/api/orders/{id}/cancel`             | Cancel order            |
+| PUT    | `/api/orders/{id}/ready-for-dispatch` | Mark ready for dispatch |
+| PUT    | `/api/orders/{id}/in-transit`         | Mark in transit         |
+| PUT    | `/api/orders/{id}/delivered`          | Mark delivered          |
 
 ### 4.2 Returns
 
-| Method | Endpoint | Purpose |
-|---|---|---|
-| POST | `/api/orders/{id}/returns` | Raise return request |
-| POST | `/api/orders/upload-return-image` | Upload return evidence image |
-| GET | `/api/returns/my` | Dealer return listing |
-| GET | `/api/returns` | Admin return listing |
-| PUT | `/api/returns/{id}/approve` | Approve return with `adminNotes` |
-| PUT | `/api/returns/{id}/reject` | Reject return with `adminNotes` |
+| Method | Endpoint                          | Purpose                          |
+| ------ | --------------------------------- | -------------------------------- |
+| POST   | `/api/orders/{id}/returns`        | Raise return request             |
+| POST   | `/api/orders/upload-return-image` | Upload return evidence image     |
+| GET    | `/api/returns/my`                 | Dealer return listing            |
+| GET    | `/api/returns`                    | Admin return listing             |
+| PUT    | `/api/returns/{id}/approve`       | Approve return with `adminNotes` |
+| PUT    | `/api/returns/{id}/reject`        | Reject return with `adminNotes`  |
 
 ---
 
@@ -150,21 +150,21 @@ Base path:
 
 - `/api/logistics`
 
-| Method | Endpoint | Purpose |
-|---|---|---|
-| POST | `/api/logistics/shipments` | Create shipment |
-| GET | `/api/logistics/shipments/pending` | Pending dispatch shipments |
-| GET | `/api/logistics/shipments` | All shipments |
-| GET | `/api/logistics/shipments/mine` | Agent assigned shipments |
-| POST | `/api/logistics/shipments/assign-agent` | Assign agent and vehicle |
-| PUT | `/api/logistics/shipments/{orderId}/status` | Update shipment status |
-| GET | `/api/logistics/tracking/{orderId}` | Tracking timeline |
-| POST | `/api/logistics/shipments/{id}/rate` | Dealer shipment rating |
-| GET | `/api/logistics/agents/me` | Agent self profile |
-| GET | `/api/logistics/agents` | Admin agent list |
-| POST | `/api/logistics/agents` | Create agent |
-| GET | `/api/logistics/vehicles` | List vehicles |
-| POST | `/api/logistics/vehicles` | Create vehicle |
+| Method | Endpoint                                    | Purpose                    |
+| ------ | ------------------------------------------- | -------------------------- |
+| POST   | `/api/logistics/shipments`                  | Create shipment            |
+| GET    | `/api/logistics/shipments/pending`          | Pending dispatch shipments |
+| GET    | `/api/logistics/shipments`                  | All shipments              |
+| GET    | `/api/logistics/shipments/mine`             | Agent assigned shipments   |
+| POST   | `/api/logistics/shipments/assign-agent`     | Assign agent and vehicle   |
+| PUT    | `/api/logistics/shipments/{orderId}/status` | Update shipment status     |
+| GET    | `/api/logistics/tracking/{orderId}`         | Tracking timeline          |
+| POST   | `/api/logistics/shipments/{id}/rate`        | Dealer shipment rating     |
+| GET    | `/api/logistics/agents/me`                  | Agent self profile         |
+| GET    | `/api/logistics/agents`                     | Admin agent list           |
+| POST   | `/api/logistics/agents`                     | Create agent               |
+| GET    | `/api/logistics/vehicles`                   | List vehicles              |
+| POST   | `/api/logistics/vehicles`                   | Create vehicle             |
 
 ---
 
@@ -174,18 +174,18 @@ Base path:
 
 - `/api/payment`
 
-| Method | Endpoint | Purpose |
-|---|---|---|
-| GET | `/api/payment/dealers/{dealerId}/credit-check` | Credit eligibility |
-| GET | `/api/payment/dealers/{dealerId}/credit-account` | Credit account detail |
-| POST | `/api/payment/dealers/{dealerId}/credit-account` | Create credit account |
-| PUT | `/api/payment/dealers/{dealerId}/credit-limit` | Update credit limit |
-| POST | `/api/payment/invoices/generate` | Generate invoice |
-| GET | `/api/payment/invoices` | List invoices |
-| GET | `/api/payment/invoices/{invoiceId}` | Invoice detail |
-| GET | `/api/payment/invoices/{invoiceId}/download` | Invoice PDF |
-| GET | `/api/payment/invoices/order/{orderId}` | Invoice by order |
-| GET | `/api/payment/admin/sales/export` | Sales export |
+| Method | Endpoint                                                 | Purpose                            |
+| ------ | -------------------------------------------------------- | ---------------------------------- |
+| GET    | `/api/payment/dealers/{dealerId}/purchase-limit-check`   | Monthly purchase limit eligibility |
+| GET    | `/api/payment/dealers/{dealerId}/purchase-limit-account` | Purchase limit account detail      |
+| POST   | `/api/payment/dealers/{dealerId}/purchase-limit-account` | Create purchase limit account      |
+| PUT    | `/api/payment/dealers/{dealerId}/purchase-limit`         | Update monthly purchase limit      |
+| POST   | `/api/payment/invoices/generate`                         | Generate invoice                   |
+| GET    | `/api/payment/invoices`                                  | List invoices                      |
+| GET    | `/api/payment/invoices/{invoiceId}`                      | Invoice detail                     |
+| GET    | `/api/payment/invoices/{invoiceId}/download`             | Invoice PDF                        |
+| GET    | `/api/payment/invoices/order/{orderId}`                  | Invoice by order                   |
+| GET    | `/api/payment/admin/sales/export`                        | Sales export                       |
 
 Razorpay endpoints:
 
@@ -200,14 +200,14 @@ Base path:
 - `/api/notifications`
 - `/api/notification` (inbox operations)
 
-| Method | Endpoint | Purpose |
-|---|---|---|
-| GET | `/api/notifications/templates` | List templates |
-| PUT | `/api/notifications/templates/{eventType}` | Update template |
-| GET | `/api/notification/inbox` | User inbox |
-| GET | `/api/notification/unread-count` | Unread count |
-| PUT | `/api/notification/{id}/mark-read` | Mark one as read |
-| PUT | `/api/notification/mark-all-read` | Mark all as read |
+| Method | Endpoint                                   | Purpose          |
+| ------ | ------------------------------------------ | ---------------- |
+| GET    | `/api/notifications/templates`             | List templates   |
+| PUT    | `/api/notifications/templates/{eventType}` | Update template  |
+| GET    | `/api/notification/inbox`                  | User inbox       |
+| GET    | `/api/notification/unread-count`           | Unread count     |
+| PUT    | `/api/notification/{id}/mark-read`         | Mark one as read |
+| PUT    | `/api/notification/mark-all-read`          | Mark all as read |
 
 ---
 
@@ -247,4 +247,3 @@ Examples:
 - `InvoiceGenerated`
 - `OrderCancelled`
 - `ReturnRequested`
-

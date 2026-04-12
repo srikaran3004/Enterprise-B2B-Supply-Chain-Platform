@@ -75,21 +75,18 @@ public class CancelOrderCommandHandler : IRequestHandler<CancelOrderCommand>
                 order.DealerId);
         }
 
-        if (string.Equals(order.PaymentMode, "Credit", StringComparison.OrdinalIgnoreCase))
-        {
-            var released = await _paymentServiceClient.ReleaseCreditAsync(
-                order.OrderId,
-                order.DealerId,
-                order.TotalAmount,
-                ct);
+        var released = await _paymentServiceClient.ReleaseCreditAsync(
+            order.OrderId,
+            order.DealerId,
+            order.TotalAmount,
+            ct);
 
-            if (!released)
-            {
-                _logger.LogWarning(
-                    "Order cancelled but credit release call failed for OrderId={OrderId}, DealerId={DealerId}",
-                    order.OrderId,
-                    order.DealerId);
-            }
+        if (!released)
+        {
+            _logger.LogWarning(
+                "Order cancelled but purchase-limit release call failed for OrderId={OrderId}, DealerId={DealerId}",
+                order.OrderId,
+                order.DealerId);
         }
 
         var dealerContact = string.IsNullOrWhiteSpace(command.DealerEmail)

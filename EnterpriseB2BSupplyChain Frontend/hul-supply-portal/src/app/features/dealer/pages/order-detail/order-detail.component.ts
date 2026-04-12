@@ -1,4 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ZoneHttpService } from '../../../../core/services/zone-http.service';
 import { API_ENDPOINTS } from '../../../../shared/constants/api-endpoints';
@@ -456,6 +457,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   loading = true;
   order: any = null;
   paymentStatus = 'Pending';
+  private invoiceLookupDisabled = false;
   tracking: any = null;
   activityEvents: Array<{ status: string; timestamp: string; note?: string | null }> = [];
   ratingValue = 0;
@@ -467,7 +469,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
 
   readonly orderStages: OrderStage[] = [
     { key: 'Placed', label: 'Order Placed', icon: '📋' },
-    { key: 'OnHold', label: 'Order Received', icon: '📥' },
+    { key: 'OnHold', label: 'Waiting for Admin Approval', icon: '⏳' },
     { key: 'Processing', label: 'Processing & Packing', icon: '📦' },
     { key: 'ReadyForDispatch', label: 'Ready for Dispatch', icon: '✅' },
     { key: 'AgentAssigned', label: 'Agent Assigned', icon: '🚚' },
@@ -524,7 +526,9 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
       next: o => {
         this.order = o;
         this.paymentStatus = o?.paymentStatus || 'Pending';
-        this.loadPaymentStatus(orderId);
+        if (!this.invoiceLookupDisabled) {
+          this.loadPaymentStatus(orderId);
+        }
         if (!silent) {
           this.loading = false;
         }
@@ -547,12 +551,18 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
 
 
   private loadPaymentStatus(orderId: string): void {
-    this.http.get<any>(API_ENDPOINTS.payment.invoiceByOrderId(orderId)).subscribe({
+    const silentOpts = { headers: new HttpHeaders({ 'X-Skip-Error-Toast': '1' }) };
+
+    this.http.get<any>(API_ENDPOINTS.payment.invoiceByOrderId(orderId), silentOpts).subscribe({
       next: invoice => {
         const resolvedStatus = invoice?.status || invoice?.paymentStatus || (invoice?.paidAt ? 'Paid' : 'Pending');
         this.paymentStatus = resolvedStatus || this.paymentStatus || 'Pending';
       },
-      error: () => {
+      error: (error: HttpErrorResponse) => {
+        // Invoice can legitimately be unavailable for some order stages; avoid retry noise.
+        if (error.status === 404) {
+          this.invoiceLookupDisabled = true;
+        }
         this.paymentStatus = this.order?.paymentStatus || this.paymentStatus || 'Pending';
       }
     });
@@ -719,7 +729,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   formatStatus(status: string): string {
     const map: Record<string, string> = {
       Placed: 'Order Placed',
-      OnHold: 'On Hold',
+      OnHold: 'Purchase Limit Exceeded - Waiting for Admin Approval',
       Processing: 'Processing',
       ReadyForDispatch: 'Ready for Dispatch',
       InTransit: 'In Transit',

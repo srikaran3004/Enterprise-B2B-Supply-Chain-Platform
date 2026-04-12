@@ -7,4 +7,4 @@ public interface IPaymentServiceClient
     Task<bool> ReleaseCreditAsync(Guid orderId, Guid dealerId, decimal amount, CancellationToken ct = default);
 }
 
-public record CreditCheckResult(bool Approved, decimal AvailableCredit);
+public record CreditCheckResult(bool Approved, decimal AvailableLimit);
