@@ -7,7 +7,7 @@
 ///
 /// Subclasses carry their own HTTP status code and machine-readable error code.
 /// This is intentionally separate from the per-service <c>DomainException</c>
-/// classes â€” those represent pure domain invariant violations and remain
+/// classes those represent pure domain invariant violations and remain
 /// untouched to avoid a cross-cutting refactor of every Domain project.
 /// The global middleware handles BOTH hierarchies.
 /// </summary>
