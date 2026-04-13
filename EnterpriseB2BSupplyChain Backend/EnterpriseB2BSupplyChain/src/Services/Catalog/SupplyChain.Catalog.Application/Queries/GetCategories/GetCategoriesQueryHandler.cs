@@ -23,7 +23,7 @@ public class GetCategoriesQueryHandler : IRequestHandler<GetCategoriesQuery, Lis
             return all.Select(c => new CategoryDto(c.CategoryId, c.Name, c.Description, c.ParentCategoryId, c.IsActive)).ToList();
         }
 
-        const string cacheKey = "catalog:categories:all";
+        const string cacheKey = "catalog:categories:v2:all";
         var cached = await _cache.GetAsync<List<CategoryDto>>(cacheKey, ct);
         if (cached is not null)
             return cached;
@@ -33,7 +33,7 @@ public class GetCategoriesQueryHandler : IRequestHandler<GetCategoriesQuery, Lis
             c.CategoryId, c.Name, c.Description, c.ParentCategoryId, c.IsActive
         )).ToList();
 
-        await _cache.SetAsync(cacheKey, result, TimeSpan.FromHours(1), ct);
+        await _cache.SetAsync(cacheKey, result, TimeSpan.FromMinutes(10), ct);
         return result;
     }
 }

@@ -72,7 +72,7 @@ import { environment } from '../../../../../environments/environment';
           <hul-skeleton *ngIf="loading$ | async" type="product-card" [count]="6"></hul-skeleton>
 
           <div class="catalog__grid" *ngIf="!(loading$ | async)">
-            <div *ngFor="let product of filteredProducts; let i = index"
+            <div *ngFor="let product of pagedProducts; let i = index"
                  class="product-card" [style.animation-delay]="(i * 40) + 'ms'">
               <!-- Stock badge -->
               <div class="product-card__badges">
@@ -124,8 +124,22 @@ import { environment } from '../../../../../environments/environment';
 
           <!-- Load indicator -->
           <p *ngIf="!(loading$ | async) && filteredProducts.length > 0" class="catalog__count">
-            Showing {{ filteredProducts.length }} products
+            Showing {{ pageStartIndex + 1 }}-{{ pageEndIndex }} of {{ filteredProducts.length }} products
           </p>
+
+          <div class="catalog__pager" *ngIf="!(loading$ | async) && filteredProducts.length > 0">
+            <div class="catalog__pager-meta">
+              Page {{ currentPage }} of {{ totalPages }}
+            </div>
+            <div class="catalog__pager-controls">
+              <label class="catalog__pager-size-label">Rows</label>
+              <select class="catalog__pager-size" [(ngModel)]="pageSize" (ngModelChange)="onPageSizeChange()">
+                <option *ngFor="let option of pageSizeOptions" [ngValue]="option">{{ option }}</option>
+              </select>
+              <button class="catalog__pager-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">Prev</button>
+              <button class="catalog__pager-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">Next</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -349,12 +363,79 @@ import { environment } from '../../../../../environments/environment';
       margin-top: 24px;
     }
 
+    .catalog__pager {
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-md);
+      background: var(--bg-card);
+    }
+
+    .catalog__pager-meta {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      font-weight: 500;
+    }
+
+    .catalog__pager-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .catalog__pager-size-label {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      font-weight: 600;
+    }
+
+    .catalog__pager-size {
+      height: 30px;
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-sm);
+      background: var(--bg-subtle);
+      color: var(--text-primary);
+      padding: 0 8px;
+      font-size: 12px;
+      font-family: var(--font-body);
+    }
+
+    .catalog__pager-btn {
+      height: 30px;
+      min-width: 56px;
+      border: 1px solid var(--border-default);
+      background: var(--bg-subtle);
+      color: var(--text-secondary);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: var(--font-body);
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .catalog__pager-btn:hover:not(:disabled) {
+      border-color: var(--hul-primary);
+      color: var(--hul-primary);
+    }
+
+    .catalog__pager-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
     @media (max-width: 768px) {
       .catalog__layout { grid-template-columns: 1fr; }
       .catalog__filters { position: static; max-height: none; overflow-y: visible; }
       .catalog__grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+      .catalog__pager { flex-direction: column; align-items: stretch; }
+      .catalog__pager-controls { justify-content: space-between; }
     }
   `]
 })
@@ -362,6 +443,7 @@ export class CatalogComponent implements OnInit, OnDestroy {
   products: any[] = [];
   filteredProducts: any[] = [];
   categories: any[] = [];
+  allCategories: any[] = [];
   availableBrands: string[] = [];
   loading$!: Observable<boolean>;
 
@@ -369,6 +451,9 @@ export class CatalogComponent implements OnInit, OnDestroy {
   inStockOnly = false;
   selectedCategory: string | null = null;
   selectedBrands: Set<string> = new Set();
+  pageSize = 12;
+  pageSizeOptions = [12, 24, 36, 48];
+  currentPage = 1;
   quantities: Record<string, number> = {};
   favorites: Set<string> = new Set();
   subscribedProducts: Set<string> = new Set();
@@ -395,9 +480,13 @@ export class CatalogComponent implements OnInit, OnDestroy {
       // Derive unique brands from the full product list
       const brands = [...new Set(p.map((x: any) => x.brand).filter(Boolean))].sort() as string[];
       this.availableBrands = brands;
+      this.refreshVisibleCategories();
       this.applyBrandFilter();
     });
-    this.store.select(selectCategories).pipe(takeUntil(this.destroy$)).subscribe(c => this.categories = c);
+    this.store.select(selectCategories).pipe(takeUntil(this.destroy$)).subscribe(c => {
+      this.allCategories = c || [];
+      this.refreshVisibleCategories();
+    });
 
     this.searchSubject.pipe(debounceTime(350), takeUntil(this.destroy$)).subscribe(() => this.applyFilters());
   }
@@ -445,6 +534,7 @@ export class CatalogComponent implements OnInit, OnDestroy {
     } else {
       this.filteredProducts = this.products.filter(p => this.selectedBrands.has(p.brand));
     }
+    this.currentPage = 1;
   }
 
   resetFilters(): void {
@@ -452,12 +542,75 @@ export class CatalogComponent implements OnInit, OnDestroy {
     this.inStockOnly = false;
     this.selectedCategory = null;
     this.selectedBrands.clear();
+    this.currentPage = 1;
     this.store.dispatch(CatalogActions.resetFilters());
     this.store.dispatch(CatalogActions.loadProducts({ params: {} }));
   }
 
   hasActiveFilters(): boolean {
     return !!this.searchTerm || this.inStockOnly || !!this.selectedCategory || this.selectedBrands.size > 0;
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.filteredProducts.length / this.pageSize));
+  }
+
+  get pageStartIndex(): number {
+    return (this.currentPage - 1) * this.pageSize;
+  }
+
+  get pageEndIndex(): number {
+    return Math.min(this.pageStartIndex + this.pageSize, this.filteredProducts.length);
+  }
+
+  get pagedProducts(): any[] {
+    return this.filteredProducts.slice(this.pageStartIndex, this.pageEndIndex);
+  }
+
+  onPageSizeChange(): void {
+    this.currentPage = 1;
+  }
+
+  goToPage(page: number): void {
+    this.currentPage = Math.min(Math.max(page, 1), this.totalPages);
+  }
+
+  private refreshVisibleCategories(): void {
+    const productCategoryIds = new Set((this.products || []).map((p: any) => p.categoryId));
+    const dedupedByName = new Map<string, any>();
+
+    for (const cat of this.allCategories || []) {
+      if (!cat?.categoryId || !cat?.name || !productCategoryIds.has(cat.categoryId)) {
+        continue;
+      }
+
+      const key = this.normalizeCategoryName(cat.name);
+      if (!key) {
+        continue;
+      }
+
+      if (!dedupedByName.has(key)) {
+        dedupedByName.set(key, cat);
+      }
+    }
+
+    this.categories = Array.from(dedupedByName.values())
+      .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+    if (this.selectedCategory && !this.categories.some(c => c.categoryId === this.selectedCategory)) {
+      this.selectedCategory = null;
+      this.applyFilters();
+    }
+  }
+
+  private normalizeCategoryName(value: string): string {
+    return (value || '')
+      .toLowerCase()
+      .replace(/[\u2013\u2014\-_/]+/g, ' ')
+      .replace(/&/g, ' and ')
+      .replace(/\bcategories?\b|\bcategorie\b/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
   }
 
   getQty(product: any): number {

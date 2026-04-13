@@ -3,22 +3,7 @@
 namespace SupplyChain.SharedInfrastructure.Results;
 
 /// <summary>
-/// Standard envelope for every API response across the HUL Supply Chain Platform.
-///
-/// Shape (JSON):
-/// <code>
-/// {
-///   "success":       true,
-///   "data":          { ... actual payload ... },
-///   "error":         null,
-///   "correlationId": "b1c9...",
-///   "traceId":       "00-...",
-///   "timestamp":     "2026-04-08T16:35:22.123Z"
-/// }
-/// </code>
-/// Clients can reliably check <c>success</c> first, then pull <c>data</c> on success
-/// or <c>error</c> on failure. <c>correlationId</c> is echoed so the client can
-/// attach it to support requests for end-to-end tracing.
+/// Generic API response envelope for successful and failed responses.
 /// </summary>
 public sealed class ApiResponse<T>
 {
@@ -44,32 +29,29 @@ public sealed class ApiResponse<T>
     [JsonPropertyName("timestamp")]
     public DateTime Timestamp { get; init; } = DateTime.UtcNow;
 
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    // Factory helpers
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
+    /// <summary>Create a successful response envelope.</summary>
     public static ApiResponse<T> Ok(T data, string? correlationId = null, string? traceId = null)
         => new()
         {
-            Success       = true,
-            Data          = data,
+            Success = true,
+            Data = data,
             CorrelationId = correlationId,
-            TraceId       = traceId,
+            TraceId = traceId
         };
 
+    /// <summary>Create a failed response envelope.</summary>
     public static ApiResponse<T> Fail(ApiError error, string? correlationId = null, string? traceId = null)
         => new()
         {
-            Success       = false,
-            Error         = error,
+            Success = false,
+            Error = error,
             CorrelationId = correlationId,
-            TraceId       = traceId,
+            TraceId = traceId
         };
 }
 
 /// <summary>
-/// Non-generic convenience type for endpoints that do not return a payload
-/// (e.g. <c>204 No Content</c> style operations still wrapped in the envelope).
+/// Non-generic envelope for responses without payload.
 /// </summary>
 public sealed class ApiResponse
 {
@@ -97,4 +79,5 @@ public sealed class ApiResponse
     public static ApiResponse Fail(ApiError error, string? correlationId = null, string? traceId = null)
         => new() { Success = false, Error = error, CorrelationId = correlationId, TraceId = traceId };
 }
+
 

@@ -12,27 +12,35 @@ using System.Threading.RateLimiting;
 namespace SupplyChain.SharedInfrastructure.Extensions;
 
 /// <summary>
-/// Single-entry-point extension methods that every microservice uses to wire up
-/// the shared infrastructure layer. Keeps <c>Program.cs</c> changes to one line of
-/// service registration and one line of middleware registration per service.
+/// Single-entry-point extension methods to wire shared platform behavior
+/// into every microservice with two lines in Program.cs.
 /// </summary>
 public static class SharedInfrastructureExtensions
 {
     /// <summary>
-    /// Registers all services required by the shared infrastructure pipeline
-    /// (HttpContextAccessor, correlation accessor, internal auth helper,
-    /// response envelope filter, platform rate limiting, and background log retention cleanup).
-    /// Call this in <c>Program.cs</c> BEFORE <c>AddApplication</c>/<c>AddInfrastructure</c>.
+    /// Registers cross-cutting services used by all APIs.
+    /// Must run before Application/Infrastructure registrations.
     /// </summary>
     public static IServiceCollection AddSharedInfrastructure(this IServiceCollection services)
     {
         services.AddHttpContextAccessor();
+
+        // Correlation ID plumbing (read from request, access anywhere, forward on HttpClient calls).
         services.AddSingleton<ICorrelationIdAccessor, CorrelationIdAccessor>();
+        //Automatically attaches correlation ID to outgoing HTTP calls.
         services.AddTransient<CorrelationIdDelegatingHandler>();
+
+        // Auto-wrap successful controller responses in standard ApiResponse envelope.
         services.AddScoped<ApiResponseEnvelopeFilter>();
         services.Configure<MvcOptions>(options => options.Filters.AddService<ApiResponseEnvelopeFilter>());
+
+        // Internal JWT helper for service-to-service calls.
         services.AddSingleton<IInternalServiceTokenProvider, InternalServiceTokenProvider>();
+
+        // Background cleanup for old log files.
         services.AddHostedService<LogRetentionCleanupService>();
+
+        // Global rate limiting: strict for auth endpoints, relaxed for normal APIs.
         services.AddRateLimiter(options =>
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -56,7 +64,7 @@ public static class SharedInfrastructureExtensions
                         factory: _ => new FixedWindowRateLimiterOptions
                         {
                             PermitLimit = 30,
-                            Window = TimeSpan.FromMinutes(1),
+                            Window = TimeSpan.FromMinutes(1),//Rate resets every 1 minute.  
                             QueueLimit = 0,
                             AutoReplenishment = true
                         });
@@ -68,7 +76,7 @@ public static class SharedInfrastructureExtensions
                     {
                         PermitLimit = 600,
                         Window = TimeSpan.FromMinutes(1),
-                        QueueLimit = 0,
+                        QueueLimit = 0, 
                         AutoReplenishment = true
                     });
             });
@@ -78,23 +86,22 @@ public static class SharedInfrastructureExtensions
     }
 
     /// <summary>
-    /// Registers the shared infrastructure request pipeline:
-    /// <list type="number">
-    ///   <item><description><see cref="CorrelationIdMiddleware"/> - reads/generates the correlation ID.</description></item>
-    ///   <item><description>Platform rate limiting middleware.</description></item>
-    ///   <item><description><see cref="RequestContextEnrichmentMiddleware"/> - enriches logs with user and request path.</description></item>
-    ///   <item><description><see cref="GlobalExceptionHandlingMiddleware"/> - central exception handler.</description></item>
-    /// </list>
-    /// Call this in <c>Program.cs</c> as the FIRST pipeline call - before UseCors,
-    /// UseSerilogRequestLogging, UseAuthentication, UseAuthorization, MapControllers.
+    /// Adds shared middleware in required order.
+    /// Should be called first in the HTTP pipeline.
     /// </summary>
     public static IApplicationBuilder UseSharedInfrastructure(this IApplicationBuilder app)
     {
-        app.UseMiddleware<CorrelationIdMiddleware>();
-        app.UseRateLimiter();
-        app.UseMiddleware<RequestContextEnrichmentMiddleware>();
-        app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
+        app.UseMiddleware<CorrelationIdMiddleware>();             // 1) Ensure every request has a correlation id.
+        app.UseRateLimiter();                                     // 2) Enforce request throttling.
+        app.UseMiddleware<RequestContextEnrichmentMiddleware>();  // 3) Add user/path metadata to logs.
+        app.UseMiddleware<GlobalExceptionHandlingMiddleware>();   // 4) Convert exceptions to uniform error payloads.
         return app;
     }
 }
 
+/**
+ This shared infrastructure layer centralizes common cross-cutting concerns for all microservices, 
+including correlation ID tracing, rate limiting, global exception handling, 
+request enrichment, standardized API responses, internal service authentication, 
+and log cleanup. It helps maintain consistency and reduces repeated boilerplate code across services.
+ * */

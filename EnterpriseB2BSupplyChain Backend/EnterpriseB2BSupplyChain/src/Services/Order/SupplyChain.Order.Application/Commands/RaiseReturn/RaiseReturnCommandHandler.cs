@@ -7,6 +7,8 @@ namespace SupplyChain.Order.Application.Commands.RaiseReturn;
 
 public class RaiseReturnCommandHandler : IRequestHandler<RaiseReturnCommand>
 {
+    private static readonly TimeSpan ReturnWindow = TimeSpan.FromHours(48);
+
     private readonly IOrderRepository  _orderRepository;
     private readonly IOutboxRepository _outboxRepository;
 
@@ -35,6 +37,19 @@ public class RaiseReturnCommandHandler : IRequestHandler<RaiseReturnCommand>
 
             if (order.Status != Domain.Enums.OrderStatus.Delivered)
                 throw new InvalidOperationException($"Returns can only be raised on delivered orders. Current status: {order.Status}.");
+
+            var deliveredAt = order.StatusHistory
+                .Where(h => string.Equals(h.ToStatus, Domain.Enums.OrderStatus.Delivered.ToString(), StringComparison.OrdinalIgnoreCase))
+                .OrderByDescending(h => h.ChangedAt)
+                .Select(h => (DateTime?)h.ChangedAt)
+                .FirstOrDefault();
+
+            if (!deliveredAt.HasValue)
+                throw new InvalidOperationException("Return cannot be raised because delivery timestamp was not found.");
+
+            var elapsedSinceDelivery = DateTime.UtcNow - deliveredAt.Value;
+            if (elapsedSinceDelivery > ReturnWindow)
+                throw new InvalidOperationException("Return request window has expired. Returns must be raised within 48 hours of delivery.");
 
             order.RaiseReturnRequest(command.DealerId, command.Reason, command.PhotoUrl);
 

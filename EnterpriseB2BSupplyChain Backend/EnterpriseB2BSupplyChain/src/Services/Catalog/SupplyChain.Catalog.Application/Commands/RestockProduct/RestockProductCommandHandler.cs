@@ -60,5 +60,6 @@ public class RestockProductCommandHandler : IRequestHandler<RestockProductComman
 
         await _cache.RemoveAsync($"catalog:product:{command.ProductId}", ct);
         await _cache.RemoveByPatternAsync("catalog:products:*", ct);
+        await _cache.RemoveByPatternAsync("catalog:products:v2:*", ct);
     }
 }

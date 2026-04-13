@@ -30,8 +30,6 @@ public class ProductRepository : IProductRepository
     public async Task<List<Product>> GetAllActiveAsync(CancellationToken ct = default)
         => await _context.Products
             .AsNoTracking()
-            .Include(p => p.Category)
-            .AsSplitQuery()
             .Where(p => p.Status == ProductStatus.Active)
             .OrderBy(p => p.Name)
             .ToListAsync(ct);
@@ -39,8 +37,6 @@ public class ProductRepository : IProductRepository
     public async Task<List<Product>> GetAllAsync(CancellationToken ct = default)
         => await _context.Products
             .AsNoTracking()
-            .Include(p => p.Category)
-            .AsSplitQuery()
             .OrderBy(p => p.Name)
             .ToListAsync(ct);
 
@@ -50,8 +46,6 @@ public class ProductRepository : IProductRepository
 
         return await _context.Products
             .AsNoTracking()
-            .Include(p => p.Category)
-            .AsSplitQuery()
             .Where(p => categoryIds.Contains(p.CategoryId) && p.Status == ProductStatus.Active)
             .OrderBy(p => p.Name)
             .ToListAsync(ct);
@@ -63,8 +57,6 @@ public class ProductRepository : IProductRepository
 
         return await _context.Products
             .AsNoTracking()
-            .Include(p => p.Category)
-            .AsSplitQuery()
             .Where(p => categoryIds.Contains(p.CategoryId))
             .OrderBy(p => p.Name)
             .ToListAsync(ct);
@@ -109,15 +101,19 @@ public class ProductRepository : IProductRepository
 
     public async Task<List<Product>> SearchAsync(string searchTerm, CancellationToken ct = default)
     {
-        var term = searchTerm.ToLower();
+        var term = searchTerm.Trim();
+        var escapedTerm = term
+            .Replace("[", "[[]")
+            .Replace("%", "[%]")
+            .Replace("_", "[_]");
+        var pattern = $"%{escapedTerm}%";
+
         return await _context.Products
             .AsNoTracking()
-            .Include(p => p.Category)
-            .AsSplitQuery()
             .Where(p => p.Status == ProductStatus.Active &&
-                       (p.Name.ToLower().Contains(term) ||
-                        p.SKU.ToLower().Contains(term) ||
-                        (p.Brand != null && p.Brand.ToLower().Contains(term))))
+                       (EF.Functions.Like(p.Name, pattern) ||
+                        EF.Functions.Like(p.SKU, pattern) ||
+                        (p.Brand != null && EF.Functions.Like(p.Brand, pattern))))
             .OrderBy(p => p.Name)
             .ToListAsync(ct);
     }

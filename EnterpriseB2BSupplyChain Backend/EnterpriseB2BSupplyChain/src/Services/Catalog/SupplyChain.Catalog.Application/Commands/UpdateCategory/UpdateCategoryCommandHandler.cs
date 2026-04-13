@@ -24,6 +24,7 @@ public class UpdateCategoryCommandHandler : IRequestHandler<UpdateCategoryComman
 
         category.Update(command.Name, command.Description);
         await _categoryRepository.SaveChangesAsync(ct);
+        await _cache.RemoveAsync("catalog:categories:v2:all", ct);
         await _cache.RemoveAsync("catalog:categories:all", ct);
     }
 }

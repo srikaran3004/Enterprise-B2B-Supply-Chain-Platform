@@ -23,6 +23,7 @@ public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryComman
         var category = Category.Create(command.Name, command.Description, command.ParentCategoryId);
         await _categoryRepository.AddAsync(category, ct);
         await _categoryRepository.SaveChangesAsync(ct);
+        await _cache.RemoveAsync("catalog:categories:v2:all", ct);
         await _cache.RemoveAsync("catalog:categories:all", ct);
         return category.CategoryId;
     }

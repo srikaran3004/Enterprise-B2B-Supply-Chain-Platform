@@ -36,6 +36,12 @@ public class ReturnRequest
 
     public void Approve(string? adminNotes = null)
     {
+        if (Status == ReturnStatus.Approved)
+            return;
+
+        if (Status != ReturnStatus.Pending)
+            throw new InvalidOperationException("Only pending return requests can be approved.");
+
         Status     = ReturnStatus.Approved;
         AdminNotes = adminNotes;
         ResolvedAt = DateTime.UtcNow;
@@ -43,6 +49,12 @@ public class ReturnRequest
 
     public void Reject(string? adminNotes = null)
     {
+        if (Status == ReturnStatus.Rejected)
+            return;
+
+        if (Status != ReturnStatus.Pending)
+            throw new InvalidOperationException("Only pending return requests can be rejected.");
+
         Status     = ReturnStatus.Rejected;
         AdminNotes = adminNotes;
         ResolvedAt = DateTime.UtcNow;

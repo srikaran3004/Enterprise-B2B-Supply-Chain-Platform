@@ -51,6 +51,7 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
         await _productRepository.SaveChangesAsync(ct);
 
         await _cache.RemoveByPatternAsync("catalog:products:*", ct);
+        await _cache.RemoveByPatternAsync("catalog:products:v2:*", ct);
 
         return product.ProductId;
     }

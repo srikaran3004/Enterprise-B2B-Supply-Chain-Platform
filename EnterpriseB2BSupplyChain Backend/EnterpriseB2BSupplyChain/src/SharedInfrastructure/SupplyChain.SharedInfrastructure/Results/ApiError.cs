@@ -3,26 +3,20 @@
 namespace SupplyChain.SharedInfrastructure.Results;
 
 /// <summary>
-/// Standard error payload nested inside <see cref="ApiResponse{T}"/> on failure.
+/// Standard error payload used inside ApiResponse when a request fails.
 /// </summary>
 public sealed class ApiError
 {
-    /// <summary>Short machine-readable error code (e.g. "VALIDATION_FAILED", "NOT_FOUND").</summary>
     [JsonPropertyName("code")]
     public required string Code { get; init; }
 
-    /// <summary>Human-friendly single-line description of what went wrong.</summary>
     [JsonPropertyName("message")]
     public required string Message { get; init; }
 
-    /// <summary>Optional extra details â€” e.g. per-field validation errors.</summary>
+    // Optional field-level errors (mainly for validation failures).
     [JsonPropertyName("details")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyDictionary<string, string[]>? Details { get; init; }
-
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    // Common factory helpers
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public static ApiError Validation(string message, IReadOnlyDictionary<string, string[]>? fieldErrors = null)
         => new() { Code = "VALIDATION_FAILED", Message = message, Details = fieldErrors };
@@ -48,4 +42,5 @@ public sealed class ApiError
     public static ApiError Cancelled(string message = "The request was cancelled.")
         => new() { Code = "CANCELLED", Message = message };
 }
+
 

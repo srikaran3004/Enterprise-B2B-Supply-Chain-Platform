@@ -7,24 +7,24 @@ namespace SupplyChain.Catalog.Application.Queries.GetProducts;
 public class GetProductsQueryHandler : IRequestHandler<GetProductsQuery, List<ProductDto>>
 {
     private readonly IProductRepository _productRepository;
+    private readonly ICategoryRepository _categoryRepository;
     private readonly ICacheService _cache;
 
-    public GetProductsQueryHandler(IProductRepository productRepository, ICacheService cache)
+    public GetProductsQueryHandler(IProductRepository productRepository, ICategoryRepository categoryRepository, ICacheService cache)
     {
         _productRepository = productRepository;
+        _categoryRepository = categoryRepository;
         _cache = cache;
     }
 
     public async Task<List<ProductDto>> Handle(GetProductsQuery query, CancellationToken ct)
     {
-        var cacheKey = $"catalog:products:cat={query.CategoryId}:stock={query.InStockOnly}:q={query.SearchTerm}:inactive={query.IncludeInactive}";
+        var cacheKey = $"catalog:products:v2:cat={query.CategoryId}:stock={query.InStockOnly}:q={query.SearchTerm}:inactive={query.IncludeInactive}";
 
-        // Skip cache when including inactive so admin always gets fresh data
-        if (!query.IncludeInactive)
+        var cached = await _cache.GetAsync<List<ProductDto>>(cacheKey, ct);
+        if (cached is not null)
         {
-            var cached = await _cache.GetAsync<List<ProductDto>>(cacheKey, ct);
-            if (cached is not null)
-                return cached;
+            return cached;
         }
 
         List<Domain.Entities.Product> products;
@@ -41,13 +41,17 @@ public class GetProductsQueryHandler : IRequestHandler<GetProductsQuery, List<Pr
         if (query.InStockOnly == true)
             products = products.Where(p => p.IsInStock).ToList();
 
+        var categoryLookup = (await _categoryRepository.GetAllAsync(ct))
+            .GroupBy(c => c.CategoryId)
+            .ToDictionary(g => g.Key, g => g.First().Name);
+
         var result = products.Select(p => new ProductDto(
             ProductId: p.ProductId,
             CategoryId: p.CategoryId,
             SKU: p.SKU,
             Name: p.Name,
             Brand: p.Brand,
-            CategoryName: p.Category.Name,
+            CategoryName: categoryLookup.TryGetValue(p.CategoryId, out var categoryName) ? categoryName : "Uncategorized",
             UnitPrice: p.UnitPrice,
             MinOrderQuantity: p.MinOrderQuantity,
             TotalStock: p.TotalStock,
@@ -58,29 +62,33 @@ public class GetProductsQueryHandler : IRequestHandler<GetProductsQuery, List<Pr
             ImageUrl: p.ImageUrl
         )).ToList();
 
-        // Fetch all soft-lock quantities in parallel to avoid N sequential Redis round-trips
-        var softLocks = await Task.WhenAll(
-            result.Select(dto => _cache.GetSoftLockedQuantityAsync(dto.ProductId, ct)));
-
-        for (int i = 0; i < result.Count; i++)
+        // Admin includeInactive views are used for management screens and do not require
+        // high-cost real-time soft-lock reconciliation for every item.
+        if (!query.IncludeInactive)
         {
-            var r = softLocks[i];
-            if (r > 0)
+            var softLocks = await Task.WhenAll(
+                result.Select(dto => _cache.GetSoftLockedQuantityAsync(dto.ProductId, ct)));
+
+            for (int i = 0; i < result.Count; i++)
             {
-                var dto = result[i];
-                var newReserved  = dto.ReservedStock + r;
-                var newAvailable = dto.TotalStock - newReserved;
-                result[i] = dto with
+                var r = softLocks[i];
+                if (r > 0)
                 {
-                    ReservedStock  = newReserved,
-                    AvailableStock = newAvailable,
-                    IsInStock      = newAvailable >= dto.MinOrderQuantity
-                };
+                    var dto = result[i];
+                    var newReserved = dto.ReservedStock + r;
+                    var newAvailable = dto.TotalStock - newReserved;
+                    result[i] = dto with
+                    {
+                        ReservedStock = newReserved,
+                        AvailableStock = newAvailable,
+                        IsInStock = newAvailable >= dto.MinOrderQuantity
+                    };
+                }
             }
         }
 
-        if (!query.IncludeInactive)
-            await _cache.SetAsync(cacheKey, result, TimeSpan.FromMinutes(5), ct);
+        var ttl = query.IncludeInactive ? TimeSpan.FromMinutes(1) : TimeSpan.FromMinutes(5);
+        await _cache.SetAsync(cacheKey, result, ttl, ct);
 
         return result;
     }

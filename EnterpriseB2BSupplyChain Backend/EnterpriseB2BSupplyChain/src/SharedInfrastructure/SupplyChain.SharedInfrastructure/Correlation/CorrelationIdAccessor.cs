@@ -3,13 +3,11 @@
 namespace SupplyChain.SharedInfrastructure.Correlation;
 
 /// <summary>
-/// Exposes the current request's correlation ID to any layer of the app
-/// (handlers, repositories, domain services, etc.) without taking a direct
-/// dependency on <c>IHttpContextAccessor</c>.
+/// Abstraction to fetch current request correlation id from any layer.
 /// </summary>
 public interface ICorrelationIdAccessor
 {
-    /// <summary>The active correlation ID for the current request, or null if called outside an HTTP request.</summary>
+    /// <summary>Current correlation id, or null when no HTTP request scope exists.</summary>
     string? CorrelationId { get; }
 }
 
@@ -25,11 +23,12 @@ internal sealed class CorrelationIdAccessor : ICorrelationIdAccessor
         get
         {
             var httpContext = _httpContextAccessor.HttpContext;
-            if (httpContext is null) return null;
+            if (httpContext is null) return null; // Background job / non-request path.
             return httpContext.Items.TryGetValue(CorrelationIdMiddleware.ItemKey, out var value)
                 ? value as string
                 : null;
         }
     }
 }
+
 

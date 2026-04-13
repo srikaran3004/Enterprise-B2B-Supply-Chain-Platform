@@ -3,7 +3,7 @@
 namespace SupplyChain.SharedInfrastructure.Correlation;
 
 /// <summary>
-/// Forwards the current request correlation ID to outbound HttpClient calls.
+/// Propagates correlation id from current request to outbound HttpClient calls.
 /// </summary>
 public sealed class CorrelationIdDelegatingHandler : DelegatingHandler
 {
@@ -17,6 +17,8 @@ public sealed class CorrelationIdDelegatingHandler : DelegatingHandler
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         var correlationId = _accessor.CorrelationId;
+
+        // Add header only if available and not already set by caller.
         if (!string.IsNullOrWhiteSpace(correlationId) && !request.Headers.Contains(CorrelationIdMiddleware.HeaderName))
         {
             request.Headers.TryAddWithoutValidation(CorrelationIdMiddleware.HeaderName, correlationId);
@@ -25,4 +27,9 @@ public sealed class CorrelationIdDelegatingHandler : DelegatingHandler
         return base.SendAsync(request, cancellationToken);
     }
 }
+
+/**
+ * This delegating handler propagates the current request’s correlation ID into outbound 
+ * HTTP client requests so distributed tracing remains consistent across microservices.
+ * */
 

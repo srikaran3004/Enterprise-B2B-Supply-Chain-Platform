@@ -36,6 +36,7 @@ public class ToggleCategoryStatusCommandHandler : IRequestHandler<ToggleCategory
 
             await _productRepository.SaveChangesAsync(ct);
             await _cache.RemoveByPatternAsync("catalog:products:*", ct);
+            await _cache.RemoveByPatternAsync("catalog:products:v2:*", ct);
         }
         else
         {
@@ -48,9 +49,11 @@ public class ToggleCategoryStatusCommandHandler : IRequestHandler<ToggleCategory
 
             await _productRepository.SaveChangesAsync(ct);
             await _cache.RemoveByPatternAsync("catalog:products:*", ct);
+            await _cache.RemoveByPatternAsync("catalog:products:v2:*", ct);
         }
 
         await _categoryRepository.SaveChangesAsync(ct);
+        await _cache.RemoveAsync("catalog:categories:v2:all", ct);
         await _cache.RemoveAsync("catalog:categories:all", ct);
     }
 }

@@ -264,6 +264,16 @@ public class RabbitMqNotificationConsumer : BackgroundService
                      $"Your order {orderNumber} has been cancelled.",
                      "Order"),
 
+                "ReturnApproved" =>
+                    ($"Return Approved — {orderNumber}",
+                     $"Your return request for order {orderNumber} has been approved and refund processing has started.",
+                     "Order"),
+
+                "ReturnRejected" =>
+                    ($"Return Rejected — {orderNumber}",
+                     $"Your return request for order {orderNumber} was rejected. Check admin notes for details.",
+                     "Order"),
+
                 "InvoiceGenerated" =>
                     ($"Invoice Ready — {orderNumber}",
                      $"Your invoice for order {orderNumber} is ready. Download from the portal.",

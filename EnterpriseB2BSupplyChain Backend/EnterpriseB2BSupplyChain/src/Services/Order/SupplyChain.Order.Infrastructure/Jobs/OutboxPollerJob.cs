@@ -55,6 +55,8 @@ public class OutboxPollerJob
                     "OrderCancelled"        => "order.cancelled",
                     "OrderApproved"         => "order.approved",
                     "ReturnRequested"       => "order.returnrequested",
+                    "ReturnApproved"        => "order.returnapproved",
+                    "ReturnRejected"        => "order.returnrejected",
                     _                       => message.EventType.ToLower().Replace(" ", "-")
                 };
 

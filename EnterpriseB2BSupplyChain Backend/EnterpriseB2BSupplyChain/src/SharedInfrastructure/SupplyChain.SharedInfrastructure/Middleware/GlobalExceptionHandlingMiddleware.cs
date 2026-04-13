@@ -9,24 +9,7 @@ using SupplyChain.SharedInfrastructure.Results;
 namespace SupplyChain.SharedInfrastructure.Middleware;
 
 /// <summary>
-/// Central exception handling middleware used by every microservice.
-///
-/// Translates exceptions into a uniform <see cref="ApiResponse{T}"/>-shaped JSON
-/// payload with the correct HTTP status code. Handles:
-/// <list type="bullet">
-///   <item><description><see cref="AppException"/> (shared infrastructure hierarchy) - uses its StatusCode + ErrorCode.</description></item>
-///   <item><description><c>FluentValidation.ValidationException</c> â€” 400 with per-field errors.</description></item>
-///   <item><description>Per-service <c>DomainException</c> (reflectively detected via a <c>Code</c> property) â€” 400.</description></item>
-///   <item><description><see cref="KeyNotFoundException"/> â€” 404.</description></item>
-///   <item><description><see cref="UnauthorizedAccessException"/> â€” 401.</description></item>
-///   <item><description><c>DbUpdateConcurrencyException</c> (reflective EF detection) â€” 409.</description></item>
-///   <item><description><see cref="InvalidOperationException"/> â€” 409.</description></item>
-///   <item><description><see cref="OperationCanceledException"/> â€” 499 (non-standard, client-closed).</description></item>
-///   <item><description>Anything else â€” 500 (detail hidden outside Development).</description></item>
-/// </list>
-///
-/// The middleware is idempotent: if the response has already started writing,
-/// it just re-throws so ASP.NET can log and terminate cleanly.
+/// Converts unhandled exceptions into a consistent API error response.
 /// </summary>
 public sealed class GlobalExceptionHandlingMiddleware
 {
@@ -36,7 +19,7 @@ public sealed class GlobalExceptionHandlingMiddleware
 
     private static readonly JsonSerializerOptions _jsonOptions = new()
     {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
     public GlobalExceptionHandlingMiddleware(
@@ -44,8 +27,8 @@ public sealed class GlobalExceptionHandlingMiddleware
         ILogger<GlobalExceptionHandlingMiddleware> logger,
         IHostEnvironment environment)
     {
-        _next        = next;
-        _logger      = logger;
+        _next = next;
+        _logger = logger;
         _environment = environment;
     }
 
@@ -69,9 +52,9 @@ public sealed class GlobalExceptionHandlingMiddleware
                     return;
                 }
 
-                _logger.LogWarning(ex,
-                    "An exception occurred after the response had already started writing. " +
-                    "Re-throwing for the ASP.NET pipeline to handle.");
+                _logger.LogWarning(
+                    ex,
+                    "An exception occurred after the response had already started writing. Re-throwing.");
                 throw;
             }
 
@@ -88,8 +71,7 @@ public sealed class GlobalExceptionHandlingMiddleware
 
         var (statusCode, error, logLevel) = MapException(exception);
 
-        // If the request was already aborted (client/navigation canceled),
-        // avoid writing a response body to prevent secondary OperationCanceledException noise.
+        // Do not write body for canceled requests.
         if (statusCode == 499 || context.RequestAborted.IsCancellationRequested)
         {
             if (!context.Response.HasStarted)
@@ -103,17 +85,24 @@ public sealed class GlobalExceptionHandlingMiddleware
             return;
         }
 
-        // Log with appropriate level: 4xx = warning, 5xx = error.
-        _logger.Log(logLevel, exception,
-            "Request {Method} {Path} failed with {StatusCode}: {ErrorCode} â€” {Message} | CorrelationId={CorrelationId}",
-            context.Request.Method, context.Request.Path.Value, statusCode, error.Code, error.Message, correlationId);
+        _logger.Log(
+            logLevel,
+            exception,
+            "Request {Method} {Path} failed with {StatusCode}: {ErrorCode} — {Message} | CorrelationId={CorrelationId}",
+            context.Request.Method,
+            context.Request.Path.Value,
+            statusCode,
+            error.Code,
+            error.Message,
+            correlationId);
 
         context.Response.Clear();
-        context.Response.StatusCode  = statusCode;
+        context.Response.StatusCode = statusCode;
         context.Response.ContentType = "application/json; charset=utf-8";
 
         var payload = ApiResponse<object>.Fail(error, correlationId, traceId);
-        var json    = JsonSerializer.Serialize(payload, _jsonOptions);
+        var json = JsonSerializer.Serialize(payload, _jsonOptions);
+
         try
         {
             await context.Response.WriteAsync(json, context.RequestAborted);
@@ -128,17 +117,12 @@ public sealed class GlobalExceptionHandlingMiddleware
         }
     }
 
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    // Exception â†’ (StatusCode, ApiError, LogLevel)
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
     private (int StatusCode, ApiError Error, LogLevel LogLevel) MapException(Exception exception)
     {
         ArgumentNullException.ThrowIfNull(exception);
 
         switch (exception)
         {
-            // 1. Shared infrastructure AppException hierarchy
             case ValidationAppException ve:
                 return (
                     ve.StatusCode,
@@ -151,35 +135,31 @@ public sealed class GlobalExceptionHandlingMiddleware
                     new ApiError { Code = ae.ErrorCode, Message = ae.Message },
                     ae.StatusCode >= 500 ? LogLevel.Error : LogLevel.Warning);
 
-            // 2. FluentValidation.ValidationException â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // Reflection keeps this middleware independent from direct package references.
             case object when exception.GetType().FullName == "FluentValidation.ValidationException":
                 return HandleFluentValidationException(exception);
 
-            // 3. EF Core DbUpdateConcurrencyException (via reflection) â”€â”€â”€
             case object when exception.GetType().FullName == "Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException":
                 return (
                     409,
                     new ApiError
                     {
-                        Code    = "CONCURRENCY_CONFLICT",
+                        Code = "CONCURRENCY_CONFLICT",
                         Message = "The resource was modified by another operation. Please refresh and try again."
                     },
                     LogLevel.Warning);
 
-            // 4. Per-service DomainException â€” any class whose type name ends with
-            //    "DomainException" and has a string "Code" property. This avoids
-            //    a hard reference to any individual service's Domain project.
+            // Supports per-service DomainException without hard project references.
             case object when IsDomainException(exception):
                 return (
                     400,
                     new ApiError
                     {
-                        Code    = ExtractDomainCode(exception) ?? "DOMAIN_ERROR",
+                        Code = ExtractDomainCode(exception) ?? "DOMAIN_ERROR",
                         Message = exception.Message
                     },
                     LogLevel.Warning);
 
-            // 5. Common BCL exceptions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             case KeyNotFoundException:
                 return (
                     404,
@@ -204,11 +184,11 @@ public sealed class GlobalExceptionHandlingMiddleware
                     new ApiError { Code = "CANCELLED", Message = "The request was cancelled." },
                     LogLevel.Information);
 
-            // 6. Everything else is a true server error â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             default:
                 var serverMessage = _environment.IsDevelopment()
-                    ? (exception?.Message ?? "An unexpected error occurred.")
+                    ? (exception.Message ?? "An unexpected error occurred.")
                     : "An unexpected error occurred. Please try again later.";
+
                 return (
                     500,
                     new ApiError { Code = "INTERNAL_ERROR", Message = serverMessage },
@@ -218,9 +198,6 @@ public sealed class GlobalExceptionHandlingMiddleware
 
     private static (int, ApiError, LogLevel) HandleFluentValidationException(Exception exception)
     {
-        // Reflectively pull out the Errors collection without taking a
-        // compile-time dependency on FluentValidation â€” keeps this middleware
-        // usable in services that don't reference FluentValidation (e.g. Notification).
         var errorsProp = exception.GetType().GetProperty("Errors");
         var fieldErrors = new Dictionary<string, List<string>>();
 
@@ -228,11 +205,13 @@ public sealed class GlobalExceptionHandlingMiddleware
         {
             foreach (var err in errors)
             {
-                var propName    = err?.GetType().GetProperty("PropertyName")?.GetValue(err) as string ?? "";
+                var propName = err?.GetType().GetProperty("PropertyName")?.GetValue(err) as string ?? "";
                 var errorMessage = err?.GetType().GetProperty("ErrorMessage")?.GetValue(err) as string ?? "";
+
                 if (!fieldErrors.ContainsKey(propName))
                     fieldErrors[propName] = new List<string>();
-                fieldErrors[propName].Add(errorMessage);
+
+                fieldErrors[propName].Add(errorMessage);    
             }
         }
 
@@ -256,3 +235,8 @@ public sealed class GlobalExceptionHandlingMiddleware
     }
 }
 
+/**
+ * This middleware provides centralized exception handling 
+ * and ensures all error responses follow a standardized response envelope format, 
+ * making API responses consistent and easier for frontend consumption.
+ * */

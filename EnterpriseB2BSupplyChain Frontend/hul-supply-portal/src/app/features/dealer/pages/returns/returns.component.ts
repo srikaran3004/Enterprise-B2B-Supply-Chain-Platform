@@ -91,7 +91,7 @@ import { API_ENDPOINTS } from '../../../../shared/constants/api-endpoints';
       </div>
 
       <div class="form-group">
-        <label>Proof Image * (Required)</label>
+        <label>Proof Image (Optional)</label>
         <div class="file-upload">
           <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" style="display: none;" />
           <button *ngIf="!imagePreview" class="upload-btn" (click)="fileInput.click()" type="button">
@@ -111,13 +111,13 @@ import { API_ENDPOINTS } from '../../../../shared/constants/api-endpoints';
             </button>
           </div>
         </div>
-        <span class="help-text">Upload a clear image showing the issue (Max 5MB, JPG/PNG)</span>
+        <span class="help-text">Optional: Upload a clear image showing the issue (Max 5MB, JPG/PNG)</span>
       </div>
 
       <div class="form-actions">
         <button class="btn btn--ghost" (click)="showRaiseReturnModal = false" [disabled]="submittingReturn">Cancel</button>
         <button class="btn btn--primary" (click)="submitReturn()"
-          [disabled]="!returnReason.trim() || !selectedFile || submittingReturn">
+          [disabled]="!returnReason.trim() || submittingReturn">
           {{ submittingReturn ? 'Submitting...' : 'Submit Return Request' }}
         </button>
       </div>
@@ -295,25 +295,27 @@ export class ReturnsComponent implements OnInit {
   }
 
   async submitReturn() {
-    if (!this.selectedOrder || !this.returnReason.trim() || !this.selectedFile) {
-      this.toast.error('Please provide reason and upload proof image');
+    if (!this.selectedOrder || !this.returnReason.trim()) {
+      this.toast.error('Please provide a return reason');
       return;
     }
 
     this.submittingReturn = true;
 
     try {
-      // Upload image first
-      const formData = new FormData();
-      formData.append('file', this.selectedFile);
+      let photoUrl = '';
+      if (this.selectedFile) {
+        const formData = new FormData();
+        formData.append('file', this.selectedFile);
 
-      const uploadResponse = await this.http.post<{ url: string }>(
-        API_ENDPOINTS.orders.uploadReturnImage(),
-        formData,
-        { headers: { 'X-Skip-Error-Toast': '1' } }
-      ).toPromise();
+        const uploadResponse = await this.http.post<{ url: string }>(
+          API_ENDPOINTS.orders.uploadReturnImage(),
+          formData,
+          { headers: { 'X-Skip-Error-Toast': '1' } }
+        ).toPromise();
 
-      const photoUrl = uploadResponse?.url || '';
+        photoUrl = uploadResponse?.url || '';
+      }
 
       // Submit return request
       await this.returnsService

@@ -368,12 +368,19 @@ export class AdminCategoriesComponent implements OnInit {
     this.productsByCategory = {};
     const allBrands = new Set<string>();
     for (const p of this.allProducts) {
-      const catId = p.categoryId;
+      const catId = this.normalizeCategoryId(p.categoryId);
+      if (!catId) {
+        continue;
+      }
       if (!this.productsByCategory[catId]) this.productsByCategory[catId] = [];
       this.productsByCategory[catId].push(p);
       if (p.brand) allBrands.add(p.brand);
     }
     this.assignBrandColors(Array.from(allBrands).sort());
+  }
+
+  private normalizeCategoryId(value: unknown): string {
+    return (value ?? '').toString().trim().toLowerCase();
   }
 
   private normalizeName(value: string): string {
@@ -560,7 +567,7 @@ export class AdminCategoriesComponent implements OnInit {
 
   private getProductsForCard(categoryId: string): any[] {
     return this.getResolvedCategoryIdsForCard(categoryId)
-      .flatMap(id => this.productsByCategory[id] || []);
+      .flatMap(id => this.productsByCategory[this.normalizeCategoryId(id)] || []);
   }
 
   private assignBrandColors(brands: string[]): void {

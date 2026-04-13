@@ -4,13 +4,8 @@ using Serilog.Context;
 namespace SupplyChain.SharedInfrastructure.Correlation;
 
 /// <summary>
-/// Reads an incoming <c>X-Correlation-ID</c> header (or generates a new GUID if missing),
-/// stores it on <see cref="HttpContext.Items"/>, echoes it back on the response via the
-/// same header, and pushes it onto Serilog's <see cref="LogContext"/> so every log line
-/// for this request is automatically enriched with the correlation ID.
-///
-/// Place this as the FIRST middleware in the pipeline so all downstream middleware,
-/// controllers, and handlers â€” including the exception handler â€” see the correlation ID.
+/// Ensures every request has a correlation id and keeps it visible
+/// in response headers + Serilog context for end-to-end tracing.
 /// </summary>
 public sealed class CorrelationIdMiddleware
 {
@@ -23,14 +18,13 @@ public sealed class CorrelationIdMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
+        //Did client sent ID, if not generate new one.
         var correlationId = ResolveCorrelationId(context);
 
-        // Stash on HttpContext so ICorrelationIdAccessor can surface it anywhere.
+        // Make correlation id available to downstream middleware/services.
         context.Items[ItemKey] = correlationId;
 
-        // Echo in the response headers so the client can capture and surface it in
-        // support tickets / UI. OnStarting guarantees the header is written before
-        // the response body begins streaming.
+        // Echo id in response so clients can attach it to bug reports/support tickets.
         context.Response.OnStarting(() =>
         {
             if (!context.Response.Headers.ContainsKey(HeaderName))
@@ -38,8 +32,7 @@ public sealed class CorrelationIdMiddleware
             return Task.CompletedTask;
         });
 
-        // Push onto Serilog's logical context so every log line in this request
-        // carries {CorrelationId} â€” works seamlessly with UseSerilogRequestLogging.
+        // Enrich all request-scope logs with CorrelationId.
         using (LogContext.PushProperty("CorrelationId", correlationId))
         {
             await _next(context);
@@ -48,8 +41,7 @@ public sealed class CorrelationIdMiddleware
 
     private static string ResolveCorrelationId(HttpContext context)
     {
-        // Prefer an incoming X-Correlation-ID header if the caller already has one
-        // (e.g. the Angular frontend or another microservice forwarding a trace).
+        // Reuse incoming id if caller already started a trace.
         if (context.Request.Headers.TryGetValue(HeaderName, out var headerValue))
         {
             var incoming = headerValue.ToString();
@@ -57,8 +49,9 @@ public sealed class CorrelationIdMiddleware
                 return incoming.Trim();
         }
 
-        // Fall back to a short GUID â€” no dashes, lowercased, first 32 chars.
+        // Otherwise create a new trace id for this request.
         return Guid.NewGuid().ToString("N");
     }
 }
+
 

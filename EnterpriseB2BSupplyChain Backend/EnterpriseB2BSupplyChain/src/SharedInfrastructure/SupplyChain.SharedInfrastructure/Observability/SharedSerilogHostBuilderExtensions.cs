@@ -22,6 +22,7 @@ public static class SharedSerilogHostBuilderExtensions
             var serviceFileName = $"{NormalizeServiceName(serviceName)}.log";
             var todayFolder = DateTime.UtcNow.ToString("yyyy-MM-dd");
             var filePath = Path.Combine(logsRoot, todayFolder, serviceFileName);
+
             var outputTemplate =
                 "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] " +
                 "[{ServiceName}] [{CorrelationId}] [{UserId}] [{RequestPath}] {Message:lj}{NewLine}{Exception}";
@@ -34,6 +35,7 @@ public static class SharedSerilogHostBuilderExtensions
                 .Enrich.WithProperty(LogContextKeys.ServiceName, serviceName)
                 .WriteTo.Console(outputTemplate: outputTemplate);
 
+            // File logging is optional via configuration.
             if (options.EnableFileLogging)
             {
                 loggerConfiguration.WriteTo.File(
@@ -52,16 +54,16 @@ public static class SharedSerilogHostBuilderExtensions
 
     private static string ResolveLogsRoot(string contentRootPath, string logsRoot)
     {
+        // Support both absolute and project-relative log paths.
         if (Path.IsPathRooted(logsRoot))
-        {
             return logsRoot;
-        }
 
         return Path.GetFullPath(Path.Combine(contentRootPath, logsRoot));
     }
 
     private static string NormalizeServiceName(string serviceName)
     {
+        // Keeps log file naming stable across spaces/underscores/dots.
         return string.Join(
             "-",
             serviceName
@@ -71,3 +73,9 @@ public static class SharedSerilogHostBuilderExtensions
     }
 }
 
+
+/**
+ * This extension method configures a common/shared Serilog logging setup for all microservices, 
+ * including console logging, optional file logging, log formatting, 
+ * service name enrichment, and log storage path handling.
+ * */

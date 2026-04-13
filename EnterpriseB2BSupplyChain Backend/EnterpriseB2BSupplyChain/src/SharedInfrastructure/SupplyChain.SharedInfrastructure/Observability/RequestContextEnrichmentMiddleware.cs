@@ -5,8 +5,7 @@ using Serilog.Context;
 namespace SupplyChain.SharedInfrastructure.Observability;
 
 /// <summary>
-/// Pushes request-level context values into Serilog's LogContext so all logs
-/// in the request scope include user and request path metadata.
+/// Adds user and path metadata to request-scope logs.
 /// </summary>
 public sealed class RequestContextEnrichmentMiddleware
 {
@@ -19,15 +18,18 @@ public sealed class RequestContextEnrichmentMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
+        // Prefer standard identity claims; fallback for unauthenticated calls.
         var userId =
             context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
             ?? context.User.FindFirst("sub")?.Value
             ?? "anonymous";
 
+        // Normalize path value for consistent logging.
         var requestPath = context.Request.Path.HasValue
             ? context.Request.Path.Value!
             : "/";
 
+        // Every log inside this request will carry these properties.
         using (LogContext.PushProperty(LogContextKeys.UserId, userId))
         using (LogContext.PushProperty(LogContextKeys.RequestPath, requestPath))
         {
@@ -35,4 +37,5 @@ public sealed class RequestContextEnrichmentMiddleware
         }
     }
 }
+
 

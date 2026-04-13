@@ -46,6 +46,7 @@ public class DeleteCategoryCommandHandler : IRequestHandler<DeleteCategoryComman
 
         _categoryRepository.Delete(category);
         await _categoryRepository.SaveChangesAsync(ct);
+        await _cache.RemoveAsync("catalog:categories:v2:all", ct);
         await _cache.RemoveAsync("catalog:categories:all", ct);
     }
 }
