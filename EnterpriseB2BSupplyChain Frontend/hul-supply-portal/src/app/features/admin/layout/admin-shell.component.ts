@@ -17,12 +17,41 @@ import { AuthService } from '../../../core/services/auth.service';
     </div>
   `,
   styles: [`
-    .admin-shell { display: flex; min-height: 100vh; background: var(--bg-base); }
-    .admin-shell__main { flex: 1; margin-left: 260px; transition: margin-left var(--duration-base) var(--ease-in-out); display: flex; flex-direction: column; }
-    .admin-shell__main--expanded { margin-left: 72px; }
-    .admin-shell__content { flex: 1; overflow: hidden; }
+    .admin-shell {
+      display: flex;
+      min-height: 100vh;
+      background: var(--bg-base);
+      overflow-x: clip;
+    }
+
+    .admin-shell__main {
+      margin-left: 248px;
+      width: calc(100% - 248px);
+      max-width: calc(100% - 248px);
+      min-width: 0;
+      transition: margin-left var(--duration-base) var(--ease-in-out), width var(--duration-base) var(--ease-in-out);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .admin-shell__main--expanded {
+      margin-left: 68px;
+      width: calc(100% - 68px);
+      max-width: calc(100% - 68px);
+    }
+
+    .admin-shell__content {
+      flex: 1;
+      min-width: 0;
+      overflow-x: hidden;
+    }
+
     @media (max-width: 768px) {
-      .admin-shell__main { margin-left: 0; }
+      .admin-shell__main {
+        margin-left: 0;
+        width: 100%;
+        max-width: 100%;
+      }
     }
   `]
 })
@@ -53,7 +82,7 @@ export class AdminShellComponent implements OnInit {
     { label: 'Reports', route: '/admin/reports', icon: 'bar-chart-2' },
   ];
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) { }
 
-  ngOnInit(): void {}
+  ngOnInit(): void { }
 }

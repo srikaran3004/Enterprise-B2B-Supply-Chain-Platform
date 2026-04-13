@@ -45,22 +45,67 @@ public class ProductRepository : IProductRepository
             .ToListAsync(ct);
 
     public async Task<List<Product>> GetByCategoryAsync(Guid categoryId, CancellationToken ct = default)
-        => await _context.Products
+    {
+        var categoryIds = await GetCategoryAndDescendantIdsAsync(categoryId, ct);
+
+        return await _context.Products
             .AsNoTracking()
             .Include(p => p.Category)
             .AsSplitQuery()
-            .Where(p => p.CategoryId == categoryId && p.Status == ProductStatus.Active)
+            .Where(p => categoryIds.Contains(p.CategoryId) && p.Status == ProductStatus.Active)
             .OrderBy(p => p.Name)
             .ToListAsync(ct);
+    }
 
     public async Task<List<Product>> GetAllByCategoryAsync(Guid categoryId, CancellationToken ct = default)
-        => await _context.Products
+    {
+        var categoryIds = await GetCategoryAndDescendantIdsAsync(categoryId, ct);
+
+        return await _context.Products
             .AsNoTracking()
             .Include(p => p.Category)
             .AsSplitQuery()
-            .Where(p => p.CategoryId == categoryId)
+            .Where(p => categoryIds.Contains(p.CategoryId))
             .OrderBy(p => p.Name)
             .ToListAsync(ct);
+    }
+
+    private async Task<HashSet<Guid>> GetCategoryAndDescendantIdsAsync(Guid categoryId, CancellationToken ct)
+    {
+        var categoryRows = await _context.Categories
+            .AsNoTracking()
+            .Select(c => new { c.CategoryId, c.ParentCategoryId })
+            .ToListAsync(ct);
+
+        var ids = new HashSet<Guid> { categoryId };
+
+        var childrenByParent = categoryRows
+            .Where(c => c.ParentCategoryId.HasValue)
+            .GroupBy(c => c.ParentCategoryId!.Value)
+            .ToDictionary(g => g.Key, g => g.Select(x => x.CategoryId).ToList());
+
+        var queue = new Queue<Guid>();
+        queue.Enqueue(categoryId);
+
+        while (queue.Count > 0)
+        {
+            var current = queue.Dequeue();
+            if (!childrenByParent.TryGetValue(current, out var children))
+            {
+                continue;
+            }
+
+            foreach (var childId in children)
+            {
+                if (ids.Add(childId))
+                {
+                    queue.Enqueue(childId);
+                }
+            }
+        }
+
+        return ids;
+    }
 
     public async Task<List<Product>> SearchAsync(string searchTerm, CancellationToken ct = default)
     {

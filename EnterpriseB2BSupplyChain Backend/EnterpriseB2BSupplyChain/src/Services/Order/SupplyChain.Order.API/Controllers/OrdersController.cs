@@ -57,20 +57,27 @@ public class OrdersController : ControllerBase
         [FromQuery] int pageSize = 10,
         CancellationToken   ct     = default)
     {
-        var dealerId     = GetDealerId();
-        OrderStatus? parsedStatus = null;
-        if (!string.IsNullOrWhiteSpace(status) && Enum.TryParse<OrderStatus>(status, true, out var s))
-            parsedStatus = s;
-
-        var orders = await _mediator.Send(new GetMyOrdersQuery(dealerId, parsedStatus, page, pageSize), ct);
-        var view = new PagedResult<OrderSummaryView>
+        try
         {
-            Items = orders.Items.Select(OrderSummaryView.FromDto).ToList(),
-            TotalCount = orders.TotalCount,
-            Page = orders.Page,
-            PageSize = orders.PageSize
-        };
-        return Ok(view);
+            var dealerId     = GetDealerId();
+            OrderStatus? parsedStatus = null;
+            if (!string.IsNullOrWhiteSpace(status) && Enum.TryParse<OrderStatus>(status, true, out var s))
+                parsedStatus = s;
+
+            var orders = await _mediator.Send(new GetMyOrdersQuery(dealerId, parsedStatus, page, pageSize), ct);
+            var view = new PagedResult<OrderSummaryView>
+            {
+                Items = orders.Items.Select(OrderSummaryView.FromDto).ToList(),
+                TotalCount = orders.TotalCount,
+                Page = orders.Page,
+                PageSize = orders.PageSize
+            };
+            return Ok(view);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            return StatusCode(499, new { Message = "Request cancelled by client." });
+        }
     }
 
     /// <summary>Get all orders (Admin only).</summary>
@@ -82,19 +89,26 @@ public class OrdersController : ControllerBase
         [FromQuery] int pageSize = 10,
         CancellationToken   ct     = default)
     {
-        OrderStatus? parsedStatus = null;
-        if (!string.IsNullOrWhiteSpace(status) && Enum.TryParse<OrderStatus>(status, true, out var s))
-            parsedStatus = s;
-
-        var orders = await _mediator.Send(new GetAllOrdersQuery(parsedStatus, page, pageSize), ct);
-        var view = new PagedResult<OrderSummaryView>
+        try
         {
-            Items = orders.Items.Select(OrderSummaryView.FromDto).ToList(),
-            TotalCount = orders.TotalCount,
-            Page = orders.Page,
-            PageSize = orders.PageSize
-        };
-        return Ok(view);
+            OrderStatus? parsedStatus = null;
+            if (!string.IsNullOrWhiteSpace(status) && Enum.TryParse<OrderStatus>(status, true, out var s))
+                parsedStatus = s;
+
+            var orders = await _mediator.Send(new GetAllOrdersQuery(parsedStatus, page, pageSize), ct);
+            var view = new PagedResult<OrderSummaryView>
+            {
+                Items = orders.Items.Select(OrderSummaryView.FromDto).ToList(),
+                TotalCount = orders.TotalCount,
+                Page = orders.Page,
+                PageSize = orders.PageSize
+            };
+            return Ok(view);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            return StatusCode(499, new { Message = "Request cancelled by client." });
+        }
     }
 
     /// <summary>Get single order detail.</summary>

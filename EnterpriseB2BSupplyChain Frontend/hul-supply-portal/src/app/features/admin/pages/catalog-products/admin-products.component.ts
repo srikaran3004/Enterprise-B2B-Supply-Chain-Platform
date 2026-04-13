@@ -58,7 +58,7 @@ import { environment } from '../../../../../environments/environment';
             <label class="filter-label">Category</label>
             <select [(ngModel)]="filters.categoryId" class="filter-select" (change)="applyFilters()">
               <option value="">All Categories</option>
-              <option *ngFor="let c of categories" [value]="c.categoryId">{{ c.name }}</option>
+              <option *ngFor="let c of groupedFilterCategories" [value]="c.categoryId">{{ c.name }}</option>
             </select>
           </div>
           <!-- Brand -->
@@ -227,6 +227,9 @@ import { environment } from '../../../../../environments/environment';
 })
 export class AdminProductsComponent implements OnInit {
   loading = true; products: any[] = []; allProducts: any[] = []; categories: any[] = [];
+  groupedFilterCategories: any[] = [];
+  private categoryToGroupId: Record<string, string> = {};
+  private groupedCategoryNameById: Record<string, string> = {};
   showModal = false; isEditing = false; showFilters = false;
   form: any = { sku: '', name: '', brand: '', categoryId: '', unitPrice: 0, minOrderQuantity: 1, initialStock: 0, description: '', imageUrl: '', status: 'Active' };
 
@@ -309,14 +312,133 @@ export class AdminProductsComponent implements OnInit {
 
   loadCategories(callback?: () => void): void {
     this.http.get<any[]>(API_ENDPOINTS.catalog.categories() + '?includeInactive=true').subscribe({
-      next: c => { this.categories = c; if (callback) callback(); },
+      next: c => {
+        this.categories = c;
+        this.buildGroupedCategoryData();
+        if (callback) callback();
+      },
       error: () => { if (callback) callback(); }
     });
   }
 
+  private normalizeName(value: string): string {
+    return (value || '')
+      .toLowerCase()
+      .replace(/\s+/g, ' ')
+      .replace(/[\u2013\u2014\-]+/g, '-')
+      .trim();
+  }
+
+  private getPrefixName(value: string): string {
+    const name = (value || '').trim();
+    const dashParts = name.split(/\s*[\u2013\u2014\-]\s*/);
+    if (dashParts.length > 1) {
+      return dashParts[0].trim();
+    }
+    return name;
+  }
+
+  private getFamilyKey(value: string): string {
+    const normalized = this.normalizeName(this.getPrefixName(value))
+      .replace(/\bcategories?\b/g, '')
+      .replace(/&/g, ' ')
+      .replace(/\band\b/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    return normalized || this.normalizeName(value);
+  }
+
+  private buildGroupedCategoryData(): void {
+    const byId = new Map(this.categories.map(c => [c.categoryId, c]));
+    const parent = new Map<string, string>();
+
+    const find = (id: string): string => {
+      const current = parent.get(id) ?? id;
+      if (current !== id) {
+        const root = find(current);
+        parent.set(id, root);
+        return root;
+      }
+      return id;
+    };
+
+    const union = (a: string, b: string): void => {
+      const ra = find(a);
+      const rb = find(b);
+      if (ra !== rb) {
+        parent.set(rb, ra);
+      }
+    };
+
+    for (const category of this.categories) {
+      parent.set(category.categoryId, category.categoryId);
+    }
+
+    for (const category of this.categories) {
+      if (category.parentCategoryId && byId.has(category.parentCategoryId)) {
+        union(category.categoryId, category.parentCategoryId);
+      }
+    }
+
+    const familyBuckets = new Map<string, any[]>();
+    for (const category of this.categories) {
+      const key = this.getFamilyKey(category.name);
+      if (!familyBuckets.has(key)) {
+        familyBuckets.set(key, []);
+      }
+      familyBuckets.get(key)!.push(category);
+    }
+
+    for (const members of familyBuckets.values()) {
+      if (members.length <= 1) {
+        continue;
+      }
+      const first = members[0].categoryId;
+      for (let i = 1; i < members.length; i++) {
+        union(first, members[i].categoryId);
+      }
+    }
+
+    const groups = new Map<string, any[]>();
+    for (const category of this.categories) {
+      const root = find(category.categoryId);
+      if (!groups.has(root)) {
+        groups.set(root, []);
+      }
+      groups.get(root)!.push(category);
+    }
+
+    this.groupedFilterCategories = Array.from(groups.values()).map(members => {
+      const sorted = [...members].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      const representative =
+        sorted.find(c => !c.parentCategoryId && !/[\u2013\u2014\-]/.test(c.name || '')) ||
+        sorted.find(c => !/[\u2013\u2014\-]/.test(c.name || '')) ||
+        sorted[0];
+
+      return {
+        categoryId: representative.categoryId,
+        name: representative.name,
+        memberCategoryIds: members.map(m => m.categoryId)
+      };
+    }).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+    this.categoryToGroupId = {};
+    this.groupedCategoryNameById = {};
+    for (const group of this.groupedFilterCategories) {
+      this.groupedCategoryNameById[group.categoryId] = group.name;
+      for (const memberId of group.memberCategoryIds) {
+        this.categoryToGroupId[memberId] = group.categoryId;
+      }
+    }
+  }
+
   private buildCategoryMap(): Record<string, string> {
     const map: Record<string, string> = {};
-    this.categories.forEach(c => { map[c.categoryId] = c.name; });
+    this.categories.forEach(c => {
+      const groupedId = this.categoryToGroupId[c.categoryId] || c.categoryId;
+      map[c.categoryId] = this.groupedCategoryNameById[groupedId] || c.name;
+    });
     return map;
   }
 
@@ -363,7 +485,9 @@ export class AdminProductsComponent implements OnInit {
     else if (this.filters.stock === 'out') result = result.filter(p => (p.availableStock || 0) <= 0);
 
     // Category
-    if (this.filters.categoryId) result = result.filter(p => p.categoryId === this.filters.categoryId);
+    if (this.filters.categoryId) {
+      result = result.filter(p => (this.categoryToGroupId[p.categoryId] || p.categoryId) === this.filters.categoryId);
+    }
 
     // Brand
     if (this.filters.brands.length > 0) result = result.filter(p => this.filters.brands.includes(p.brand));
@@ -442,7 +566,7 @@ export class AdminProductsComponent implements OnInit {
                 ...this.allProducts[idx],
                 ...body,
                 categoryName: this.categories.find(c => c.categoryId === body.categoryId)?.name
-                              || this.allProducts[idx].categoryName,
+                  || this.allProducts[idx].categoryName,
                 status
               };
             }

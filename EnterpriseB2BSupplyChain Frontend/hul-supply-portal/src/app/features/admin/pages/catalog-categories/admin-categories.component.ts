@@ -23,7 +23,7 @@ import { HulConfirmService } from '../../../../shared/ui/confirm-dialog/hul-conf
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
           </div>
           <div class="stat-pill__data">
-            <span class="stat-pill__value">{{ categories.length }}</span>
+              <span class="stat-pill__value">{{ groupedCategories.length }}</span>
             <span class="stat-pill__label">Total Categories</span>
           </div>
         </div>
@@ -88,7 +88,7 @@ import { HulConfirmService } from '../../../../shared/ui/confirm-dialog/hul-conf
           <p *ngIf="!searchTerm">No categories yet. Create your first category.</p>
         </div>
 
-        <div *ngFor="let cat of filteredCategories; let i = index" class="cat-card"
+        <div *ngFor="let cat of pagedCategories; let i = index" class="cat-card"
             [class.cat-card--inactive]="cat.isActive === false"
             [style.animation-delay]="(i * 30) + 'ms'">
           <!-- Card Header -->
@@ -141,6 +141,21 @@ import { HulConfirmService } from '../../../../shared/ui/confirm-dialog/hul-conf
               Delete
             </button>
           </div>
+        </div>
+      </div>
+
+      <div class="pager" *ngIf="!loading && filteredCategories.length > 0">
+        <div class="pager__meta">
+          Showing {{ pageStartIndex + 1 }}-{{ pageEndIndex }} of {{ filteredCategories.length }} categories
+        </div>
+        <div class="pager__controls">
+          <label class="pager__size-label">Rows</label>
+          <select class="pager__size-select" [(ngModel)]="pageSize" (ngModelChange)="onPageSizeChange()">
+            <option *ngFor="let option of pageSizeOptions" [ngValue]="option">{{ option }}</option>
+          </select>
+          <button class="pager__btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">Prev</button>
+          <span class="pager__page">{{ currentPage }} / {{ totalPages }}</span>
+          <button class="pager__btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">Next</button>
         </div>
       </div>
 
@@ -266,6 +281,7 @@ import { HulConfirmService } from '../../../../shared/ui/confirm-dialog/hul-conf
 export class AdminCategoriesComponent implements OnInit {
   loading = true;
   categories: any[] = [];
+  groupedCategories: any[] = [];
   filteredCategories: any[] = [];
   allProducts: any[] = [];
   activeCount = 0;
@@ -274,6 +290,9 @@ export class AdminCategoriesComponent implements OnInit {
   // Search / Filter
   searchTerm = '';
   statusFilter = 'all';
+  pageSize = 9;
+  pageSizeOptions = [9, 12, 18, 24];
+  currentPage = 1;
 
   // Form Modal
   showFormModal = false;
@@ -289,7 +308,8 @@ export class AdminCategoriesComponent implements OnInit {
 
   // Precomputed
   private productsByCategory: Record<string, any[]> = {};
-  private brandsByCategory: Record<string, string[]> = {};
+  private categoryChildren: Record<string, string[]> = {};
+  private cardMemberCategoryIds: Record<string, string[]> = {};
 
   private categoryColors = [
     '#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#ef4444',
@@ -301,7 +321,7 @@ export class AdminCategoriesComponent implements OnInit {
     private http: ZoneHttpService,
     private toast: ToastService,
     private confirm: HulConfirmService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadAll();
@@ -319,6 +339,8 @@ export class AdminCategoriesComponent implements OnInit {
     this.http.get<any[]>(API_ENDPOINTS.catalog.categories() + '?includeInactive=true').subscribe({
       next: c => {
         this.categories = c;
+        this.rebuildCategoryHierarchy();
+        this.rebuildGroupedCategories();
         this.computeStatusCounts();
         this.filterCategories();
         this.loading = false;
@@ -333,18 +355,17 @@ export class AdminCategoriesComponent implements OnInit {
         this.allProducts = products;
         this.recomputeMaps();
       },
-      error: () => {}
+      error: () => { }
     });
   }
 
   private computeStatusCounts(): void {
-    this.activeCount = this.categories.filter(c => c.isActive !== false).length;
-    this.inactiveCount = this.categories.filter(c => c.isActive === false).length;
+    this.activeCount = this.groupedCategories.filter(c => c.isActive !== false).length;
+    this.inactiveCount = this.groupedCategories.filter(c => c.isActive === false).length;
   }
 
   private recomputeMaps(): void {
     this.productsByCategory = {};
-    this.brandsByCategory = {};
     const allBrands = new Set<string>();
     for (const p of this.allProducts) {
       const catId = p.categoryId;
@@ -352,12 +373,194 @@ export class AdminCategoriesComponent implements OnInit {
       this.productsByCategory[catId].push(p);
       if (p.brand) allBrands.add(p.brand);
     }
-    for (const catId of Object.keys(this.productsByCategory)) {
-      const brands = new Set<string>();
-      this.productsByCategory[catId].forEach(p => { if (p.brand) brands.add(p.brand); });
-      this.brandsByCategory[catId] = Array.from(brands).sort();
-    }
     this.assignBrandColors(Array.from(allBrands).sort());
+  }
+
+  private normalizeName(value: string): string {
+    return (value || '')
+      .toLowerCase()
+      .replace(/\s+/g, ' ')
+      .replace(/[\u2013\u2014\-]+/g, '-')
+      .trim();
+  }
+
+  private getPrefixName(value: string): string {
+    const name = (value || '').trim();
+    const dashParts = name.split(/\s*[\u2013\u2014\-]\s*/);
+    if (dashParts.length > 1) {
+      return dashParts[0].trim();
+    }
+    return name;
+  }
+
+  private getFamilyKey(value: string): string {
+    const normalized = this.normalizeName(this.getPrefixName(value))
+      .replace(/\bcategories?\b/g, '')
+      .replace(/&/g, ' ')
+      .replace(/\band\b/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    return normalized || this.normalizeName(value);
+  }
+
+  private rebuildCategoryHierarchy(): void {
+    this.categoryChildren = {};
+    for (const category of this.categories) {
+      if (!category.parentCategoryId) {
+        continue;
+      }
+
+      if (!this.categoryChildren[category.parentCategoryId]) {
+        this.categoryChildren[category.parentCategoryId] = [];
+      }
+      this.categoryChildren[category.parentCategoryId].push(category.categoryId);
+    }
+  }
+
+  private getTopAncestorId(categoryId: string): string {
+    const byId = new Map(this.categories.map(c => [c.categoryId, c]));
+    let current = byId.get(categoryId);
+    const visited = new Set<string>();
+
+    while (current?.parentCategoryId && !visited.has(current.parentCategoryId)) {
+      visited.add(current.parentCategoryId);
+      const parent = byId.get(current.parentCategoryId);
+      if (!parent) {
+        break;
+      }
+      current = parent;
+    }
+
+    return current?.categoryId || categoryId;
+  }
+
+  private rebuildGroupedCategories(): void {
+    const byId = new Map(this.categories.map(c => [c.categoryId, c]));
+
+    // Union-Find to merge related categories by hierarchy and by shared naming family.
+    const parent = new Map<string, string>();
+    const find = (id: string): string => {
+      const current = parent.get(id) ?? id;
+      if (current !== id) {
+        const root = find(current);
+        parent.set(id, root);
+        return root;
+      }
+      return id;
+    };
+    const union = (a: string, b: string): void => {
+      const ra = find(a);
+      const rb = find(b);
+      if (ra !== rb) {
+        parent.set(rb, ra);
+      }
+    };
+
+    for (const category of this.categories) {
+      parent.set(category.categoryId, category.categoryId);
+    }
+
+    // 1) Merge parent/child relationships.
+    for (const category of this.categories) {
+      if (category.parentCategoryId && byId.has(category.parentCategoryId)) {
+        union(category.categoryId, category.parentCategoryId);
+      }
+    }
+
+    // 2) Merge categories that belong to same "PREFIX — ..." family.
+    const familyBuckets = new Map<string, any[]>();
+    for (const category of this.categories) {
+      const familyKey = this.getFamilyKey(category.name);
+      if (!familyBuckets.has(familyKey)) {
+        familyBuckets.set(familyKey, []);
+      }
+      familyBuckets.get(familyKey)!.push(category);
+    }
+
+    for (const members of familyBuckets.values()) {
+      if (members.length <= 1) {
+        continue;
+      }
+      const firstId = members[0].categoryId;
+      for (let i = 1; i < members.length; i++) {
+        union(firstId, members[i].categoryId);
+      }
+    }
+
+    const groups = new Map<string, any[]>();
+    for (const category of this.categories) {
+      const rootId = find(category.categoryId);
+      if (!groups.has(rootId)) {
+        groups.set(rootId, []);
+      }
+      groups.get(rootId)!.push(category);
+    }
+
+    const grouped = Array.from(groups.values()).map((members) => {
+      const sorted = [...members].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      const representative =
+        sorted.find(c => !c.parentCategoryId && !/[\u2013\u2014\-]/.test(c.name || '')) ||
+        sorted.find(c => !/[\u2013\u2014\-]/.test(c.name || '')) ||
+        sorted[0];
+
+      const searchText = members
+        .map(m => `${m.name || ''} ${m.description || ''}`.trim())
+        .join(' ')
+        .toLowerCase();
+
+      return {
+        ...representative,
+        searchText,
+        memberCategoryIds: members.map(m => m.categoryId),
+        isActive: members.some(m => m.isActive !== false)
+      };
+    });
+
+    this.groupedCategories = grouped.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    this.cardMemberCategoryIds = {};
+    for (const card of this.groupedCategories) {
+      this.cardMemberCategoryIds[card.categoryId] = card.memberCategoryIds || [card.categoryId];
+    }
+  }
+
+  private getDescendantCategoryIds(categoryId: string): string[] {
+    const result: string[] = [categoryId];
+    const queue: string[] = [categoryId];
+    const visited = new Set<string>([categoryId]);
+
+    while (queue.length > 0) {
+      const current = queue.shift()!;
+      const children = this.categoryChildren[current] || [];
+      for (const childId of children) {
+        if (visited.has(childId)) {
+          continue;
+        }
+        visited.add(childId);
+        result.push(childId);
+        queue.push(childId);
+      }
+    }
+
+    return result;
+  }
+
+  private getResolvedCategoryIdsForCard(categoryId: string): string[] {
+    const memberIds = this.cardMemberCategoryIds[categoryId] || [categoryId];
+    const resolved = new Set<string>();
+
+    for (const id of memberIds) {
+      for (const descendantId of this.getDescendantCategoryIds(id)) {
+        resolved.add(descendantId);
+      }
+    }
+
+    return Array.from(resolved);
+  }
+
+  private getProductsForCard(categoryId: string): any[] {
+    return this.getResolvedCategoryIdsForCard(categoryId)
+      .flatMap(id => this.productsByCategory[id] || []);
   }
 
   private assignBrandColors(brands: string[]): void {
@@ -375,9 +578,12 @@ export class AdminCategoriesComponent implements OnInit {
 
   filterCategories(): void {
     const s = this.searchTerm.trim().toLowerCase();
-    let result = [...this.categories];
+    let result = [...this.groupedCategories];
     if (s) {
-      result = result.filter(c => c.name?.toLowerCase().includes(s) || c.description?.toLowerCase().includes(s));
+      result = result.filter(c =>
+        c.name?.toLowerCase().includes(s) ||
+        c.description?.toLowerCase().includes(s) ||
+        c.searchText?.includes(s));
     }
     if (this.statusFilter === 'active') {
       result = result.filter(c => c.isActive !== false);
@@ -385,6 +591,31 @@ export class AdminCategoriesComponent implements OnInit {
       result = result.filter(c => c.isActive === false);
     }
     this.filteredCategories = result;
+    this.currentPage = 1;
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.filteredCategories.length / this.pageSize));
+  }
+
+  get pageStartIndex(): number {
+    return (this.currentPage - 1) * this.pageSize;
+  }
+
+  get pageEndIndex(): number {
+    return Math.min(this.pageStartIndex + this.pageSize, this.filteredCategories.length);
+  }
+
+  get pagedCategories(): any[] {
+    return this.filteredCategories.slice(this.pageStartIndex, this.pageEndIndex);
+  }
+
+  onPageSizeChange(): void {
+    this.currentPage = 1;
+  }
+
+  goToPage(page: number): void {
+    this.currentPage = Math.min(Math.max(page, 1), this.totalPages);
   }
 
   // ========== View Helpers ==========
@@ -396,23 +627,29 @@ export class AdminCategoriesComponent implements OnInit {
   }
 
   getProductCount(categoryId: string): number {
-    return this.productsByCategory[categoryId]?.length || 0;
+    return this.getProductsForCard(categoryId).length;
   }
 
   getActiveProductCount(categoryId: string): number {
-    return (this.productsByCategory[categoryId] || []).filter(p => p.isActive !== false).length;
+    return this.getProductsForCard(categoryId).filter(p => p.isActive !== false).length;
   }
 
   getCategoryBrands(categoryId: string): string[] {
-    return this.brandsByCategory[categoryId] || [];
+    const brands = new Set<string>();
+    for (const product of this.getProductsForCard(categoryId)) {
+      if (product.brand) {
+        brands.add(product.brand);
+      }
+    }
+    return Array.from(brands).sort();
   }
 
   getCategoryProducts(categoryId: string): any[] {
-    return this.productsByCategory[categoryId] || [];
+    return this.getProductsForCard(categoryId);
   }
 
   getBrandProductCount(categoryId: string, brand: string): number {
-    return (this.productsByCategory[categoryId] || []).filter(p => p.brand === brand).length;
+    return this.getProductsForCard(categoryId).filter(p => p.brand === brand).length;
   }
 
   getBrandColor(brand: string): string {
@@ -481,7 +718,7 @@ export class AdminCategoriesComponent implements OnInit {
         this.allProducts = products;
         this.recomputeMaps();
       },
-      error: () => {}
+      error: () => { }
     });
   }
 
