@@ -49,8 +49,11 @@ public class OutboxPollerJob
                 {
                     "OrderPlaced"           => "order.placed",
                     "AdminApprovalRequired" => "order.adminapprovalrequired",
+                    "OrderReadyForDispatch" => "order.readyfordispatch",
+                    "OrderInTransit"        => "order.intransit",
                     "OrderDelivered"        => "order.delivered",
                     "OrderCancelled"        => "order.cancelled",
+                    "OrderApproved"         => "order.approved",
                     "ReturnRequested"       => "order.returnrequested",
                     _                       => message.EventType.ToLower().Replace(" ", "-")
                 };
