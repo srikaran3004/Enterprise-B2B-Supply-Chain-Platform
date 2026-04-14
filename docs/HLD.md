@@ -2,126 +2,155 @@
 
 ## 1. Purpose
 
-This document describes the macro-architecture of the HUL Supply Chain Enterprise Portal:
+This document explains the macro architecture of the Enterprise B2B Supply Chain platform, focused on:
 
-- domain boundaries
-- service interactions
-- storage and messaging topology
-- runtime deployment shape
+- business capability decomposition
+- service boundaries and responsibilities
+- integration topology (sync and async)
+- deployment/runtime shape and platform concerns
 
 ---
 
-## 2. Architectural Principles
+## 2. Architecture Summary
 
-- Bounded context ownership per microservice
-- Independent database per service
-- API-first service contracts
+The platform is implemented as a domain-aligned microservice system behind an API gateway.
+
+- Frontend: Angular portal for Dealer, Admin, Super Admin, and Delivery Agent personas
+- Edge: Ocelot gateway as a single API entry point
+- Core services: Identity, Catalog, Order, Logistics, Payment, Notification
+- Data and messaging: SQL Server, Redis, RabbitMQ
+- External integrations: Razorpay and SMTP email provider
+
+---
+
+## 3. Architectural Principles
+
+- Bounded context ownership per service
+- Database per service to preserve autonomy
+- API-first contracts for synchronous operations
 - Event-driven integration for cross-domain side effects
-- Shared cross-cutting platform layer for consistency
+- Shared cross-cutting infrastructure for consistency (logging, correlation, envelope, resilience)
 
 ---
 
-## 3. System Context
+## 4. System Context
 
 ```mermaid
 flowchart LR
     Dealer[Dealer]
     Admin[Admin]
-    SA[SuperAdmin]
+    SA[Super Admin]
     Agent[Delivery Agent]
 
-    FE[Angular Frontend]
-    GW[Ocelot API Gateway]
+    Portal[HUL Supply Portal Angular]
+    GW[API Gateway Ocelot]
 
-    Dealer --> FE
-    Admin --> FE
-    SA --> FE
-    Agent --> FE
-    FE --> GW
+    Dealer --> Portal
+    Admin --> Portal
+    SA --> Portal
+    Agent --> Portal
+
+    Portal --> GW
 ```
 
 ---
 
-## 4. Container View
+## 5. Component Architecture
 
 ```mermaid
 flowchart LR
-    FE[Frontend :4200]
-    GW[Gateway :5000]
+    subgraph UI
+        Portal[HUL Supply Portal Angular]
+        AdminViews[Admin and Super Admin Views]
+    end
 
-    ID[Identity :5002]
-    CAT[Catalog :5004]
-    ORD[Order :5006]
-    LOG[Logistics :5008]
-    PAY[Payment :5010]
-    NOTI[Notification :5012]
+    subgraph Gateway
+        GW[API Gateway Ocelot]
+    end
 
-    SQLI[(HUL_IdentityDb)]
-    SQLC[(HUL_InventoryDb)]
-    SQLO[(HUL_OrderDb)]
-    SQLL[(HUL_LogisticsDb)]
-    SQLP[(HUL_PaymentDb)]
-    SQLN[(HUL_NotificationDb)]
-    RED[(Redis)]
-    RBT[(RabbitMQ)]
+    subgraph Services
+        ID[Identity Service API]
+        CAT[Catalog Service API]
+        ORD[Order Service API]
+        LOG[Logistics Service API]
+        PAY[Payment Service API]
+        NOTIF[Notification Service API]
+    end
 
-    FE --> GW
+    subgraph Infra
+        SQL[(SQL Server)]
+        RED[(Redis)]
+        MQ[(RabbitMQ)]
+        RZ[Razorpay]
+        SMTP[SMTP Email]
+    end
+
+    Portal --> GW
+    AdminViews --> GW
+
     GW --> ID
     GW --> CAT
     GW --> ORD
     GW --> LOG
     GW --> PAY
-    GW --> NOTI
+    GW --> NOTIF
 
-    ID --> SQLI
-    CAT --> SQLC
-    ORD --> SQLO
-    LOG --> SQLL
-    PAY --> SQLP
-    NOTI --> SQLN
+    ORD --> ID
+    ORD --> CAT
+    ORD --> PAY
+    LOG --> ORD
+    LOG --> ID
+    PAY --> ORD
+
+    ID --> SQL
+    CAT --> SQL
+    ORD --> SQL
+    LOG --> SQL
+    PAY --> SQL
+    NOTIF --> SQL
 
     ID --> RED
     CAT --> RED
     LOG --> RED
 
-    ORD --> RBT
-    LOG --> RBT
-    RBT --> LOG
-    RBT --> PAY
-    RBT --> NOTI
+    ORD --> MQ
+    CAT --> MQ
+    LOG --> MQ
+    PAY --> MQ
+    NOTIF --> MQ
+
+    PAY --> RZ
+    NOTIF --> SMTP
 ```
 
 ---
 
-## 5. Service Responsibilities
+## 6. Service Ownership Matrix
 
-| Service | Core Responsibility |
-|---|---|
-| Identity | Authentication, OTP, refresh tokens, dealer governance, shipping addresses |
-| Catalog | Products, categories, stock metadata, favorites, subscriptions, reservation integration |
-| Order | Order aggregate lifecycle, returns, outbox publication |
-| Logistics | Shipment lifecycle, assignment, tracking timeline, SLA monitoring |
-| Payment | Credit checks, invoice generation and retrieval |
-| Notification | Event-driven email dispatch, templates, inbox and log audit |
-
----
-
-## 6. Cross-Service Integration Modes
-
-### Synchronous
-
-- Gateway to service APIs
-- Selected internal service-to-service calls (JWT authenticated)
-
-### Asynchronous
-
-- Domain events via RabbitMQ topic exchange
-- Outbox-driven publish path (order domain)
-- Consumer inbox dedupe pattern for idempotent processing
+| Service      | Owns Data                                                                    | Key Responsibilities                                        | Produces / Consumes Events                    |
+| ------------ | ---------------------------------------------------------------------------- | ----------------------------------------------------------- | --------------------------------------------- |
+| Identity     | Users, DealerProfiles, ShippingAddresses, RefreshTokens                      | Auth, OTP, dealer governance, account policy                | Consumes selected internal requests           |
+| Catalog      | Products, Categories, Inventory state, Favorites                             | Product and category management, stock reservation/release  | Emits and consumes inventory-related messages |
+| Order        | Orders, OrderItems, Returns, OutboxMessages                                  | Order lifecycle, return workflow, outbox publication        | Produces order lifecycle events               |
+| Logistics    | Shipments, TrackingEvents, DeliveryAgents, Vehicles, ConsumedMessages        | Dispatch, assignment, tracking, shipment status transitions | Consumes order events, emits shipment updates |
+| Payment      | PurchaseLimitAccounts, Invoices, ConsumedMessages                            | Credit checks, purchase limits, invoice generation/export   | Consumes delivery events                      |
+| Notification | NotificationTemplates, NotificationInbox, NotificationLogs, ConsumedMessages | Email delivery, inbox updates, template management          | Consumes domain events                        |
 
 ---
 
-## 7. Domain Event Topology
+## 7. Integration Architecture
+
+### 7.1 Synchronous Interactions
+
+- Frontend calls gateway upstream routes
+- Gateway forwards to downstream service APIs
+- Internal service-to-service HTTP used where immediate consistency is needed
+
+### 7.2 Asynchronous Interactions
+
+- RabbitMQ topic exchange propagates domain events
+- Order service uses outbox polling to publish reliably
+- Consumer services maintain dedupe tables for idempotent processing
 
 ```mermaid
 flowchart LR
@@ -133,7 +162,7 @@ flowchart LR
 
     ORD -- OrderReadyForDispatch --> EX
     ORD -- OrderDelivered --> EX
-    LOG -- AgentAssigned / ShipmentStatusUpdated --> EX
+    LOG -- ShipmentStatusUpdated / AgentAssigned --> EX
 
     EX --> LOG
     EX --> PAY
@@ -142,40 +171,48 @@ flowchart LR
 
 ---
 
-## 8. Security Topology
+## 8. Security and Trust Model
 
-- External traffic enters through Gateway
-- JWT bearer authentication for protected routes
-- Internal service policy with signed internal tokens
-- Audience validation across service identities
-
----
-
-## 9. Observability Topology
-
-- Request correlation via `X-Correlation-ID`
-- Structured logging via shared Serilog setup
-- Context enrichment (`ServiceName`, `UserId`, `RequestPath`, `CorrelationId`)
-- Correlation propagation to async event envelope
+- Gateway is the main external security boundary
+- JWT Bearer authentication protects role-based APIs
+- Internal APIs use service policy and internal token validation
+- Correlation and trace metadata propagate across HTTP and messaging boundaries
 
 ---
 
-## 10. Runtime Environment Summary
+## 9. Runtime and Deployment View
 
-| Component | Port |
-|---|---:|
-| Frontend | 4200 |
-| Gateway | 5000 |
-| Identity | 5002 |
-| Catalog | 5004 |
-| Order | 5006 |
-| Logistics | 5008 |
-| Payment | 5010 |
-| Notification | 5012 |
+| Component    | Port | Runtime Role                  |
+| ------------ | ---: | ----------------------------- |
+| Frontend     | 4200 | Angular SPA                   |
+| Gateway      | 5000 | API gateway and routing       |
+| Identity     | 5002 | Identity and access domain    |
+| Catalog      | 5004 | Product and inventory domain  |
+| Order        | 5006 | Order and returns domain      |
+| Logistics    | 5008 | Shipment and tracking domain  |
+| Payment      | 5010 | Purchase limits and invoicing |
+| Notification | 5012 | Notifications and templates   |
 
-Primary backing stores:
+Platform dependencies:
 
-- SQL Server (`.\SQLEXPRESS`)
-- Redis
-- RabbitMQ
+- SQL Server (`.\SQLEXPRESS` in local setup)
+- Redis (cache and transient state)
+- RabbitMQ (event bus)
 
+---
+
+## 10. Observability and Operations
+
+- `X-Correlation-ID` is propagated for request and event tracing
+- Structured logging with Serilog across services
+- Shared response envelope improves operability and diagnostics
+- Health endpoints support smoke checks and automation
+
+---
+
+## 11. Key Architectural Decisions
+
+- Keep service boundaries strict with independent persistence
+- Prefer eventual consistency for cross-domain updates
+- Use outbox plus inbox dedupe for reliable messaging
+- Centralize cross-cutting concerns in shared infrastructure package

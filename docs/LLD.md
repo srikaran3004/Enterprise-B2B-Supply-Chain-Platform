@@ -2,233 +2,243 @@
 
 ## 1. Scope
 
-This document describes implementation-level architecture for backend and frontend components, with emphasis on:
+This document captures implementation-level design of the platform, including:
 
-- layering and dependency flow
-- request/response pipeline
-- command/query execution
-- integration clients and consumers
-- shared infrastructure internals
+- backend code structure and runtime pipeline
+- CQRS and domain execution flow
+- persistence and messaging reliability patterns
+- gateway behavior and service communication
+- frontend module and API integration patterns
 
 ---
 
-## 2. Backend Layering Model
+## 2. Service Code Architecture
 
-Each microservice follows the same dependency direction:
+Each backend service follows the same layered model:
 
 ```text
 API -> Application -> Domain
-API -> Infrastructure -> Domain
+API -> Infrastructure
+Infrastructure -> Application (interfaces)
 Application -> Domain
-Infrastructure -> Application abstractions
 ```
 
-Rules:
+Design rules:
 
-- API does not contain business logic
-- Domain does not depend on API/Infrastructure
-- Application orchestrates use cases via handlers
-- Infrastructure implements persistence and external adapters
+- Controllers remain thin and delegate to MediatR requests
+- Business rules are implemented in command/query handlers and domain models
+- Domain layer has no dependency on API or Infrastructure
+- Infrastructure provides EF Core repositories, external clients, and message adapters
 
 ---
 
-## 3. Request Pipeline (API)
+## 3. Request Processing Pipeline
 
-Shared middleware stack (first in pipeline):
+The HTTP pipeline (in order) is standardized via shared infrastructure:
 
 1. Correlation ID middleware
 2. Rate limiting middleware
 3. Request context enrichment middleware
-4. Global exception handling middleware
+4. Global exception middleware
 5. CORS
 6. Serilog request logging
 7. Authentication
 8. Authorization
-9. Endpoint mapping
+9. Controller endpoint execution
 
-Result standardization:
+Envelope behavior:
 
-- success results wrapped in standard `ApiResponse<T>` envelope using response filter
-- exceptions mapped to standard error envelope by global exception middleware
+- successful responses are wrapped in `ApiResponse<T>`
+- failures are transformed to standard `ApiError` envelope
 
----
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API as ASP.NET API
+    participant MW as Shared Middleware
+    participant C as Controller
+    participant M as MediatR
+    participant H as Handler
 
-## 4. Shared Infrastructure Components
-
-Path: `src/SharedInfrastructure/SupplyChain.SharedInfrastructure`
-
-### Core Modules
-
-- `Correlation`
-  - request correlation creation/propagation
-  - outbound header forwarding handler
-- `Middleware`
-  - global exception middleware
-  - response envelope filter
-- `Results`
-  - `ApiResponse`, `ApiError`, `PaginatedResult`
-- `Security`
-  - internal token provider and defaults
-- `Resilience`
-  - standard HttpClient Polly policy extensions
-- `Observability`
-  - shared Serilog bootstrap
-  - log retention cleanup service
+    Client->>API: HTTP Request
+    API->>MW: Execute pipeline
+    MW->>C: Routed action
+    C->>M: Send(Command/Query)
+    M->>H: Dispatch
+    H-->>C: Result DTO
+    C-->>MW: Action result
+    MW-->>Client: ApiResponse or ApiError
+```
 
 ---
 
-## 5. CQRS Execution Flow
+## 4. Shared Infrastructure Internals
+
+Location: `src/SharedInfrastructure/SupplyChain.SharedInfrastructure`
+
+| Module        | Implementation Role                                                   |
+| ------------- | --------------------------------------------------------------------- |
+| Correlation   | Creates and propagates correlation IDs and outbound headers           |
+| Middleware    | Global exception handling and response envelope filter                |
+| Results       | Shared DTO contracts (`ApiResponse`, `ApiError`, pagination wrappers) |
+| Security      | Internal service token provider and policy helpers                    |
+| Resilience    | HttpClient resilience defaults and transient failure handling         |
+| Observability | Serilog bootstrap, enrichers, and retention helpers                   |
+
+---
+
+## 5. CQRS and Validation Flow
 
 ```mermaid
 sequenceDiagram
     participant C as Controller
-    participant M as MediatR
+    participant MB as MediatR Pipeline
+    participant FV as FluentValidation
     participant H as Handler
     participant R as Repository
-    participant DB as DbContext/DB
+    participant DB as DbContext
 
-    C->>M: Send(Command/Query)
-    M->>H: Dispatch request
-    H->>R: Domain operation
-    R->>DB: Persist / Read
-    DB-->>R: Result
-    R-->>H: Domain/DTO data
-    H-->>M: Response DTO
-    M-->>C: Response
+    C->>MB: Send request
+    MB->>FV: Validate request
+    FV-->>MB: Validated
+    MB->>H: Invoke handler
+    H->>R: Load or persist aggregate
+    R->>DB: EF Core operation
+    DB-->>R: Data result
+    R-->>H: Entity or projection
+    H-->>MB: Response DTO
+    MB-->>C: Return response
 ```
 
-Validation:
+Key behavior:
 
-- FluentValidation pipeline behavior executes before handler
-- handler receives validated request object
-
----
-
-## 6. Service-Level Technical Details
-
-## 6.1 Identity Service
-
-Key internals:
-
-- JWT token generation
-- OTP issuance and verification
-- refresh token hashing/rotation/revocation
-- dealer lifecycle actions (approve/reject/suspend/reactivate/delete)
-- shipping address management with default-address constraints
-
-Security specifics:
-
-- internal endpoints protected by internal policy
-- audience-aware token validation
-
-## 6.2 Catalog Service
-
-Key internals:
-
-- product and category CRUD flows
-- favorites and stock subscription APIs
-- reservation services backed by Redis keyed structures
-- cache invalidation paths for mutating operations
-
-## 6.3 Order Service
-
-Key internals:
-
-- order status state progression
-- return request lifecycle
-- transactional outbox messages
-- scheduled outbox poller + cleanup jobs
-
-Concurrency:
-
-- status transitions guarded in handler/repository flow
-- assignment and downstream interactions designed for idempotent behavior
-
-## 6.4 Logistics Service
-
-Key internals:
-
-- shipment creation and assignment
-- delivery status updates and tracking event persistence
-- SLA monitoring (scheduled jobs)
-- `OrderReadyForDispatch` event consumer with dedupe
-
-## 6.5 Payment Service
-
-Key internals:
-
-- credit account and limit management
-- invoice generation and retrieval
-- `OrderDelivered` event consumer with dedupe
-
-## 6.6 Notification Service
-
-Key internals:
-
-- template-based email rendering and sending
-- notification inbox writes
-- event consumer with dedupe and dead-letter routing behavior
-- notification log retention cleanup
+- pre-handler validation short-circuits invalid requests
+- handlers enforce state transition rules for lifecycle operations
+- repositories encapsulate query and persistence concerns
 
 ---
 
-## 7. Async Consumer Design
+## 6. Domain-Specific Technical Design
 
-Consumer processing pipeline:
+### 6.1 Identity Service
 
-1. read message
-2. parse envelope (`eventType`, `eventId`, `correlationId`, `payload`)
-3. compute/resolve message identity
-4. inbox dedupe check (`ConsumedMessages`)
-5. execute use case
-6. persist dedupe marker
-7. ack success
-8. retry or dead-letter on failure according to retry budget
+- JWT access token creation and validation
+- OTP registration/login verification
+- refresh token rotation and revoke-all support
+- admin and super-admin governance endpoints
+- shipping address management with default-address control
 
----
+### 6.2 Catalog Service
 
-## 8. Frontend Internal Design
+- product/category CRUD and activation controls
+- favorites and notify-me subscription endpoints
+- stock reservation/release flows
+- Redis-assisted reservation state and invalidation logic
 
-## 8.1 Module and State Strategy
+### 6.3 Order Service
 
-- role/domain-oriented modules
-- NgRx feature slices:
-  - auth
-  - cart
-  - catalog
-  - orders
-  - shipping addresses
+- order placement, approval, cancel, and progression endpoints
+- returns workflow and evidence image handling
+- transactional outbox table for reliable event publication
+- outbox poller and cleanup background jobs
 
-## 8.2 HTTP Interceptors
+### 6.4 Logistics Service
 
-- zone interceptor
-- auth header interceptor
-- response envelope interceptor
-- error interceptor (includes refresh/retry handling)
+- shipment creation, assignment, and status transitions
+- tracking timeline persistence and query APIs
+- delivery agent and vehicle management
+- event consumer (`OrderReadyForDispatch`) with dedupe checks
 
----
+### 6.5 Payment Service
 
-## 9. Data Access Patterns
+- purchase limit account and monthly cap management
+- internal reserve/release operations during order workflow
+- invoice generation, listing, download, and sales export
+- event consumer (`OrderDelivered`) with dedupe tracking
 
-- EF Core per-service DbContext
-- repository abstractions for core aggregates
-- migrations in each service infrastructure project
-- unique and filtered indexes for critical integrity rules
+### 6.6 Notification Service
 
----
-
-## 10. Operational Behaviors
-
-- startup migration execution per service
-- health check endpoint exposure
-- development OpenAPI/Scalar documentation
-- service logs written to console and date-partitioned files
+- template retrieval and update APIs
+- user inbox read/unread operations
+- event-driven email and inbox writes
+- consumed-message dedupe and retention routines
 
 ---
 
-## 11. Constraints and Boundaries
+## 7. Messaging Reliability Design
 
-- CI/CD pipeline definition is out of current scope
-- full multi-service containerization is out of current scope
-- infrastructure compose currently focuses on Redis and RabbitMQ
+### 7.1 Publisher Path (Order Service)
 
+```mermaid
+flowchart LR
+    TX[Order Transaction]
+    OB[(OutboxMessages)]
+    JOB[Outbox Poller Job]
+    MQ[(RabbitMQ Exchange)]
+
+    TX --> OB
+    OB --> JOB
+    JOB --> MQ
+```
+
+### 7.2 Consumer Path (Logistics/Payment/Notification)
+
+1. Receive event from queue
+2. Parse event envelope (`eventId`, `eventType`, `correlationId`, `payload`)
+3. Check dedupe table (`ConsumedMessages`)
+4. Execute use-case logic
+5. Save dedupe marker
+6. Acknowledge message
+7. Retry and dead-letter on repeated failures
+
+---
+
+## 8. Gateway and Inter-Service Communication
+
+- Ocelot gateway maps upstream routes to service-specific downstream ports
+- Correlation header forwarding is enabled for trace continuity
+- Gateway-protected routes require bearer token unless explicitly public
+- Internal APIs use dedicated internal auth policy and token audiences
+
+---
+
+## 9. Persistence and Data Integrity Patterns
+
+- EF Core DbContext per service boundary
+- Repository abstractions around aggregate roots and query projections
+- Service-local migrations under each Infrastructure project
+- Unique and filtered indexes for consistency-critical scenarios
+- State transition guards in handlers to avoid invalid lifecycle changes
+
+---
+
+## 10. Frontend Internal Design
+
+### 10.1 Module and State Organization
+
+- role and feature oriented Angular modules
+- NgRx slices around auth, catalog, cart, orders, shipping addresses
+- route guards tied to authentication and role claims
+
+### 10.2 API and Error Handling
+
+- interceptor chain for auth header, envelope parsing, and global error handling
+- token refresh flow integrated into API retry path
+- centralized API base URL and environment-driven configuration
+
+---
+
+## 11. Runtime and Operability Details
+
+- health endpoints exposed per service and gateway
+- OpenAPI/Scalar enabled for local API exploration
+- structured logs written to console and service log files
+- startup checks include configuration, auth settings, and database connectivity
+
+---
+
+## 12. Constraints and Current Boundaries
+
+- CI/CD pipeline specifics are documented separately
+- full production container orchestration is outside current local scope
+- local compose primarily provisions RabbitMQ and Redis dependencies

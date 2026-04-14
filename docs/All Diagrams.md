@@ -125,45 +125,68 @@ erDiagram
 
 ```mermaid
 flowchart LR
-        FE[Frontend] --> GW[Gateway\nOcelot]
+    subgraph UI
+        Portal[HUL Supply Portal Angular]
+        AdminViews[Admin and Super Admin Views]
+    end
 
-        GW --> ID[Identity]
-        GW --> CAT[Catalog]
-        GW --> ORD[Order]
-        GW --> LOG[Logistics]
-        GW --> PAY[Payment]
-        GW --> NOTIF[Notification]
+    subgraph Gateway
+        GW[API Gateway Ocelot]
+    end
 
-        ORD --> ID
-        ORD --> CAT
-        ORD --> PAY
-        LOG --> ORD
-        LOG --> ID
-        PAY --> ORD
+    subgraph Services
+        ID[Identity Service API]
+        CAT[Catalog Service API]
+        ORD[Order Service API]
+        LOG[Logistics Service API]
+        PAY[Payment Service API]
+        NOTIF[Notification Service API]
+    end
 
-        MQ[(RabbitMQ)]
-        RED[(Redis)]
+    subgraph Infra
         SQL[(SQL Server)]
+        RED[(Redis)]
+        MQ[(RabbitMQ)]
+        RZ[Razorpay]
+        SMTP[SMTP Email]
+    end
 
-        ORD --> MQ
-        CAT --> MQ
-        LOG --> MQ
-        PAY --> MQ
-        NOTIF --> MQ
+    Portal --> GW
+    AdminViews --> GW
 
-        ID --> RED
-        CAT --> RED
-        LOG --> RED
+    GW --> ID
+    GW --> CAT
+    GW --> ORD
+    GW --> LOG
+    GW --> PAY
+    GW --> NOTIF
 
-        ID --> SQL
-        CAT --> SQL
-        ORD --> SQL
-        LOG --> SQL
-        PAY --> SQL
-        NOTIF --> SQL
+    ORD --> ID
+    ORD --> CAT
+    ORD --> PAY
+    LOG --> ORD
+    LOG --> ID
+    PAY --> ORD
 
-        N[Note: Event bus via RabbitMQ\nOutbox is used in Order service]
-        N -.-> MQ
+    ID --> SQL
+    CAT --> SQL
+    ORD --> SQL
+    LOG --> SQL
+    PAY --> SQL
+    NOTIF --> SQL
+
+    ID --> RED
+    CAT --> RED
+    LOG --> RED
+
+    ORD --> MQ
+    CAT --> MQ
+    LOG --> MQ
+    PAY --> MQ
+    NOTIF --> MQ
+
+    PAY --> RZ
+    NOTIF --> SMTP
 ```
 
 <!-- pagebreak -->
