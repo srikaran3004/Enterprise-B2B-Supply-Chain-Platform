@@ -93,3 +93,4 @@ Desktop.ini
 *.pid
 *.seed
 
+**/docs/
