@@ -43,4 +43,7 @@
   <Folder Name="/src/SharedInfrastructure/">
     <Project Path="src/SharedInfrastructure/SupplyChain.SharedInfrastructure/SupplyChain.SharedInfrastructure.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/SupplyChain.Identity.Tests/SupplyChain.Identity.Tests.csproj" />
+  </Folder>
 </Solution>

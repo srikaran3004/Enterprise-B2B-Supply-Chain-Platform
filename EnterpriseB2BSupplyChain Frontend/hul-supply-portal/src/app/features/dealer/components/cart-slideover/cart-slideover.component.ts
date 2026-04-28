@@ -740,7 +740,7 @@ export class CartSlideoverComponent implements OnInit, OnDestroy {
 
       // Step 2: Open real Razorpay checkout popup
       const options = {
-        key: 'rzp_test_SYJYgxSOWJyCJu',
+        key: 'rzp_test_SdZPZWzMSu8eO3',
         amount: Math.round(amount * 100).toString(),
         currency: 'INR',
         name: 'UniDistrib Supply Portal',
@@ -775,6 +775,25 @@ export class CartSlideoverComponent implements OnInit, OnDestroy {
         },
         theme: {
           color: '#0369a1',
+        },
+        config: {
+          display: {
+            blocks: {
+              upi: {
+                name: 'UPI / QR',
+                instruments: [
+                  {
+                    method: 'upi',
+                    protocols: ['vpa', 'collect', 'intent']
+                  }
+                ]
+              }
+            },
+            sequence: ['block.upi'],
+            preferences: {
+              show_default_blocks: true,
+            },
+          },
         },
         modal: {
           ondismiss: () => {
