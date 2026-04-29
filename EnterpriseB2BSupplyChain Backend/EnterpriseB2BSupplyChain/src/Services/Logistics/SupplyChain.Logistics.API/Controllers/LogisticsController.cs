@@ -15,6 +15,7 @@ using SupplyChain.Logistics.Application.Queries.GetMyShipments;
 using SupplyChain.Logistics.Application.Queries.GetPendingShipments;
 using SupplyChain.Logistics.Application.Queries.GetTracking;
 using SupplyChain.Logistics.Application.Views;
+using SupplyChain.Logistics.Domain.Entities;
 using SupplyChain.Logistics.Domain.Enums;
 
 namespace SupplyChain.Logistics.API.Controllers;
@@ -122,24 +123,7 @@ public class LogisticsController : ControllerBase
     public async Task<IActionResult> GetMyAgentProfile(CancellationToken ct)
     {
         var userId = GetCurrentUserId();
-        var agent = await _agentRepository.GetByUserIdAsync(userId, ct);
-        if (agent is null)
-        {
-            var fullName = GetCurrentUserFullName();
-            if (!string.IsNullOrWhiteSpace(fullName))
-            {
-                agent = await _agentRepository.GetByFullNameAsync(fullName, ct);
-                if (agent is not null && agent.UserId != userId)
-                {
-                    var userAlreadyLinked = await _agentRepository.ExistsByUserIdAsync(userId, ct);
-                    if (!userAlreadyLinked)
-                    {
-                        agent.LinkToUser(userId);
-                        await _agentRepository.SaveChangesAsync(ct);
-                    }
-                }
-            }
-        }
+        var agent = await ResolveCurrentAgentAsync(userId, ct);
 
         if (agent is null) return NotFound(new { error = "Agent profile not found." });
         return Ok(new
@@ -150,6 +134,32 @@ public class LogisticsController : ControllerBase
             agent.AverageRating, agent.TotalDeliveries,
             agent.LicenseNumber
         });
+    }
+
+    private async Task<DeliveryAgent?> ResolveCurrentAgentAsync(Guid userId, CancellationToken ct)
+    {
+        var agent = await _agentRepository.GetByUserIdAsync(userId, ct);
+        if (agent is not null)
+            return agent;
+
+        var fullName = GetCurrentUserFullName();
+        if (string.IsNullOrWhiteSpace(fullName))
+            return null;
+
+        agent = await _agentRepository.GetByFullNameAsync(fullName, ct);
+        if (agent is null)
+            return null;
+
+        if (agent.UserId == userId)
+            return agent;
+
+        var userAlreadyLinked = await _agentRepository.ExistsByUserIdAsync(userId, ct);
+        if (userAlreadyLinked)
+            return null;
+
+        agent.LinkToUser(userId);
+        await _agentRepository.SaveChangesAsync(ct);
+        return agent;
     }
 
     /// <summary>Get all delivery agents (all statuses) for admin portal.</summary>

@@ -86,6 +86,16 @@ export class AuthService {
       error: () => { }
     });
 
+    this.clearSession();
+  }
+
+  logoutAll(): Observable<unknown> {
+    return this.http
+      .post(API_ENDPOINTS.auth.logoutAll(), {}, { withCredentials: true })
+      .pipe(tap(() => this.clearSession()));
+  }
+
+  private clearSession(): void {
     this.accessToken = null;
     this.currentRole = null;
     this.currentUserName = null;

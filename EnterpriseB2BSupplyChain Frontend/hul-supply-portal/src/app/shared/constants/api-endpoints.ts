@@ -10,7 +10,7 @@ export const API_ENDPOINTS = {
     loginVerifyOtp: () => `${getBaseUrl(environment.identityServiceUrl)}/api/auth/login/verify-otp`,
     refresh: () => `${getBaseUrl(environment.identityServiceUrl)}/api/auth/refresh`,
     logout: () => `${getBaseUrl(environment.identityServiceUrl)}/api/auth/logout`,
-    // NOTE: logoutAll removed — no backend endpoint exists for /api/auth/logout-all
+    logoutAll: () => `${getBaseUrl(environment.identityServiceUrl)}/api/auth/logout-all`,
     register: () => `${getBaseUrl(environment.identityServiceUrl)}/api/auth/register`,
     registerVerifyOtp: () => `${getBaseUrl(environment.identityServiceUrl)}/api/auth/register/verify-otp`,
     forgotPassword: () => `${getBaseUrl(environment.identityServiceUrl)}/api/auth/forgot-password`,

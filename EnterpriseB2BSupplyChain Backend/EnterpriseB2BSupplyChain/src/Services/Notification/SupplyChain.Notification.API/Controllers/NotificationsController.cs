@@ -52,5 +52,5 @@ public record NotificationTemplateDto(
     string EventType,
     string Subject,
     bool IsActive,
-    DateTime UpdatedAt
+    DateTime? UpdatedAt
 );
