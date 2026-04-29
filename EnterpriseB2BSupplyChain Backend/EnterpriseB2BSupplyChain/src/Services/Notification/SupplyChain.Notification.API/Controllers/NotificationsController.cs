@@ -18,14 +18,13 @@ public class NotificationsController : ControllerBase
     public async Task<IActionResult> GetTemplates(CancellationToken ct)
     {
         var templates = await _repository.GetAllTemplatesAsync(ct);
-        return Ok(templates.Select(t => new
-        {
+        return Ok(templates.Select(t => new NotificationTemplateDto(
             t.TemplateId,
             t.EventType,
             t.Subject,
             t.IsActive,
             t.UpdatedAt
-        }));
+        )));
     }
 
     [HttpPut("templates/{templateId:guid}")]
@@ -47,3 +46,11 @@ public class NotificationsController : ControllerBase
 }
 
 public record UpdateTemplateRequest(string Subject, string HtmlBody);
+
+public record NotificationTemplateDto(
+    Guid TemplateId,
+    string EventType,
+    string Subject,
+    bool IsActive,
+    DateTime UpdatedAt
+);
