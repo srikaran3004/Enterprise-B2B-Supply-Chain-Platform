@@ -69,4 +69,6 @@ export interface AuthResult {
   role: string;
   fullName: string;
   userId: string;
+  requiresOtp?: boolean;
+  message?: string;
 }
