@@ -27,11 +27,16 @@ public class LogisticsController : ControllerBase
 {
     private readonly IMediator _mediator;
     private readonly IAgentRepository _agentRepository;
+    private readonly IShipmentRepository _shipmentRepository;
 
-    public LogisticsController(IMediator mediator, IAgentRepository agentRepository)
+    public LogisticsController(
+        IMediator mediator,
+        IAgentRepository agentRepository,
+        IShipmentRepository shipmentRepository)
     {
-        _mediator = mediator;
-        _agentRepository = agentRepository;
+        _mediator            = mediator;
+        _agentRepository     = agentRepository;
+        _shipmentRepository  = shipmentRepository;
     }
 
     /// <summary>Create a shipment for an order (called when order is ReadyForDispatch).</summary>
@@ -44,6 +49,49 @@ public class LogisticsController : ControllerBase
         var shipmentId = await _mediator.Send(command, ct);
         return Ok(new { shipmentId });
     }
+
+    /// <summary>
+    /// Get a single shipment by its Id.
+    /// IDOR guard: Dealers may only view shipments linked to orders they own (verified
+    /// by cross-referencing orderId against the dealer's shipment list); Delivery Agents
+    /// may only view shipments assigned to them; Admins bypass both checks.
+    /// </summary>
+    [HttpGet("shipments/{shipmentId:guid}")]
+    [Authorize(Roles = "Dealer,DeliveryAgent,Admin,SuperAdmin")]
+    public async Task<IActionResult> GetShipmentById(Guid shipmentId, CancellationToken ct)
+    {
+        var shipment = await _shipmentRepository.GetByIdAsync(shipmentId, ct);
+        if (shipment is null)
+            return NotFound(new { error = "Shipment not found." });
+
+        // Admins bypass ownership checks.
+        if (User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))
+            return Ok(shipment);
+
+        // Agent IDOR check: the shipment must be assigned to the calling agent.
+        if (User.IsInRole("DeliveryAgent"))
+        {
+            var agentUserId = GetCurrentUserId();
+            var agent = await ResolveCurrentAgentAsync(agentUserId, ct);
+            if (agent is null || shipment.AgentId != agent.AgentId)
+                return Forbid();
+            return Ok(shipment);
+        }
+
+        // Dealer IDOR check: fetch all shipments assigned to this dealer's orders.
+        // If the requested shipmentId is not among them, deny access.
+        if (User.IsInRole("Dealer"))
+        {
+            var dealerId = GetDealerId();
+            var dealerShipments = await _shipmentRepository.GetByDealerIdAsync(dealerId, ct);
+            if (!dealerShipments.Any(s => s.ShipmentId == shipmentId))
+                return Forbid();
+            return Ok(shipment);
+        }
+
+        return Forbid();
+    }
+
 
     /// <summary>Get all active shipments (Pending through OutForDelivery — excludes Delivered/Failed).</summary>
     [HttpGet("shipments/pending")]

@@ -18,7 +18,7 @@ public class CreateShipmentCommandHandler : IRequestHandler<CreateShipmentComman
         if (existing is not null)
             return existing.ShipmentId;
 
-        var shipment = Shipment.Create(command.OrderId, command.SlaDeadlineUtc);
+        var shipment = Shipment.Create(command.OrderId, command.DealerId, command.SlaDeadlineUtc);
         await _shipmentRepository.AddAsync(shipment, ct);
         await _shipmentRepository.SaveChangesAsync(ct);
         return shipment.ShipmentId;

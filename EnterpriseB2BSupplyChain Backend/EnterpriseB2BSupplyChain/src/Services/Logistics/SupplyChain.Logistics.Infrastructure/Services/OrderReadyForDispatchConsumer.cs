@@ -160,9 +160,10 @@ public class OrderReadyForDispatchConsumer : BackgroundService
             }
 
             var defaultSlaHours = _configuration.GetValue<int?>("Logistics:DefaultSlaHours") ?? 72;
+            var dealerId = TryReadGuid(payload, "DealerId", "dealerId") ?? Guid.Empty;
             var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
             await mediator.Send(
-                new CreateShipmentCommand(orderId.Value, DateTime.UtcNow.AddHours(defaultSlaHours)),
+                new CreateShipmentCommand(orderId.Value, dealerId, DateTime.UtcNow.AddHours(defaultSlaHours)),
                 ct);
 
             db.ConsumedMessages.Add(ConsumedMessage.Create(messageId, ConsumerName, eventType, correlationId));

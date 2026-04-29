@@ -58,6 +58,14 @@ public class ShipmentRepository : IShipmentRepository
             .OrderByDescending(s => s.CreatedAt)
             .ToListAsync(ct);
 
+    public async Task<List<Shipment>> GetByDealerIdAsync(Guid dealerId, CancellationToken ct = default)
+        => await _context.Shipments
+            .Include(s => s.Agent)
+            .Include(s => s.Vehicle)
+            .Where(s => s.DealerId == dealerId)
+            .OrderByDescending(s => s.CreatedAt)
+            .ToListAsync(ct);
+
     public async Task<List<Shipment>> GetActiveShipmentsForSlaCheckAsync(CancellationToken ct = default)
         => await _context.Shipments
             .Where(s => s.Status != ShipmentStatus.Delivered
@@ -415,7 +423,7 @@ public class ShipmentRepository : IShipmentRepository
         DateTime slaDeadlineUtc,
         CancellationToken ct)
     {
-        var newShipment = Shipment.Create(orderId, slaDeadlineUtc);
+        var newShipment = Shipment.Create(orderId, Guid.Empty, slaDeadlineUtc); // DealerId set via command in normal flow
         _context.Shipments.Add(newShipment);
 
         try

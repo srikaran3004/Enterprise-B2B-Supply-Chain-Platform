@@ -1,4 +1,4 @@
-﻿{
+{
   "Routes": [
     {
       "DownstreamPathTemplate": "/api/auth/{everything}",
@@ -15,6 +15,12 @@
         "ExceptionsAllowedBeforeBreaking": 5,
         "DurationOfBreak": 30,
         "TimeoutValue": 10000
+      },
+      "RateLimitOptions": {
+        "EnableRateLimiting": true,
+        "Period": "1m",
+        "PeriodTimespan": 60,
+        "Limit": 30
       },
       "AddHeadersToRequest": {
         "X-Correlation-ID": "{TraceId}"
@@ -361,6 +367,10 @@
         "DurationOfBreak": 30,
         "TimeoutValue": 10000
       },
+      "FileCacheOptions": {
+        "TtlSeconds": 300,
+        "Region": "catalog-categories"
+      },
       "AddHeadersToRequest": {
         "X-Correlation-ID": "{TraceId}"
       }
@@ -797,6 +807,12 @@
         "ExceptionsAllowedBeforeBreaking": 5,
         "DurationOfBreak": 30,
         "TimeoutValue": 10000
+      },
+      "RateLimitOptions": {
+        "EnableRateLimiting": true,
+        "Period": "1m",
+        "PeriodTimespan": 60,
+        "Limit": 100
       },
       "AddHeadersToRequest": {
         "X-Correlation-ID": "{TraceId}"

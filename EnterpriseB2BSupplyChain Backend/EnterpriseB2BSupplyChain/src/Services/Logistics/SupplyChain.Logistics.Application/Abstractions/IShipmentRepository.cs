@@ -11,6 +11,7 @@ public interface IShipmentRepository
     Task<List<Shipment>> GetAllActiveAsync(CancellationToken ct = default);
     Task<List<Shipment>> GetAllAsync(CancellationToken ct = default);
     Task<List<Shipment>> GetByAgentIdAsync(Guid agentId, CancellationToken ct = default);
+    Task<List<Shipment>> GetByDealerIdAsync(Guid dealerId, CancellationToken ct = default);
     Task<List<Shipment>> GetActiveShipmentsForSlaCheckAsync(CancellationToken ct = default);
     /// <summary>
     /// Atomic agent + vehicle + shipment assignment using ExecuteUpdateAsync.

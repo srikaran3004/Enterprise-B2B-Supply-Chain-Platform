@@ -7,6 +7,7 @@ public class Shipment
 {
     public Guid            ShipmentId          { get; private set; }
     public Guid            OrderId             { get; private set; }
+    public Guid            DealerId            { get; private set; }  // Stored for IDOR checks without cross-service calls
     public Guid?           AgentId             { get; private set; }
     public Guid?           VehicleId           { get; private set; }
     public ShipmentStatus  Status              { get; private set; }
@@ -25,15 +26,16 @@ public class Shipment
 
     private Shipment() { }
 
-    public static Shipment Create(Guid orderId, DateTime slaDeadlineUtc)
+    public static Shipment Create(Guid orderId, Guid dealerId, DateTime slaDeadlineUtc)
         => new()
         {
-            ShipmentId       = Guid.NewGuid(),
-            OrderId          = orderId,
-            Status           = ShipmentStatus.Pending,
-            SlaDeadlineUtc   = slaDeadlineUtc,
+            ShipmentId        = Guid.NewGuid(),
+            OrderId           = orderId,
+            DealerId          = dealerId,
+            Status            = ShipmentStatus.Pending,
+            SlaDeadlineUtc    = slaDeadlineUtc,
             SlaAtRiskNotified = false,
-            CreatedAt        = DateTime.UtcNow
+            CreatedAt         = DateTime.UtcNow
         };
 
     public void AssignAgent(Guid agentId, Guid vehicleId)
