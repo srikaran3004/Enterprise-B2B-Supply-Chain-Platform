@@ -26,7 +26,17 @@ if (string.IsNullOrWhiteSpace(jwtSecret))
 }
 
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "UniSupplyPlatform";
-var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "UniSupplyAPI";
+var configuredAudiences = builder.Configuration.GetSection("Jwt:Audiences").Get<string[]>();
+var validAudiences = (configuredAudiences ?? Array.Empty<string>())
+    .Concat(new[]
+    {
+        builder.Configuration["Jwt:Audience"] ?? "UniSupplyAPI",
+        "gateway", "identity", "order", "catalog", "payment", "logistics", "notification"
+    })
+    .Where(a => !string.IsNullOrWhiteSpace(a))
+    .Distinct(StringComparer.OrdinalIgnoreCase)
+    .ToArray();
+
 //Whenever a request comes, Check JWT token for authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer("Bearer", options =>
@@ -38,7 +48,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateLifetime         = true, //Checks if token is expired.
             ValidateIssuerSigningKey = true, //Verifies token signature.
             ValidIssuer              = jwtIssuer,
-            ValidAudience            = jwtAudience,
+            ValidAudiences           = validAudiences,
             IssuerSigningKey         = new SymmetricSecurityKey( //Secret key used to validate token signature
                                            Encoding.UTF8.GetBytes(jwtSecret)),
             ClockSkew = TimeSpan.Zero
