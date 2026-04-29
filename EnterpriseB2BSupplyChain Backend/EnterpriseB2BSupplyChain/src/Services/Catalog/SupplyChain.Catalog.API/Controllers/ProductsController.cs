@@ -62,8 +62,15 @@ public class ProductsController : ControllerBase
         [FromBody] CreateProductCommand command,
         CancellationToken ct)
     {
-        var productId = await _mediator.Send(command, ct);
-        return CreatedAtAction(nameof(GetProduct), new { productId }, new { productId });
+        try
+        {
+            var productId = await _mediator.Send(command, ct);
+            return CreatedAtAction(nameof(GetProduct), new { productId }, new { productId });
+        }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("already exists", StringComparison.OrdinalIgnoreCase))
+        {
+            return Conflict(new { error = ex.Message });
+        }
     }
 
     [HttpPut("{productId:guid}")]
