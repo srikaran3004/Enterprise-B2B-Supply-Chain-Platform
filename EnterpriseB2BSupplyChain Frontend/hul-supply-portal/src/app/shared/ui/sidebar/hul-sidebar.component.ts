@@ -38,7 +38,7 @@ export interface SidebarItem {
             <button class="sidebar__item sidebar__item--parent"
               [class.sidebar__item--expanded]="isGroupExpanded(item.label)"
               [class.sidebar__item--child-active]="hasActiveChild(item)"
-              (click)="toggleGroup(item.label)"
+              (click)="onParentItemClick(item)"
               [title]="collapsed ? item.label : ''">
               <span class="sidebar__item-icon" [innerHTML]="getIconSvg(item.icon)"></span>
               <span class="sidebar__item-label" *ngIf="!collapsed">{{ item.label }}</span>
@@ -386,6 +386,16 @@ export class HulSidebarComponent {
     } else {
       this.expandedGroups.add(label);
     }
+  }
+
+  onParentItemClick(item: SidebarItem): void {
+    // In collapsed mode, child links are hidden, so parent click should navigate.
+    if (this.collapsed) {
+      this.router.navigateByUrl(item.route);
+      return;
+    }
+
+    this.toggleGroup(item.label);
   }
 
   getInitials(): string {

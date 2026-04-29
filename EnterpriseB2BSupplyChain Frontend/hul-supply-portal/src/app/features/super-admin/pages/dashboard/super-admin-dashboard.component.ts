@@ -47,6 +47,10 @@ import { API_ENDPOINTS } from '../../../../shared/constants/api-endpoints';
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m16.5 9.4-9-5.19"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" y1="22" x2="12" y2="12"/></svg>
             <span>Manage Inventory</span>
           </a>
+          <a routerLink="/admin/logistics/dashboard" class="qa-card">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            <span>Logistics Dashboard</span>
+          </a>
         </div>
       </div>
     </div>
@@ -56,7 +60,7 @@ import { API_ENDPOINTS } from '../../../../shared/constants/api-endpoints';
     @media (max-width: 1280px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 640px) { .kpi-grid { grid-template-columns: 1fr; } }
     .kpi-grid hul-stat-card, .kpi-grid .stat-card-wrapper { height: 100%; display: flex; flex-direction: column; }
-    .quick-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .quick-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
     @media (max-width: 768px) { .quick-grid { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 480px) { .quick-grid { grid-template-columns: 1fr; } }
     .qa-card { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 24px; background: var(--bg-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); text-decoration: none; color: var(--text-primary); font-size: 15px; font-weight: 600; transition: all var(--duration-fast); }

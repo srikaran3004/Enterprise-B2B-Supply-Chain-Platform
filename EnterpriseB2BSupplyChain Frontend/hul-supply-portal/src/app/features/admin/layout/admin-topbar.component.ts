@@ -1,7 +1,8 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { ThemeService } from '../../../core/services/theme.service';
-import { Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-admin-topbar',
@@ -68,13 +69,27 @@ export class AdminTopbarComponent {
   constructor(private authService: AuthService, public themeService: ThemeService, private router: Router) {
     this.userName = this.authService.getUserName() || 'Admin';
     this.isSuperAdmin = this.authService.getUserRole() === 'SuperAdmin';
+
+    if (this.isSuperAdmin) {
+      this.syncActivePortalWithRoute(this.router.url);
+      this.router.events
+        .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
+        .subscribe(event => this.syncActivePortalWithRoute(event.urlAfterRedirects));
+    }
   }
 
   onPortalChange(): void {
     if (this.activePortal === 'superadmin') {
       this.router.navigate(['/super-admin/dashboard']);
+      return;
     }
+
+    this.router.navigate(['/admin/dashboard']);
   }
 
   logout(): void { this.authService.logout(); }
+
+  private syncActivePortalWithRoute(url: string): void {
+    this.activePortal = url.startsWith('/super-admin') ? 'superadmin' : 'admin';
+  }
 }

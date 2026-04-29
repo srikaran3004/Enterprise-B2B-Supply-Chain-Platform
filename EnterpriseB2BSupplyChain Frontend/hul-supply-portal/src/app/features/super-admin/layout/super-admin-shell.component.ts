@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { ThemeService } from '../../../core/services/theme.service';
-import { Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-super-admin-shell', standalone: false,
@@ -63,6 +64,18 @@ export class SuperAdminShellComponent {
     { label: 'Categories', route: '/admin/catalog/categories', icon: 'folder' },
     { label: 'Products', route: '/admin/catalog/products', icon: 'package' },
     { label: 'All Orders', route: '/admin/orders', icon: 'shopping-bag' },
+    {
+      label: 'Logistics', route: '/admin/logistics', icon: 'truck',
+      children: [
+        { label: 'Dashboard', route: '/admin/logistics/dashboard', icon: 'layout-dashboard' },
+        { label: 'Dispatch Queue', route: '/admin/logistics/dispatch-queue', icon: 'package' },
+        { label: 'Pending Shipments', route: '/admin/logistics/pending', icon: 'truck' },
+        { label: 'Live Tracking', route: '/admin/logistics/tracking', icon: 'map-pin' },
+        { label: 'Agents', route: '/admin/logistics/agents', icon: 'users' },
+        { label: 'Vehicles', route: '/admin/logistics/vehicles', icon: 'truck' },
+        { label: 'SLA Monitor', route: '/admin/logistics/sla', icon: 'clock' },
+      ]
+    },
     { label: 'Returns', route: '/admin/returns', icon: 'corner-down-left' },
     { label: 'Inventory', route: '/admin/inventory', icon: 'warehouse' },
     { label: 'Notifications', route: '/admin/notifications', icon: 'bell' },
@@ -75,14 +88,27 @@ export class SuperAdminShellComponent {
 
   constructor(public authService: AuthService, public themeService: ThemeService, private router: Router) { 
     this.userName = authService.getUserName() || 'Super Admin'; 
-    // Auto-select portal based on current route
-    if (this.router.url.startsWith('/admin')) {
-      this.activePortal = 'admin';
-    }
+    // Keep portal selector synced with actual route.
+    this.syncActivePortalWithRoute(this.router.url);
+    this.router.events
+      .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
+      .subscribe(event => this.syncActivePortalWithRoute(event.urlAfterRedirects));
   }
 
   onPortalChange(): void {
     if (this.activePortal === 'superadmin') this.router.navigate(['/super-admin/dashboard']);
     else this.router.navigate(['/admin/dashboard']);
   }
+
+  private syncActivePortalWithRoute(url: string): void {
+    if (url.startsWith('/admin')) {
+      this.activePortal = 'admin';
+      return;
+    }
+
+    if (url.startsWith('/super-admin')) {
+      this.activePortal = 'superadmin';
+    }
+  }
 }
+
