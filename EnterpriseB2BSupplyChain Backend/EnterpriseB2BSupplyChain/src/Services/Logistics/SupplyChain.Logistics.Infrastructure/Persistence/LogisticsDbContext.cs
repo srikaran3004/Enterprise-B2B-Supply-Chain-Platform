@@ -8,11 +8,12 @@ public class LogisticsDbContext : DbContext
     public LogisticsDbContext(DbContextOptions<LogisticsDbContext> options)
         : base(options) { }
 
-    public DbSet<Shipment>      Shipments      => Set<Shipment>();
-    public DbSet<DeliveryAgent> DeliveryAgents => Set<DeliveryAgent>();
-    public DbSet<Vehicle>       Vehicles       => Set<Vehicle>();
-    public DbSet<TrackingEvent> TrackingEvents => Set<TrackingEvent>();
+    public DbSet<Shipment>        Shipments        => Set<Shipment>();
+    public DbSet<DeliveryAgent>   DeliveryAgents   => Set<DeliveryAgent>();
+    public DbSet<Vehicle>         Vehicles         => Set<Vehicle>();
+    public DbSet<TrackingEvent>   TrackingEvents   => Set<TrackingEvent>();
     public DbSet<ConsumedMessage> ConsumedMessages => Set<ConsumedMessage>();
+    public DbSet<OutboxMessage>   OutboxMessages   => Set<OutboxMessage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

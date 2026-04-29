@@ -1,11 +1,15 @@
+using Hangfire;
+using Hangfire.SqlServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net.Http.Headers;
+using RabbitMQ.Client;
 using SupplyChain.SharedInfrastructure.Correlation;
 using SupplyChain.SharedInfrastructure.Resilience;
 using SupplyChain.SharedInfrastructure.Security;
 using SupplyChain.Payment.Application.Abstractions;
+using SupplyChain.Payment.Infrastructure.Jobs;
 using SupplyChain.Payment.Infrastructure.Persistence;
 using SupplyChain.Payment.Infrastructure.Persistence.Repositories;
 using SupplyChain.Payment.Infrastructure.Services;
@@ -28,6 +32,7 @@ public static class DependencyInjection
         services.AddScoped<IPurchaseLimitHistoryRepository, PurchaseLimitHistoryRepository>();
         services.AddScoped<IPaymentRecordRepository, PaymentRecordRepository>();
         services.AddScoped<IInvoicePdfService, QuestPdfInvoiceService>();
+        services.AddScoped<IOutboxRepository, OutboxRepository>();
 
         var orderServiceUrl = configuration["ServiceUrls:OrderService"] ?? "http://localhost:5006";
         services.AddHttpClient<IOrderInternalClient, OrderInternalClient>((sp, client) =>
@@ -41,6 +46,17 @@ public static class DependencyInjection
             .AddStandardResiliencePolicies();
 
         services.AddHostedService<OrderDeliveredConsumer>();
+
+        var connString = configuration.GetConnectionString("DefaultConnection")!;
+        services.AddHangfire(cfg =>
+            cfg.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+               .UseSimpleAssemblyNameTypeSerializer()
+               .UseRecommendedSerializerSettings()
+               .UseSqlServerStorage(connString));
+
+        services.AddHangfireServer();
+        services.AddScoped<OutboxPollerJob>();
+        services.AddScoped<OutboxCleanupJob>();
 
         return services;
     }

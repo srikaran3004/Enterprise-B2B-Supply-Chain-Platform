@@ -107,4 +107,15 @@ RecurringJob.AddOrUpdate<SlaMonitorJob>(
     job => job.ExecuteAsync(),
     "*/5 * * * *"); // Every 5 minutes
 
+// Logistics Outbox Poller — runs every 5 seconds
+RecurringJob.AddOrUpdate<OutboxPollerJob>(
+    "logistics-outbox-poller",
+    job => job.ExecuteAsync(),
+    "*/5 * * * * *"); // Every 5 seconds (seconds syntax)
+
+RecurringJob.AddOrUpdate<OutboxCleanupJob>(
+    "logistics-outbox-cleanup",
+    job => job.ExecuteAsync(CancellationToken.None),
+    "0 2 * * *"); // Daily at 02:00
+
 app.Run();

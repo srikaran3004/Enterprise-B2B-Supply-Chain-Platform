@@ -1,4 +1,5 @@
-﻿using System.Text;
+using System.Text;
+using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -9,6 +10,7 @@ using SupplyChain.SharedInfrastructure.Observability;
 using SupplyChain.SharedInfrastructure.Security;
 using SupplyChain.Payment.Application;
 using SupplyChain.Payment.Infrastructure;
+using SupplyChain.Payment.Infrastructure.Jobs;
 using SupplyChain.Payment.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -124,8 +126,23 @@ app.UseCors("AllowAngular");
 app.UseSerilogRequestLogging();
 app.UseAuthentication();
 app.UseAuthorization();
+
+if (app.Environment.IsDevelopment())
+    app.UseHangfireDashboard("/hangfire");
+
 app.MapControllers();
 app.MapHealthChecks("/health");
+
+// Register Payment Outbox Poller — runs every 5 seconds
+RecurringJob.AddOrUpdate<OutboxPollerJob>(
+    "payment-outbox-poller",
+    job => job.ExecuteAsync(),
+    "*/5 * * * * *"); // Every 5 seconds
+
+RecurringJob.AddOrUpdate<OutboxCleanupJob>(
+    "payment-outbox-cleanup",
+    job => job.ExecuteAsync(CancellationToken.None),
+    "0 2 * * *"); // Daily at 02:00
 
 app.Run();
 

@@ -14,6 +14,7 @@ public class PaymentDbContext : DbContext
     public DbSet<PurchaseLimitHistory> PurchaseLimitHistory => Set<PurchaseLimitHistory>();
     public DbSet<PaymentRecord>       PaymentRecords => Set<PaymentRecord>();
     public DbSet<ConsumedMessage>     ConsumedMessages => Set<ConsumedMessage>();
+    public DbSet<OutboxMessage>       OutboxMessages   => Set<OutboxMessage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -1,4 +1,4 @@
-﻿using Hangfire;
+using Hangfire;
 using Hangfire.SqlServer;
 using System.Net.Http.Headers;
 using Microsoft.EntityFrameworkCore;
@@ -59,11 +59,12 @@ public static class DependencyInjection
             return factory.CreateConnectionAsync().GetAwaiter().GetResult();
         });
 
-        services.AddScoped<IShipmentRepository,   ShipmentRepository>();
-        services.AddScoped<IAgentRepository,      AgentRepository>();
-        services.AddScoped<ITrackingCacheService,  TrackingCacheService>();
-        services.AddScoped<IAgentAssignedEventPublisher, AgentAssignedEventPublisher>();
-        services.AddScoped<IShipmentEventPublisher, ShipmentEventPublisher>();
+        services.AddScoped<IShipmentRepository,          ShipmentRepository>();
+        services.AddScoped<IAgentRepository,             AgentRepository>();
+        services.AddScoped<ITrackingCacheService,         TrackingCacheService>();
+        services.AddScoped<IOutboxRepository,             OutboxRepository>();
+        services.AddScoped<IAgentAssignedEventPublisher,  AgentAssignedEventPublisher>();
+        services.AddScoped<IShipmentEventPublisher,       ShipmentEventPublisher>();
         services.AddHostedService<OrderReadyForDispatchConsumer>();
 
         var identityServiceUrl = configuration["ServiceUrls:IdentityService"] ?? "http://localhost:5002";
@@ -96,6 +97,8 @@ public static class DependencyInjection
 
         services.AddHangfireServer();
         services.AddScoped<SlaMonitorJob>();
+        services.AddScoped<OutboxPollerJob>();
+        services.AddScoped<OutboxCleanupJob>();
 
         return services;
     }

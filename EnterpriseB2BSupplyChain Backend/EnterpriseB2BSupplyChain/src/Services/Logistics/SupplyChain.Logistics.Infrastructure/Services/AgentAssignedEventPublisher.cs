@@ -1,29 +1,25 @@
-using System.Text;
 using System.Text.Json;
-using RabbitMQ.Client;
 using SupplyChain.Logistics.Application.Abstractions;
+using SupplyChain.Logistics.Domain.Entities;
 using SupplyChain.Logistics.Domain.Events;
-using SupplyChain.SharedInfrastructure.Contracts;
-using SupplyChain.SharedInfrastructure.Correlation;
 
 namespace SupplyChain.Logistics.Infrastructure.Services;
 
+/// <summary>
+/// Writes an AgentAssigned event to the local OutboxMessages table instead of
+/// publishing directly to RabbitMQ. The OutboxPollerJob delivers it reliably
+/// with at-least-once semantics, even if the broker is temporarily unavailable.
+/// </summary>
 public class AgentAssignedEventPublisher : IAgentAssignedEventPublisher
 {
-    private readonly IConnection _rabbitConnection;
-    private readonly ICorrelationIdAccessor _correlationIdAccessor;
+    private readonly IOutboxRepository _outboxRepository;
 
-    public AgentAssignedEventPublisher(
-        IConnection rabbitConnection,
-        ICorrelationIdAccessor correlationIdAccessor)
-    {
-        _rabbitConnection = rabbitConnection;
-        _correlationIdAccessor = correlationIdAccessor;
-    }
+    public AgentAssignedEventPublisher(IOutboxRepository outboxRepository)
+        => _outboxRepository = outboxRepository;
 
     public async Task PublishAsync(AgentAssigned @event, CancellationToken ct)
     {
-        var payload = new
+        var payload = JsonSerializer.Serialize(new
         {
             @event.ShipmentId,
             @event.OrderId,
@@ -39,43 +35,10 @@ public class AgentAssignedEventPublisher : IAgentAssignedEventPublisher
             @event.ShippingAddressLine,
             @event.ShippingCity,
             @event.ShippingPinCode
-        };
+        });
 
-        var envelope = new EventEnvelope<object>(
-            EventId: Guid.NewGuid(),
-            EventType: "AgentAssigned",
-            OccurredAt: DateTime.UtcNow,
-            CorrelationId: _correlationIdAccessor.CorrelationId,
-            Source: "logistics-service",
-            Payload: payload);
-
-        var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(envelope));
-        await using var channel = await _rabbitConnection.CreateChannelAsync(cancellationToken: ct);
-
-        await channel.ExchangeDeclareAsync(
-            exchange: "supplychain.domain.events",
-            type: ExchangeType.Topic,
-            durable: true,
-            cancellationToken: ct);
-
-        var props = new BasicProperties
-        {
-            ContentType = "application/json",
-            DeliveryMode = DeliveryModes.Persistent,
-            Headers = new Dictionary<string, object?>
-            {
-                ["EventType"] = "AgentAssigned",
-                ["ServiceSource"] = "LogisticsService",
-                ["CorrelationId"] = _correlationIdAccessor.CorrelationId
-            }
-        };
-
-        await channel.BasicPublishAsync(
-            exchange: "supplychain.domain.events",
-            routingKey: "agent.assigned",
-            mandatory: false,
-            basicProperties: props,
-            body: body,
-            cancellationToken: ct);
+        var message = OutboxMessage.Create("AgentAssigned", payload);
+        await _outboxRepository.AddAsync(message, ct);
+        // SaveChanges is the caller's responsibility (unit-of-work pattern).
     }
 }
