@@ -242,14 +242,6 @@ public class OrdersController : ControllerBase
         return Ok(new { Url = dataUri });
     }
 
-    /// <summary>Get uploaded return proof image.</summary>
-    [HttpGet("return-images/{fileName}")]
-    [AllowAnonymous]
-    public IActionResult GetReturnImage(string fileName)
-    {
-        return NotFound(new { Message = "Return proof images are database-backed and no longer served as local files." });
-    }
-
     // ── Helpers ──────────────────────────────────────────────────
     private Guid GetCurrentUserId()
     {

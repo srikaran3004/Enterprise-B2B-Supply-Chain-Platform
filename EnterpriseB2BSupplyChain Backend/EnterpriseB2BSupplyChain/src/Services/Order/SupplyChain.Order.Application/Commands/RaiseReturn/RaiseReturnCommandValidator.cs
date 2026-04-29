@@ -30,11 +30,6 @@ public class RaiseReturnCommandValidator : AbstractValidator<RaiseReturnCommand>
             return true;
         }
 
-        if (url.StartsWith("/api/orders/return-images/", StringComparison.OrdinalIgnoreCase))
-        {
-            return true;
-        }
-
         if (url.StartsWith("data:image/", StringComparison.OrdinalIgnoreCase))
         {
             return url.Contains(";base64,", StringComparison.OrdinalIgnoreCase);
