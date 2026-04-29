@@ -1,3 +1,5 @@
+using Hangfire;
+using Hangfire.SqlServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,6 +10,7 @@ using SupplyChain.SharedInfrastructure.Correlation;
 using SupplyChain.SharedInfrastructure.Resilience;
 using SupplyChain.SharedInfrastructure.Security;
 using SupplyChain.Catalog.Application.Abstractions;
+using SupplyChain.Catalog.Infrastructure.Jobs;
 using SupplyChain.Catalog.Infrastructure.Persistence;
 using SupplyChain.Catalog.Infrastructure.Persistence.Repositories;
 using SupplyChain.Catalog.Infrastructure.Services;
@@ -57,6 +60,7 @@ public static class DependencyInjection
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<ICacheService, RedisCacheService>();
         services.AddScoped<IInventoryReservationService, InventoryReservationService>();
+        services.AddScoped<IOutboxRepository, OutboxRepository>();
         services.AddScoped<IStockRestoredEventPublisher, StockRestoredEventPublisher>();
 
         var identityServiceUrl = configuration["ServiceUrls:IdentityService"] ?? "http://localhost:5002";
@@ -72,6 +76,18 @@ public static class DependencyInjection
 
         // Image download service (uses HttpClient)
         services.AddHttpClient<IImageDownloadService, ImageDownloadService>();
+
+        // Hangfire — Catalog outbox poller
+        var connString = configuration.GetConnectionString("DefaultConnection")!;
+        services.AddHangfire(cfg =>
+            cfg.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+               .UseSimpleAssemblyNameTypeSerializer()
+               .UseRecommendedSerializerSettings()
+               .UseSqlServerStorage(connString));
+
+        services.AddHangfireServer();
+        services.AddScoped<OutboxPollerJob>();
+        services.AddScoped<OutboxCleanupJob>();
 
         return services;
     }

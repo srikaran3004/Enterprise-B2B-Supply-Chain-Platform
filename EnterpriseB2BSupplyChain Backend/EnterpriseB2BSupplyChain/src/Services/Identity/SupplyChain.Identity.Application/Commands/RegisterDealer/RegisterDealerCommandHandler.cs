@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using SupplyChain.Identity.Application.Abstractions;
 using SupplyChain.Identity.Application.DTOs;
 using SupplyChain.Identity.Domain.Entities;
@@ -11,16 +11,16 @@ public class RegisterDealerCommandHandler : IRequestHandler<RegisterDealerComman
 {
     private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher _passwordHasher;
-    private readonly IEmailService _emailService;
+    private readonly IEmailBackgroundJobDispatcher _emailDispatcher;
 
     public RegisterDealerCommandHandler(
         IUserRepository userRepository,
         IPasswordHasher passwordHasher,
-        IEmailService emailService)
+        IEmailBackgroundJobDispatcher emailDispatcher)
     {
-        _userRepository = userRepository;
-        _passwordHasher = passwordHasher;
-        _emailService = emailService;
+        _userRepository  = userRepository;
+        _passwordHasher  = passwordHasher;
+        _emailDispatcher = emailDispatcher;
     }
 
     public async Task<string> Handle(RegisterDealerCommand command, CancellationToken ct)
@@ -60,7 +60,10 @@ public class RegisterDealerCommandHandler : IRequestHandler<RegisterDealerComman
         await _userRepository.AddOtpRecordAsync(otpRecord, ct);
         await _userRepository.SaveChangesAsync(ct);
 
-        await _emailService.SendOtpAsync(command.Email, "Dealer Registration OTP", otp, "dealer registration", ct);
+        // OTP is persisted — enqueue email delivery as a fire-and-forget background job.
+        // If the broker/SMTP is temporarily unavailable, Hangfire retries automatically
+        // without blocking the HTTP response.
+        _emailDispatcher.EnqueueOtp(command.Email, "Dealer Registration OTP", otp, "dealer registration");
 
         return "OTP sent to your email. Verify OTP to complete registration.";
     }

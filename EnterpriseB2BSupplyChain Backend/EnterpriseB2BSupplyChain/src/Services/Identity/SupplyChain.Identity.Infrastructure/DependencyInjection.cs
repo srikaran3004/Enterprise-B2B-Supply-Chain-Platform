@@ -1,3 +1,5 @@
+using Hangfire;
+using Hangfire.SqlServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -43,6 +45,18 @@ public static class DependencyInjection
         services.AddSingleton<ICacheService, RedisCacheService>();
         services.AddHostedService<OtpCleanupBackgroundService>();
         services.AddHostedService<RefreshTokenCleanupBackgroundService>();
+
+        // Hangfire — fire-and-forget OTP email delivery
+        var connString = configuration.GetConnectionString("DefaultConnection")!;
+        services.AddHangfire(cfg =>
+            cfg.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+               .UseSimpleAssemblyNameTypeSerializer()
+               .UseRecommendedSerializerSettings()
+               .UseSqlServerStorage(connString));
+
+        services.AddHangfireServer();
+        services.AddScoped<EmailBackgroundJob>();
+        services.AddScoped<IEmailBackgroundJobDispatcher, HangfireEmailBackgroundJobDispatcher>();
 
         return services;
     }

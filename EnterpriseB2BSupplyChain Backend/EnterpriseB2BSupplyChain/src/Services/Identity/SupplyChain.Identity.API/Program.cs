@@ -1,4 +1,5 @@
-﻿using System.Text;
+using System.Text;
+using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -108,6 +109,11 @@ app.UseStaticFiles(); // Added to serve profile pictures
 app.UseSerilogRequestLogging();
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Hangfire Dashboard (dev only)
+if (app.Environment.IsDevelopment())
+    app.UseHangfireDashboard("/hangfire");
+
 app.MapControllers();
 app.MapHealthChecks("/health");
 

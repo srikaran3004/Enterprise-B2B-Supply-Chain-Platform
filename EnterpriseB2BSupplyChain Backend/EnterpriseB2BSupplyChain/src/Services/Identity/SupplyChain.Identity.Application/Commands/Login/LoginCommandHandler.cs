@@ -9,19 +9,19 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResultDto>
 {
     private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher _passwordHasher;
-    private readonly ITokenService _tokenService;
-    private readonly IEmailService _emailService;
+    private readonly ITokenService   _tokenService;
+    private readonly IEmailBackgroundJobDispatcher _emailDispatcher;
 
     public LoginCommandHandler(
         IUserRepository userRepository,
         IPasswordHasher passwordHasher,
-        ITokenService tokenService,
-        IEmailService emailService)
+        ITokenService   tokenService,
+        IEmailBackgroundJobDispatcher emailDispatcher)
     {
-        _userRepository = userRepository;
-        _passwordHasher = passwordHasher;
-        _tokenService = tokenService;
-        _emailService = emailService;
+        _userRepository  = userRepository;
+        _passwordHasher  = passwordHasher;
+        _tokenService    = tokenService;
+        _emailDispatcher = emailDispatcher;
     }
 
     public async Task<AuthResultDto> Handle(LoginCommand command, CancellationToken ct)
@@ -55,7 +55,10 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResultDto>
                     expiryMinutes: 10), ct);
 
             await _userRepository.SaveChangesAsync(ct);
-            await _emailService.SendOtpAsync(user.Email, "Login OTP", otp, "dealer login", ct);
+
+            // OTP is persisted — enqueue email delivery as a fire-and-forget background job
+            // so the login HTTP response is not held up by SMTP latency.
+            _emailDispatcher.EnqueueOtp(user.Email, "Login OTP", otp, "dealer login");
 
             return new AuthResultDto(
                 AccessToken: null,

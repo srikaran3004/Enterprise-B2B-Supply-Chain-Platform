@@ -1,4 +1,5 @@
-﻿using System.Text;
+using System.Text;
+using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -9,6 +10,7 @@ using SupplyChain.SharedInfrastructure.Observability;
 using SupplyChain.SharedInfrastructure.Security;
 using SupplyChain.Catalog.Application;
 using SupplyChain.Catalog.Infrastructure;
+using SupplyChain.Catalog.Infrastructure.Jobs;
 using SupplyChain.Catalog.Infrastructure.Persistence;
 using SupplyChain.Catalog.Infrastructure.Persistence.Seed;
 
@@ -98,8 +100,24 @@ app.UseCors("AllowAngular");
 app.UseSerilogRequestLogging();
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Hangfire Dashboard (dev only)
+if (app.Environment.IsDevelopment())
+    app.UseHangfireDashboard("/hangfire");
+
 app.MapControllers();
 app.MapHealthChecks("/health");
+
+// Register Catalog Outbox Poller — runs every 5 seconds
+RecurringJob.AddOrUpdate<OutboxPollerJob>(
+    "catalog-outbox-poller",
+    job => job.ExecuteAsync(),
+    "*/5 * * * * *"); // Every 5 seconds
+
+RecurringJob.AddOrUpdate<OutboxCleanupJob>(
+    "catalog-outbox-cleanup",
+    job => job.ExecuteAsync(CancellationToken.None),
+    "0 2 * * *"); // Daily at 02:00
 
 app.Run();
 
