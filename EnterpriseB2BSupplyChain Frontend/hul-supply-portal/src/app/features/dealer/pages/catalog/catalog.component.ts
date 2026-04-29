@@ -9,7 +9,7 @@ import { ToastService } from '../../../../shared/ui/toast/toast.service';
 
 import { HttpClient } from '@angular/common/http';
 import { API_ENDPOINTS } from '../../../../shared/constants/api-endpoints';
-import { environment } from '../../../../../environments/environment';
+import { resolveCatalogImageUrl } from '../../../../shared/utils/url-utils';
 
 @Component({
   selector: 'app-catalog',
@@ -682,10 +682,7 @@ export class CatalogComponent implements OnInit, OnDestroy {
   }
 
   resolveImageUrl(url: string): string {
-    if (!url) return '';
-    if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    const base = environment.useDirect ? environment.catalogServiceUrl : (environment.gatewayUrl || environment.catalogServiceUrl);
-    return base + url;
+    return resolveCatalogImageUrl(url);
   }
 
   onImgError(event: Event, product: any): void {

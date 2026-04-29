@@ -4,7 +4,7 @@ import { API_ENDPOINTS } from '../../../../shared/constants/api-endpoints';
 import { ToastService } from '../../../../shared/ui/toast/toast.service';
 import { HulConfirmService } from '../../../../shared/ui/confirm-dialog/hul-confirm.service';
 import { DataTableColumn, DataTableAction } from '../../../../shared/ui/data-table/hul-data-table.component';
-import { environment } from '../../../../../environments/environment';
+import { resolveCatalogImageUrl } from '../../../../shared/utils/url-utils';
 
 @Component({
   selector: 'app-admin-products', standalone: false,
@@ -282,11 +282,7 @@ export class AdminProductsComponent implements OnInit {
     return c;
   }
 
-  private catalogBaseUrl = '';
-
-  constructor(private http: ZoneHttpService, private toast: ToastService, private confirm: HulConfirmService) {
-    this.catalogBaseUrl = environment.useDirect ? environment.catalogServiceUrl : (environment.gatewayUrl || environment.catalogServiceUrl);
-  }
+  constructor(private http: ZoneHttpService, private toast: ToastService, private confirm: HulConfirmService) {}
 
   ngOnInit(): void {
     this.loadCategories(() => this.load());
@@ -627,9 +623,7 @@ export class AdminProductsComponent implements OnInit {
   // ========== Image Helpers ==========
 
   resolveImageUrl(url: string): string {
-    if (!url) return '';
-    if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    return this.catalogBaseUrl + url;
+    return resolveCatalogImageUrl(url);
   }
 
   onImageError(event: Event): void {

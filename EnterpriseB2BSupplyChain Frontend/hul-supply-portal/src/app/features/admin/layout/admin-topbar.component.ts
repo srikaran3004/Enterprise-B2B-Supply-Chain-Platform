@@ -1,8 +1,9 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, DestroyRef, EventEmitter, Input, Output, inject } from '@angular/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { ThemeService } from '../../../core/services/theme.service';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-admin-topbar',
@@ -60,6 +61,8 @@ import { filter } from 'rxjs/operators';
   `]
 })
 export class AdminTopbarComponent {
+  private readonly destroyRef = inject(DestroyRef);
+
   @Input() collapsed = false;
   @Output() toggleSidebar = new EventEmitter<void>();
   userName: string;
@@ -73,7 +76,10 @@ export class AdminTopbarComponent {
     if (this.isSuperAdmin) {
       this.syncActivePortalWithRoute(this.router.url);
       this.router.events
-        .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
+        .pipe(
+          filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+          takeUntilDestroyed(this.destroyRef)
+        )
         .subscribe(event => this.syncActivePortalWithRoute(event.urlAfterRedirects));
     }
   }
