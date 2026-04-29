@@ -23,7 +23,9 @@ public class DeleteDealerCommandHandler : IRequestHandler<DeleteDealerCommand>
         var dealerEmail = user.Email;
         var dealerName  = user.FullName;
 
-        _userRepository.Delete(user);
+        // Soft delete: mark as deleted and suspend the account.
+        // The global EF query filter will exclude this user from all future queries.
+        user.SoftDelete();
         await _userRepository.SaveChangesAsync(ct);
 
         var subject = "Account Deletion Notice — HUL Supply Chain Platform";
@@ -38,8 +40,8 @@ public class DeleteDealerCommandHandler : IRequestHandler<DeleteDealerCommand>
                 HulEmailLayout.Escape(command.Reason),
                 "danger") +
             HulEmailLayout.Paragraph(
-                "<strong>This action is permanent.</strong> Your account data has been removed from our system " +
-                "and cannot be recovered.") +
+                "<strong>This action is permanent.</strong> Your account has been deactivated and " +
+                "cannot be recovered.") +
             HulEmailLayout.Paragraph(
                 "If you believe this was done in error or have any questions regarding this decision, " +
                 "please contact our support team immediately.") +

@@ -3,59 +3,67 @@ import { Observable, forkJoin } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { API_ENDPOINTS } from '../../shared/constants/api-endpoints';
 import { ZoneHttpService } from './zone-http.service';
+import { ProductDto, OrderSummary, PagedResponse } from '../models/api-models';
+import { OrderStatus } from '../models/status.enums';
+
+/** Merged inventory view: ProductDto enriched with live reservation data from active orders. */
+export interface InventorySnapshot extends ProductDto {
+  reservedStock: number;
+  availableStock: number;
+  isInStock: boolean;
+}
 
 @Injectable({ providedIn: 'root' })
 export class InventoryViewService {
-  private readonly reservedStatuses = new Set([
-    'Placed',
-    'OnHold',
-    'Processing',
-    'ReadyForDispatch',
-    'InTransit',
+  /** Orders in these statuses are considered to have inventory reserved. */
+  private readonly reservedStatuses = new Set<string>([
+    OrderStatus.Placed,
+    OrderStatus.OnHold,
+    OrderStatus.Processing,
+    OrderStatus.ReadyForDispatch,
+    OrderStatus.InTransit,
   ]);
 
   constructor(private http: ZoneHttpService) {}
 
-  getInventorySnapshot(pageSize = 500): Observable<any[]> {
+  getInventorySnapshot(pageSize = 500): Observable<InventorySnapshot[]> {
     return forkJoin({
-      products: this.http.get<any[]>(API_ENDPOINTS.catalog.products()),
-      orders: this.http.get<any>(`${API_ENDPOINTS.orders.base()}?pageSize=${pageSize}`),
+      products: this.http.get<ProductDto[]>(API_ENDPOINTS.catalog.products()),
+      orders:   this.http.get<PagedResponse<OrderSummary>>(`${API_ENDPOINTS.orders.base()}?pageSize=${pageSize}`),
     }).pipe(
-      map(({ products, orders }) => this.mergeInventory(products, orders?.items || orders || []))
+      map(({ products, orders }) =>
+        this.mergeInventory(products, orders?.items ?? (orders as unknown as OrderSummary[]) ?? [])
+      )
     );
   }
 
-  mergeInventory(products: any[], orders: any[]): any[] {
+  mergeInventory(products: ProductDto[], orders: OrderSummary[]): InventorySnapshot[] {
     const reservedByProduct = new Map<string, number>();
 
-    for (const order of orders || []) {
+    for (const order of orders ?? []) {
       if (!this.reservedStatuses.has(order?.status)) {
         continue;
       }
 
-      for (const line of order?.lines || order?.items || []) {
+      for (const line of order?.lines ?? []) {
         const productId = line?.productId;
-        if (!productId) {
-          continue;
-        }
-
-        const quantity = Number(line?.quantity || 0);
-        reservedByProduct.set(productId, (reservedByProduct.get(productId) || 0) + quantity);
+        if (!productId) continue;
+        reservedByProduct.set(productId, (reservedByProduct.get(productId) ?? 0) + (line.quantity ?? 0));
       }
     }
 
-    return (products || []).map(product => {
-      const totalStock = Number(product?.totalStock || 0);
-      const reservedStock = Math.max(0, reservedByProduct.get(product?.productId) ?? Number(product?.reservedStock || 0));
-      const safeReserved = Math.min(totalStock, reservedStock);
+    return (products ?? []).map(product => {
+      const totalStock    = Number(product?.totalStock ?? 0);
+      const reservedStock = Math.max(0, reservedByProduct.get(product?.productId) ?? Number(product?.reservedStock ?? 0));
+      const safeReserved  = Math.min(totalStock, reservedStock);
       const availableStock = Math.max(0, totalStock - safeReserved);
 
       return {
         ...product,
-        reservedStock: safeReserved,
+        reservedStock:  safeReserved,
         availableStock,
         totalStock,
-        isInStock: availableStock >= Number(product?.minOrderQuantity || 1),
+        isInStock: availableStock >= Number(product?.minOrderQuantity ?? 1),
       };
     });
   }

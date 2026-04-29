@@ -8,6 +8,8 @@ import { API_ENDPOINTS } from '../../../../shared/constants/api-endpoints';
 import { ToastService } from '../../../../shared/ui/toast/toast.service';
 import { DataTableColumn, DataTableAction } from '../../../../shared/ui/data-table/hul-data-table.component';
 import { environment } from '../../../../../environments/environment';
+import { DealerListItem, OrderSummary, PagedResponse } from '../../../../core/models/api-models';
+import { UserStatus, OrderStatus, isTerminalOrder } from '../../../../core/models/status.enums';
 
 @Component({
   selector: 'app-all-dealers', standalone: false,
@@ -476,8 +478,8 @@ import { environment } from '../../../../../environments/environment';
 })
 export class AllDealersComponent implements OnInit {
   loading = true;
-  dealers: any[] = [];
-  allDealers: any[] = [];
+  dealers: DealerListItem[] = [];
+  allDealers: DealerListItem[] = [];
 
   // Filters
   stateFilter = '';
@@ -488,11 +490,18 @@ export class AllDealersComponent implements OnInit {
 
   // Modal state
   showViewModal = false;
-  viewingDealer: any = null;
-  dealerOrders: any[] = [];
-  dealerStats: any = null;
-  dealerStatCards: any[] = [];
-  dealerCredit: any = null;
+  viewingDealer: DealerListItem | null = null;
+  dealerOrders: OrderSummary[] = [];
+  dealerStats: {
+    totalOrders: number;
+    totalSpent: number;
+    pendingOrders: number;
+    completedOrders: number;
+    cancelledOrders: number;
+    avgOrderValue: number;
+  } | null = null;
+  dealerStatCards: { label: string; value: string | number; bg: string; color: string; safeIcon: SafeHtml }[] = [];
+  dealerCredit: { creditLimit: number; outstanding: number; available: number; utilization: number } | null = null;
   dealerInvoices: any[] = [];
   dealerPayments: any[] = [];
   purchaseLimitHistory: any[] = [];
@@ -503,17 +512,17 @@ export class AllDealersComponent implements OnInit {
   activeTab = 'overview';
 
   showDeleteModal = false;
-  deletingDealer: any = null;
+  deletingDealer: DealerListItem | null = null;
   deleteReason = '';
   deleting = false;
 
   showSuspendModal = false;
-  suspendingDealer: any = null;
+  suspendingDealer: DealerListItem | null = null;
   suspendReason = '';
   suspending = false;
 
   showCreditModal = false;
-  editingCreditDealer: any = null;
+  editingCreditDealer: DealerListItem | null = null;
   newCreditLimit: number = 0;
   savingCredit = false;
 
@@ -530,9 +539,9 @@ export class AllDealersComponent implements OnInit {
   ];
 
   tableActions: DataTableAction[] = [
-    { key: 'view', label: 'View Profile', variant: 'primary' },
-    { key: 'suspend', label: 'Suspend', variant: 'danger', condition: (row: any) => row.status === 'Active' },
-    { key: 'reactivate', label: 'Reactivate', variant: 'primary', condition: (row: any) => row.status !== 'Active' },
+    { key: 'view',       label: 'View Profile', variant: 'primary' },
+    { key: 'suspend',    label: 'Suspend',      variant: 'danger',   condition: (row: DealerListItem) => row.status === UserStatus.Active },
+    { key: 'reactivate', label: 'Reactivate',   variant: 'primary',  condition: (row: DealerListItem) => row.status !== UserStatus.Active },
   ];
 
   private destroyRef = inject(DestroyRef);
@@ -545,10 +554,10 @@ export class AllDealersComponent implements OnInit {
     this.loading = true;
 
     // Step 1: Get all dealers
-    this.http.get<any[]>(API_ENDPOINTS.admin.dealers()).pipe(
+    this.http.get<DealerListItem[]>(API_ENDPOINTS.admin.dealers()).pipe(
       // Step 2: Use switchMap to chain orders request and prevent race conditions
       switchMap(dealers =>
-        this.http.get<any>(API_ENDPOINTS.orders.base() + '?pageSize=1000').pipe(
+        this.http.get<PagedResponse<OrderSummary>>(`${API_ENDPOINTS.orders.base()}?pageSize=1000`).pipe(
           map(orderResponse => ({ dealers, orderResponse })),
           catchError(() => of({ dealers, orderResponse: null })) // Fallback if orders fail
         )
@@ -566,7 +575,7 @@ export class AllDealersComponent implements OnInit {
           return;
         }
 
-        const allOrders = orderResponse.items || orderResponse || [];
+        const allOrders: OrderSummary[] = orderResponse.items || (orderResponse as unknown as OrderSummary[]) || [];
 
         this.allDealers = dealers.map((d, i) => {
           // Calculate total spent for this specific dealer
@@ -623,7 +632,7 @@ export class AllDealersComponent implements OnInit {
     else if (e.action === 'reactivate') this.reactivateDealer(e.row);
   }
 
-  viewDealer(dealer: any): void {
+  viewDealer(dealer: DealerListItem): void {
     this.viewingDealer = dealer;
     this.dealerOrders = [];
     this.dealerStats = null;
@@ -640,18 +649,20 @@ export class AllDealersComponent implements OnInit {
     this.loadingDetails = true;
 
     // Load orders
-    this.http.get<any>(API_ENDPOINTS.orders.base() + '?pageSize=100').subscribe({
-      next: (response: any) => {
-        const allOrders = response.items || response || [];
+    this.http.get<PagedResponse<OrderSummary>>(API_ENDPOINTS.orders.base() + '?pageSize=100').subscribe({
+      next: (response) => {
+        const allOrders: OrderSummary[] = response.items || (response as unknown as OrderSummary[]) || [];
         const dealerFinancialId = this.getDealerFinancialId(dealer);
-        this.dealerOrders = allOrders.filter((o: any) => o.dealerEmail === dealer.email || o.dealerId === dealerFinancialId);
+        this.dealerOrders = allOrders.filter(o => o.dealerEmail === dealer.email || o.dealerId === dealerFinancialId);
         const stats = {
-          totalOrders: this.dealerOrders.length,
-          totalSpent: this.dealerOrders.reduce((s: number, o: any) => s + (o.totalAmount || 0), 0),
-          pendingOrders: this.dealerOrders.filter((o: any) => !['Delivered', 'Cancelled'].includes(o.status)).length,
-          completedOrders: this.dealerOrders.filter((o: any) => o.status === 'Delivered').length,
-          cancelledOrders: this.dealerOrders.filter((o: any) => o.status === 'Cancelled').length,
-          avgOrderValue: this.dealerOrders.length ? this.dealerOrders.reduce((s: number, o: any) => s + (o.totalAmount || 0), 0) / this.dealerOrders.length : 0
+          totalOrders:      this.dealerOrders.length,
+          totalSpent:       this.dealerOrders.reduce((s, o) => s + (o.totalAmount || 0), 0),
+          pendingOrders:    this.dealerOrders.filter(o => !isTerminalOrder(o.status)).length,
+          completedOrders:  this.dealerOrders.filter(o => o.status === OrderStatus.Delivered).length,
+          cancelledOrders:  this.dealerOrders.filter(o => o.status === OrderStatus.Cancelled).length,
+          avgOrderValue:    this.dealerOrders.length
+            ? this.dealerOrders.reduce((s, o) => s + (o.totalAmount || 0), 0) / this.dealerOrders.length
+            : 0
         };
         this.dealerStats = stats;
         this.dealerStatCards = [

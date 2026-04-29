@@ -48,6 +48,17 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         // Ignore domain events — not persisted
         builder.Ignore(u => u.DomainEvents);
 
+        // Soft-delete columns
+        builder.Property(u => u.IsDeleted)
+            .IsRequired()
+            .HasDefaultValue(false);
+        builder.Property(u => u.DeletedAt);
+
+        // Global query filter: automatically excludes soft-deleted users from all queries
+        // Note: GetByEmailForAuthAsync uses IgnoreQueryFilters() explicitly for the login check
+        // so that we can still return a meaningful error ("account deleted") instead of 404.
+        builder.HasQueryFilter(u => !u.IsDeleted);
+
         // One-to-one with DealerProfile
         builder.HasOne(u => u.DealerProfile)
             .WithOne(d => d.User)

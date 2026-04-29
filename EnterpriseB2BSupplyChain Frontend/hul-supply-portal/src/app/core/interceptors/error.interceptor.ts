@@ -50,9 +50,20 @@ export class ErrorInterceptor implements HttpInterceptor {
           const message = this.extractErrorMessage(error) || 'Conflict detected.';
           this.toast.warning(message);
         } else if (error.status === 400) {
-          const errors = error.error?.errors ?? error.error?.error?.details;
-          if (errors && Array.isArray(errors)) {
-            const messages = errors.map((e: any) => e.errorMessage || e).join('. ');
+          // ── VALIDATION_FAILED: structured field-level errors from FluentValidation ──
+          const errorCode: string | undefined = error.error?.error?.code ?? error.error?.errorCode;
+          const validationErrors: { propertyName?: string; errorMessage: string }[] | undefined =
+            error.error?.errors ?? error.error?.error?.details;
+
+          if (errorCode === 'VALIDATION_FAILED' && validationErrors && Array.isArray(validationErrors)) {
+            // Format as "Field: message" for each validation failure
+            const messages = validationErrors
+              .map(e => e.propertyName ? `${e.propertyName}: ${e.errorMessage}` : e.errorMessage)
+              .join('\n');
+            this.toast.error(messages);
+          } else if (validationErrors && Array.isArray(validationErrors)) {
+            // Fallback: errors array without explicit VALIDATION_FAILED code
+            const messages = validationErrors.map(e => e.errorMessage || e).join('. ');
             this.toast.error(messages);
           } else {
             const message = this.extractErrorMessage(error);

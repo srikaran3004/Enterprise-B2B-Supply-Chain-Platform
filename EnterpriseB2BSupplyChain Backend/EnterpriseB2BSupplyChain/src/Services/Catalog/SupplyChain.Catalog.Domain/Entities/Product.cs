@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -23,6 +23,10 @@ public class Product
     public ProductStatus Status { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
+
+    // Soft delete — never physically removed, just hidden via global EF query filter
+    public bool IsDeleted { get; private set; }
+    public DateTime? DeletedAt { get; private set; }
 
     // Computed — not stored in DB
     public int AvailableStock => TotalStock - ReservedStock;
@@ -148,6 +152,19 @@ public class Product
     public void Activate()
     {
         Status = ProductStatus.Active;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Soft-delete: marks this product as deleted without physically removing the row.
+    /// The global EF query filter (<c>!IsDeleted</c>) will exclude it from all future queries.
+    /// </summary>
+    public void SoftDelete()
+    {
+        IsDeleted = true;
+        DeletedAt = DateTime.UtcNow;
+        // Also deactivate so any residual non-filtered queries show correct status.
+        Status    = ProductStatus.Inactive;
         UpdatedAt = DateTime.UtcNow;
     }
 }

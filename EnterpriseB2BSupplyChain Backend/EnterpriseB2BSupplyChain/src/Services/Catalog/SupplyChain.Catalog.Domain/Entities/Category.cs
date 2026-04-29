@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -14,6 +14,10 @@ public class Category
     public Guid? ParentCategoryId { get; private set; }
     public bool IsActive { get; private set; }
     public DateTime CreatedAt { get; private set; }
+
+    // Soft delete
+    public bool IsDeleted { get; private set; }
+    public DateTime? DeletedAt { get; private set; }
 
     // Self-referencing navigation
     public Category? ParentCategory { get; private set; }
@@ -52,4 +56,15 @@ public class Category
 
     /// <summary>Detach this category from its parent (prevents FK constraint on parent delete).</summary>
     public void ClearParent() => ParentCategoryId = null;
+
+    /// <summary>
+    /// Soft-delete: marks this category as deleted without physically removing the row.
+    /// The global EF query filter will exclude it from all future queries.
+    /// </summary>
+    public void SoftDelete()
+    {
+        IsDeleted  = true;
+        DeletedAt  = DateTime.UtcNow;
+        IsActive   = false;
+    }
 }

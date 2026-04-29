@@ -44,8 +44,11 @@ public class DeleteCategoryCommandHandler : IRequestHandler<DeleteCategoryComman
         if (subCategories.Any())
             await _categoryRepository.SaveChangesAsync(ct);
 
-        _categoryRepository.Delete(category);
+        // Soft delete: mark as deleted instead of physically removing the row.
+        // The global EF query filter (!IsDeleted) will exclude it from all future queries.
+        category.SoftDelete();
         await _categoryRepository.SaveChangesAsync(ct);
+
         await _cache.RemoveAsync("catalog:categories:v2:all", ct);
         await _cache.RemoveAsync("catalog:categories:all", ct);
     }

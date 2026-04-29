@@ -34,6 +34,17 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Ignore(p => p.AvailableStock);
         builder.Ignore(p => p.IsInStock);
 
+        // Soft-delete columns
+        builder.Property(p => p.IsDeleted)
+            .IsRequired()
+            .HasDefaultValue(false);
+        builder.Property(p => p.DeletedAt);
+
+        // Global query filter: automatically excludes soft-deleted rows from every query
+        builder.HasQueryFilter(p => !p.IsDeleted);
+
+        builder.HasIndex(p => p.IsDeleted);  // Index for efficient filter evaluation
+
         builder.HasOne(p => p.Category)
             .WithMany(c => c.Products)
             .HasForeignKey(p => p.CategoryId)

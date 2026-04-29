@@ -4,6 +4,8 @@ import { Router } from '@angular/router';
 import { API_ENDPOINTS } from '../../../../shared/constants/api-endpoints';
 import { ToastService } from '../../../../shared/ui/toast/toast.service';
 import { DataTableColumn, DataTableAction } from '../../../../shared/ui/data-table/hul-data-table.component';
+import { OrderSummary, PagedResponse } from '../../../../core/models/api-models';
+import { OrderStatus } from '../../../../core/models/status.enums';
 
 @Component({
   selector: 'app-admin-orders', standalone: false,
@@ -75,21 +77,26 @@ import { DataTableColumn, DataTableAction } from '../../../../shared/ui/data-tab
   `]
 })
 export class AdminOrdersComponent implements OnInit {
-  loading = true; orders: any[] = []; filtered: any[] = []; pagedOrders: any[] = []; searchTerm = ''; activeTab = 'All';
+  loading = true;
+  orders: OrderSummary[] = [];
+  filtered: OrderSummary[] = [];
+  pagedOrders: OrderSummary[] = [];
+  searchTerm = '';
+  activeTab = 'All';
   dateFrom = '';
   dateTo = '';
   currentPage = 1;
   pageSize = 10;
 
-  readonly tabDefs = [
-    { label: 'All', value: 'All' },
-    { label: 'Placed', value: 'Placed' },
-    { label: 'On Hold', value: 'OnHold' },
-    { label: 'Processing', value: 'Processing' },
-    { label: 'Ready to Ship', value: 'ReadyForDispatch' },
-    { label: 'In Transit', value: 'InTransit' },
-    { label: 'Delivered', value: 'Delivered' },
-    { label: 'Cancelled', value: 'Cancelled' },
+  readonly tabDefs: { label: string; value: string }[] = [
+    { label: 'All',               value: 'All' },
+    { label: 'Placed',            value: OrderStatus.Placed },
+    { label: 'On Hold',           value: OrderStatus.OnHold },
+    { label: 'Processing',        value: OrderStatus.Processing },
+    { label: 'Ready to Ship',     value: OrderStatus.ReadyForDispatch },
+    { label: 'In Transit',        value: OrderStatus.InTransit },
+    { label: 'Delivered',         value: OrderStatus.Delivered },
+    { label: 'Cancelled',         value: OrderStatus.Cancelled },
   ];
 
   tabsWithCounts: { label: string; value: string; count?: number }[] = [];
@@ -111,13 +118,13 @@ export class AdminOrdersComponent implements OnInit {
       key: 'approve',
       label: 'Approve',
       variant: 'primary',
-      condition: (row: any) => row?.status === 'OnHold' || row?.status === 'Placed'
+      condition: (row: OrderSummary) => row?.status === OrderStatus.OnHold || row?.status === OrderStatus.Placed
     },
     {
       key: 'ready',
       label: 'Ready for Dispatch',
       variant: 'primary',
-      condition: (row: any) => row?.status === 'Processing'
+      condition: (row: OrderSummary) => row?.status === OrderStatus.Processing
     }
   ];
 
@@ -127,9 +134,9 @@ export class AdminOrdersComponent implements OnInit {
 
   load(): void {
     this.loading = true;
-    this.http.get<any>(API_ENDPOINTS.orders.base() + '?pageSize=200').subscribe({
+    this.http.get<PagedResponse<OrderSummary>>(API_ENDPOINTS.orders.base() + '?pageSize=200').subscribe({
       next: response => {
-        this.orders = response.items || response || [];
+        this.orders = response.items || (response as unknown as OrderSummary[]) || [];
         this.buildTabCounts();
         this.buildSummaryStats();
         this.applyFilters();
@@ -149,16 +156,16 @@ export class AdminOrdersComponent implements OnInit {
   }
 
   buildSummaryStats(): void {
-    const total = this.orders.reduce((s, o) => s + (o.totalAmount || 0), 0);
-    const onHold = this.orders.filter(o => o.status === 'OnHold').length;
-    const delivered = this.orders.filter(o => o.status === 'Delivered').length;
-    const inTransit = this.orders.filter(o => o.status === 'InTransit').length;
+    const total   = this.orders.reduce((s, o) => s + (o.totalAmount || 0), 0);
+    const onHold  = this.orders.filter(o => o.status === OrderStatus.OnHold).length;
+    const delivered = this.orders.filter(o => o.status === OrderStatus.Delivered).length;
+    const inTransit = this.orders.filter(o => o.status === OrderStatus.InTransit).length;
 
     this.summaryStats = [
       { label: 'Total Orders', value: String(this.orders.length) },
-      { label: 'Total Value', value: '₹' + total.toLocaleString('en-IN') },
-      { label: 'On Hold', value: String(onHold), color: onHold > 0 ? 'var(--hul-warning)' : undefined },
-      { label: 'In Transit', value: String(inTransit), color: inTransit > 0 ? 'var(--hul-primary)' : undefined },
+      { label: 'Total Value',  value: '₹' + total.toLocaleString('en-IN') },
+      { label: 'On Hold',   value: String(onHold),   color: onHold  > 0 ? 'var(--hul-warning)' : undefined },
+      { label: 'In Transit',value: String(inTransit), color: inTransit > 0 ? 'var(--hul-primary)' : undefined },
       { label: 'Delivered', value: String(delivered), color: 'var(--hul-success)' },
     ];
   }
@@ -207,7 +214,7 @@ export class AdminOrdersComponent implements OnInit {
     this.pagedOrders = this.filtered.slice(start, start + this.pageSize);
   }
 
-  onAction(e: any): void {
+  onAction(e: { action: string; row: OrderSummary }): void {
     if (e.action === 'view') {
       this.router.navigate(['/admin/orders', e.row.orderId]);
       return;

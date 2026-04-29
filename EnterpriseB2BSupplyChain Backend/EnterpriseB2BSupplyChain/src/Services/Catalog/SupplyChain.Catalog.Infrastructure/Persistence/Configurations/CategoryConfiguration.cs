@@ -28,6 +28,15 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
             .HasForeignKey(c => c.ParentCategoryId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // Soft-delete columns
+        builder.Property(c => c.IsDeleted)
+            .IsRequired()
+            .HasDefaultValue(false);
+        builder.Property(c => c.DeletedAt);
+
+        // Global query filter: automatically excludes soft-deleted rows
+        builder.HasQueryFilter(c => !c.IsDeleted);
+
         builder.ToTable("Categories");
     }
 }

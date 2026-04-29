@@ -17,6 +17,10 @@ public class User
     public DateTime? UpdatedAt { get; private set; }
     public string? ProfilePictureUrl { get; private set; }
 
+    // Soft delete
+    public bool IsDeleted { get; private set; }
+    public DateTime? DeletedAt { get; private set; }
+
     // Navigation property
     public DealerProfile? DealerProfile { get; private set; }
 
@@ -134,4 +138,17 @@ public class User
     }
 
     public void ClearDomainEvents() => _domainEvents.Clear();
+
+    /// <summary>
+    /// Soft-delete: marks this user as deleted without physically removing the row.
+    /// Suspended status is applied so any non-filtered auth queries block login.
+    /// The global EF query filter will exclude the user from all standard lookups.
+    /// </summary>
+    public void SoftDelete()
+    {
+        IsDeleted = true;
+        DeletedAt = DateTime.UtcNow;
+        Status    = UserStatus.Suspended; // Belt-and-suspenders: block auth even if filter is bypassed
+        UpdatedAt = DateTime.UtcNow;
+    }
 }

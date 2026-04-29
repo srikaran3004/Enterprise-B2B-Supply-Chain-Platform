@@ -19,9 +19,12 @@ public class HardDeleteProductCommandHandler : IRequestHandler<HardDeleteProduct
         var product = await _productRepository.GetByIdAsync(command.ProductId, ct)
             ?? throw new KeyNotFoundException($"Product {command.ProductId} not found.");
 
-        await _productRepository.RemoveAsync(product, ct);
+        // Soft delete: mark as deleted instead of physically removing the row.
+        // The global EF query filter (!IsDeleted) will exclude it from all future queries.
+        product.SoftDelete();
         await _productRepository.SaveChangesAsync(ct);
 
+        // Invalidate all product cache entries
         await _cache.RemoveAsync($"catalog:product:{command.ProductId}", ct);
         await _cache.RemoveByPatternAsync("catalog:products:*", ct);
         await _cache.RemoveByPatternAsync("catalog:products:v2:*", ct);
