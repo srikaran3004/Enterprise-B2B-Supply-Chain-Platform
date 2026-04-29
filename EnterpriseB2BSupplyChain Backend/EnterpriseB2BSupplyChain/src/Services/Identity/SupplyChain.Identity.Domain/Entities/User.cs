@@ -63,7 +63,8 @@ public class User
         string email,
         string passwordHash,
         string fullName,
-        UserRole role)
+        UserRole role,
+        string? phoneNumber = null)
     {
         var allowedRoles = new[] { UserRole.SuperAdmin, UserRole.Admin, UserRole.DeliveryAgent };
         if (!allowedRoles.Contains(role))
@@ -75,6 +76,7 @@ public class User
             Email = email.ToLowerInvariant().Trim(),
             PasswordHash = passwordHash,
             FullName = fullName.Trim(),
+            PhoneNumber = string.IsNullOrWhiteSpace(phoneNumber) ? null : phoneNumber.Trim(),
             Role = role,
             Status = UserStatus.Active,   // Staff are active immediately
             CreatedAt = DateTime.UtcNow

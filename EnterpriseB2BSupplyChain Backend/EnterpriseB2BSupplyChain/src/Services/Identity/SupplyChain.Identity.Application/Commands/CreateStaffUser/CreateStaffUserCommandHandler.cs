@@ -33,7 +33,7 @@ public class CreateStaffUserCommandHandler : IRequestHandler<CreateStaffUserComm
             throw new InvalidOperationException("Only staff roles can be created from this endpoint.");
 
         var passwordHash = _passwordHasher.Hash(command.Password);
-        var user = User.CreateStaff(command.Email, passwordHash, command.FullName, role);
+        var user = User.CreateStaff(command.Email, passwordHash, command.FullName, role, command.PhoneNumber);
 
         await _userRepository.AddAsync(user, ct);
         await _userRepository.SaveChangesAsync(ct);

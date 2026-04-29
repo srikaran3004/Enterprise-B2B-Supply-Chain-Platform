@@ -78,14 +78,14 @@ import { environment } from '../../../../../environments/environment';
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
             Clear All
           </button>
-          <span class="filters-summary">{{ products.length }} of {{ allProducts.length }} products shown</span>
+          <span class="filters-summary">{{ filteredProducts.length }} of {{ allProducts.length }} products shown</span>
         </div>
       </div>
 
-      <hul-data-table [columns]="columns" [data]="products" [loading]="loading" [totalCount]="products.length"
-        [currentPage]="1" [pageSize]="50" searchPlaceholder="Search by name, SKU, or brand..."
+      <hul-data-table [columns]="columns" [data]="pagedProducts" [loading]="loading" [totalCount]="filteredProducts.length"
+        [currentPage]="currentPage" [pageSize]="pageSize" searchPlaceholder="Search by name, SKU, or brand..."
         emptyMessage="No products found" [actions]="tableActions"
-        (searchChange)="onSearch($event)" (rowAction)="onAction($event)">
+        (searchChange)="onSearch($event)" (rowAction)="onAction($event)" (pageChange)="onPageChange($event)">
       </hul-data-table>
 
       <!-- Add/Edit Product Modal -->
@@ -226,7 +226,7 @@ import { environment } from '../../../../../environments/environment';
   `]
 })
 export class AdminProductsComponent implements OnInit {
-  loading = true; products: any[] = []; allProducts: any[] = []; categories: any[] = [];
+  loading = true; filteredProducts: any[] = []; pagedProducts: any[] = []; allProducts: any[] = []; categories: any[] = [];
   groupedFilterCategories: any[] = [];
   private categoryToGroupId: Record<string, string> = {};
   private groupedCategoryNameById: Record<string, string> = {};
@@ -268,6 +268,8 @@ export class AdminProductsComponent implements OnInit {
   ];
   availableBrands: string[] = [];
   searchTerm = '';
+  currentPage = 1;
+  pageSize = 10;
 
   get activeFilterCount(): number {
     let c = 0;
@@ -492,13 +494,27 @@ export class AdminProductsComponent implements OnInit {
     // Brand
     if (this.filters.brands.length > 0) result = result.filter(p => this.filters.brands.includes(p.brand));
 
-    this.products = result;
+    this.filteredProducts = result;
+    this.currentPage = 1;
+    this.updatePagedProducts();
   }
 
   clearFilters(): void {
     this.filters = { status: 'All', priceMin: null, priceMax: null, stock: 'all', categoryId: '', brands: [] };
     this.searchTerm = '';
     this.applyFilters();
+  }
+
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    this.updatePagedProducts();
+  }
+
+  private updatePagedProducts(): void {
+    const totalPages = Math.max(1, Math.ceil(this.filteredProducts.length / this.pageSize));
+    this.currentPage = Math.min(Math.max(this.currentPage, 1), totalPages);
+    const start = (this.currentPage - 1) * this.pageSize;
+    this.pagedProducts = this.filteredProducts.slice(start, start + this.pageSize);
   }
 
   // ========== CRUD ==========

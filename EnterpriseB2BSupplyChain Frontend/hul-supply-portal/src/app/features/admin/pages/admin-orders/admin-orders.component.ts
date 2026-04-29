@@ -25,11 +25,22 @@ import { DataTableColumn, DataTableAction } from '../../../../shared/ui/data-tab
       </div>
 
       <hul-tabs [tabs]="tabsWithCounts" [activeTab]="activeTab" (tabChange)="onTabChange($event)"></hul-tabs>
+      <div class="order-filters">
+        <div class="order-filters__group">
+          <label>From</label>
+          <input type="date" [(ngModel)]="dateFrom" (change)="onDateFilterChange()" class="order-filters__input" />
+        </div>
+        <div class="order-filters__group">
+          <label>To</label>
+          <input type="date" [(ngModel)]="dateTo" (change)="onDateFilterChange()" class="order-filters__input" />
+        </div>
+        <button class="order-filters__clear" (click)="clearDateFilters()" [disabled]="!dateFrom && !dateTo">Clear Dates</button>
+      </div>
       <div style="margin-top:20px">
-        <hul-data-table [columns]="columns" [data]="filtered" [loading]="loading" [totalCount]="filtered.length"
-          [currentPage]="1" [pageSize]="50" searchPlaceholder="Search by order number or dealer..."
+        <hul-data-table [columns]="columns" [data]="pagedOrders" [loading]="loading" [totalCount]="filtered.length"
+          [currentPage]="currentPage" [pageSize]="pageSize" searchPlaceholder="Search by order number or dealer..."
           emptyMessage="No orders found" [actions]="tableActions"
-          (searchChange)="onSearch($event)" (rowAction)="onAction($event)">
+          (searchChange)="onSearch($event)" (rowAction)="onAction($event)" (pageChange)="onPageChange($event)">
         </hul-data-table>
       </div>
     </div>
@@ -54,10 +65,21 @@ import { DataTableColumn, DataTableAction } from '../../../../shared/ui/data-tab
     }
     .btn-export:hover { border-color: var(--border-strong); color: var(--text-primary); background: var(--bg-muted); }
 
+    .order-filters { margin-top: 14px; display: flex; align-items: end; gap: 12px; flex-wrap: wrap; }
+    .order-filters__group { display: flex; flex-direction: column; gap: 6px; }
+    .order-filters__group label { font-size: 12px; color: var(--text-tertiary); font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
+    .order-filters__input { min-width: 160px; padding: 8px 10px; border: 1px solid var(--border-default); border-radius: var(--radius-md); background: var(--bg-card); color: var(--text-primary); font-size: 13px; font-family: var(--font-body); }
+    .order-filters__input:focus { outline: none; border-color: var(--border-focus); }
+    .order-filters__clear { padding: 8px 12px; border: 1px solid var(--border-default); border-radius: var(--radius-md); background: var(--bg-card); color: var(--text-secondary); cursor: pointer; font-size: 12px; font-weight: 600; }
+    .order-filters__clear:disabled { opacity: .5; cursor: not-allowed; }
   `]
 })
 export class AdminOrdersComponent implements OnInit {
-  loading = true; orders: any[] = []; filtered: any[] = []; searchTerm = ''; activeTab = 'All';
+  loading = true; orders: any[] = []; filtered: any[] = []; pagedOrders: any[] = []; searchTerm = ''; activeTab = 'All';
+  dateFrom = '';
+  dateTo = '';
+  currentPage = 1;
+  pageSize = 10;
 
   readonly tabDefs = [
     { label: 'All', value: 'All' },
@@ -143,6 +165,13 @@ export class AdminOrdersComponent implements OnInit {
 
   onTabChange(tab: string): void { this.activeTab = tab; this.applyFilters(); }
   onSearch(term: string): void { this.searchTerm = term; this.applyFilters(); }
+  onPageChange(page: number): void { this.currentPage = page; this.updatePagedOrders(); }
+  onDateFilterChange(): void { this.applyFilters(); }
+  clearDateFilters(): void {
+    this.dateFrom = '';
+    this.dateTo = '';
+    this.applyFilters();
+  }
 
   applyFilters(): void {
     let r = [...this.orders];
@@ -151,7 +180,31 @@ export class AdminOrdersComponent implements OnInit {
       const s = this.searchTerm.toLowerCase();
       r = r.filter(o => o.orderNumber?.toLowerCase().includes(s) || o.dealerName?.toLowerCase().includes(s));
     }
+
+    const fromDate = this.dateFrom ? new Date(`${this.dateFrom}T00:00:00`) : null;
+    const toDate = this.dateTo ? new Date(`${this.dateTo}T23:59:59.999`) : null;
+    if (fromDate || toDate) {
+      r = r.filter(o => {
+        const raw = o.placedAt || o.createdAt || o.updatedAt;
+        if (!raw) return false;
+        const dt = new Date(raw);
+        if (Number.isNaN(dt.getTime())) return false;
+        if (fromDate && dt < fromDate) return false;
+        if (toDate && dt > toDate) return false;
+        return true;
+      });
+    }
+
     this.filtered = r;
+    this.currentPage = 1;
+    this.updatePagedOrders();
+  }
+
+  private updatePagedOrders(): void {
+    const totalPages = Math.max(1, Math.ceil(this.filtered.length / this.pageSize));
+    this.currentPage = Math.min(Math.max(this.currentPage, 1), totalPages);
+    const start = (this.currentPage - 1) * this.pageSize;
+    this.pagedOrders = this.filtered.slice(start, start + this.pageSize);
   }
 
   onAction(e: any): void {
