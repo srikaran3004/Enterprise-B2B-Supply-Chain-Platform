@@ -1,5 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, DestroyRef, inject } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { switchMap, catchError, map } from 'rxjs/operators';
+import { of } from 'rxjs';
 import { ZoneHttpService } from '../../../../core/services/zone-http.service';
 import { API_ENDPOINTS } from '../../../../shared/constants/api-endpoints';
 import { ToastService } from '../../../../shared/ui/toast/toast.service';
@@ -532,46 +535,57 @@ export class AllDealersComponent implements OnInit {
     { key: 'reactivate', label: 'Reactivate', variant: 'primary', condition: (row: any) => row.status !== 'Active' },
   ];
 
+  private destroyRef = inject(DestroyRef);
+
   constructor(private http: ZoneHttpService, private toast: ToastService, private sanitizer: DomSanitizer) { }
 
   ngOnInit(): void { this.load(); }
 
   load(): void {
     this.loading = true;
-    // Step 1: Get all dealers
-    this.http.get<any[]>(API_ENDPOINTS.admin.dealers()).subscribe({
-      next: dealers => {
-        // Step 2: Get all orders to calculate spending
-        this.http.get<any>(API_ENDPOINTS.orders.base() + '?pageSize=1000').subscribe({
-          next: (orderResponse: any) => {
-            const allOrders = orderResponse.items || orderResponse || [];
-            
-            this.allDealers = dealers.map((d, i) => {
-              // Calculate total spent for this specific dealer
-              const dealerOrders = allOrders.filter((o: any) => 
-                o.dealerEmail === d.email || o.dealerId === d.userId || o.dealerId === d.dealerProfileId
-              );
-              const totalSpent = dealerOrders.reduce((sum: number, o: any) => sum + (o.totalAmount || 0), 0);
-              
-              return { 
-                ...d, 
-                serial: i + 1,
-                totalSpent: totalSpent
-              };
-            });
 
-            const states = new Set(dealers.map(d => d.state).filter(Boolean));
-            this.availableStates = Array.from(states).sort();
-            this.applyFilters();
-            this.loading = false;
-          },
-          error: () => {
-            // Fallback if orders fail
-            this.allDealers = dealers.map((d, i) => ({ ...d, serial: i + 1, totalSpent: 0 }));
-            this.applyFilters();
-            this.loading = false;
-          }
+    // Step 1: Get all dealers
+    this.http.get<any[]>(API_ENDPOINTS.admin.dealers()).pipe(
+      // Step 2: Use switchMap to chain orders request and prevent race conditions
+      switchMap(dealers =>
+        this.http.get<any>(API_ENDPOINTS.orders.base() + '?pageSize=1000').pipe(
+          map(orderResponse => ({ dealers, orderResponse })),
+          catchError(() => of({ dealers, orderResponse: null })) // Fallback if orders fail
+        )
+      ),
+      takeUntilDestroyed(this.destroyRef) // Prevents memory leaks if component is destroyed
+    ).subscribe({
+      next: ({ dealers, orderResponse }) => {
+        if (!orderResponse) {
+          // Fallback logic
+          this.allDealers = dealers.map((d, i) => ({ ...d, serial: i + 1, totalSpent: 0 }));
+          const fallbackStates = new Set(dealers.map(d => d.state).filter(Boolean));
+          this.availableStates = Array.from(fallbackStates).sort();
+          this.applyFilters();
+          this.loading = false;
+          return;
+        }
+
+        const allOrders = orderResponse.items || orderResponse || [];
+
+        this.allDealers = dealers.map((d, i) => {
+          // Calculate total spent for this specific dealer
+          const dealerOrders = allOrders.filter((o: any) =>
+            o.dealerEmail === d.email || o.dealerId === d.userId || o.dealerId === d.dealerProfileId
+          );
+          const totalSpent = dealerOrders.reduce((sum: number, o: any) => sum + (o.totalAmount || 0), 0);
+
+          return {
+            ...d,
+            serial: i + 1,
+            totalSpent: totalSpent
+          };
         });
+
+        const states = new Set(dealers.map(d => d.state).filter(Boolean));
+        this.availableStates = Array.from(states).sort();
+        this.applyFilters();
+        this.loading = false;
       },
       error: () => { this.loading = false; }
     });
