@@ -13,6 +13,7 @@ public class Order
     public OrderStatus Status       { get; private set; }
     public decimal     TotalAmount  { get; private set; }
     public string      PaymentMode  { get; private set; } = string.Empty;
+    public PaymentStatus PaymentStatus { get; private set; }
     public string?     Notes        { get; private set; }
     public string?     CancellationReason { get; private set; }
     public DateTime    PlacedAt     { get; private set; }
@@ -50,7 +51,8 @@ public class Order
         string?               shippingState = null,
         string?               shippingPinCode = null,
         string?               dealerName = null,
-        string?               dealerEmail = null)
+        string?               dealerEmail = null,
+        OrderStatus           initialStatus = OrderStatus.Placed)
     {
         if (!lines.Any())
             throw new DomainException("EMPTY_ORDER", "Order must have at least one line item.");
@@ -64,7 +66,8 @@ public class Order
             DealerId    = dealerId,
             DealerName  = dealerName,
             DealerEmail = dealerEmail,
-            Status      = OrderStatus.Placed,
+            Status      = initialStatus,
+            PaymentStatus = PaymentStatus.Pending,
             TotalAmount = totalAmount,
             ShippingFee = shippingFee,
             PaymentMode = paymentMode,
@@ -81,7 +84,7 @@ public class Order
             order.Lines.Add(line);
 
         order.StatusHistory.Add(OrderStatusHistory.Create(
-            order.OrderId, "None", OrderStatus.Placed.ToString(), dealerId, "Order placed by dealer"));
+            order.OrderId, "None", initialStatus.ToString(), dealerId, "Order placed by dealer"));
 
         return order;
     }
