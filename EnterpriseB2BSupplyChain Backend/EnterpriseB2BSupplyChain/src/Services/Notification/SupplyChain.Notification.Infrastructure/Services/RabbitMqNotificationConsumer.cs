@@ -244,6 +244,11 @@ public class RabbitMqNotificationConsumer : BackgroundService
                      $"Your order {orderNumber} has been placed successfully.",
                      "Order"),
 
+                "QuotaExceededReview" =>
+                    ($"Order {orderNumber} Under Review",
+                     $"Payment Verified! Your order {orderNumber} is currently Under Review as it exceeds your Monthly Purchase Limit.",
+                     "Order"),
+
                 "AdminApprovalRequired" =>
                     ($"Order {orderNumber} On Hold",
                      $"Order {orderNumber} exceeded monthly purchase limit and is waiting for admin approval.",

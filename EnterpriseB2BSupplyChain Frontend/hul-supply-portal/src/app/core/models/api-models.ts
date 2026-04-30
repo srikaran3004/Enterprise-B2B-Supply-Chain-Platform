@@ -72,6 +72,7 @@ export interface OrderSummary {
   status: string;
   totalAmount: number;
   paymentMode: string;
+  paymentStatus?: string;
   totalItems: number;
   placedAt: string;         // ISO date string
   updatedAt: string | null;
@@ -94,6 +95,7 @@ export interface OrderDetail {
   status: string;
   totalAmount: number;
   paymentMode: string;
+  paymentStatus?: string;
   notes: string | null;
   placedAt: string;
   updatedAt: string | null;

@@ -14,17 +14,20 @@ public class ConfirmRazorpayPaymentCommandHandler : IRequestHandler<ConfirmRazor
     private readonly IConfiguration _configuration;
     private readonly IPaymentRecordRepository _paymentRecordRepository;
     private readonly IOutboxRepository _outboxRepository;
+    private readonly ICreditAccountRepository _creditAccountRepository;
     private readonly ILogger<ConfirmRazorpayPaymentCommandHandler> _logger;
 
     public ConfirmRazorpayPaymentCommandHandler(
         IConfiguration configuration,
         IPaymentRecordRepository paymentRecordRepository,
         IOutboxRepository outboxRepository,
+        ICreditAccountRepository creditAccountRepository,
         ILogger<ConfirmRazorpayPaymentCommandHandler> logger)
     {
         _configuration = configuration;
         _paymentRecordRepository = paymentRecordRepository;
         _outboxRepository = outboxRepository;
+        _creditAccountRepository = creditAccountRepository;
         _logger = logger;
     }
 
@@ -66,6 +69,16 @@ public class ConfirmRazorpayPaymentCommandHandler : IRequestHandler<ConfirmRazor
                 }
 
                 paymentRecord.MarkPaid(command.RazorpayPaymentId);
+
+                // Ensure the DealerCreditAccount is updated with the AddOutstanding amount
+                var account = await _creditAccountRepository.GetByDealerIdAsync(command.DealerId.Value, ct);
+                if (account is null)
+                {
+                    account = DealerCreditAccount.Create(command.DealerId.Value);
+                    await _creditAccountRepository.AddAsync(account, ct);
+                }
+                account.EnsureMonthlyReset(DateTime.UtcNow);
+                account.AddOutstanding(command.Amount.Value);
 
                 var eventPayload = JsonSerializer.Serialize(new
                 {

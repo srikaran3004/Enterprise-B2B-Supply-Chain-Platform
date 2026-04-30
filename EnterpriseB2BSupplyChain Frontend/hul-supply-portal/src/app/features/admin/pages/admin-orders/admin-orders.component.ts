@@ -39,10 +39,10 @@ import { OrderStatus } from '../../../../core/models/status.enums';
         <button class="order-filters__clear" (click)="clearDateFilters()" [disabled]="!dateFrom && !dateTo">Clear Dates</button>
       </div>
       <div style="margin-top:20px">
-        <hul-data-table [columns]="columns" [data]="pagedOrders" [loading]="loading" [totalCount]="filtered.length"
-          [currentPage]="currentPage" [pageSize]="pageSize" searchPlaceholder="Search by order number or dealer..."
-          emptyMessage="No orders found" [actions]="tableActions"
-          (searchChange)="onSearch($event)" (rowAction)="onAction($event)" (pageChange)="onPageChange($event)">
+        <hul-data-table [columns]="tableColumns" [data]="pagedOrders" [loading]="loading" [totalCount]="filtered.length"
+           [currentPage]="currentPage" [pageSize]="pageSize" searchPlaceholder="Search by order number or dealer..."
+           emptyMessage="No orders found" [actions]="tableActions"
+           (searchChange)="onSearch($event)" (rowAction)="onAction($event)" (pageChange)="onPageChange($event)">
         </hul-data-table>
       </div>
     </div>
@@ -90,7 +90,7 @@ export class AdminOrdersComponent implements OnInit {
 
   readonly tabDefs: { label: string; value: string }[] = [
     { label: 'All',               value: 'All' },
-    { label: 'Pending Payment',   value: OrderStatus.PaymentPending },
+    { label: 'Incomplete Payments', value: OrderStatus.PaymentPending },
     { label: 'Placed',            value: OrderStatus.Placed },
     { label: 'On Hold',           value: OrderStatus.OnHold },
     { label: 'Processing',        value: OrderStatus.Processing },
@@ -104,22 +104,31 @@ export class AdminOrdersComponent implements OnInit {
 
   summaryStats: { label: string; value: string; color?: string }[] = [];
 
-  columns: DataTableColumn[] = [
-    { key: 'orderNumber', label: 'Order #', type: 'text', sortable: true },
-    { key: 'dealerName', label: 'Dealer', type: 'text' },
-    { key: 'totalAmount', label: 'Total', type: 'currency-inr', sortable: true },
-    { key: 'paymentMode', label: 'Payment', type: 'badge', badgeMap: { 'Credit': 'info', 'COD': 'warning', 'Prepaid': 'success' } },
-    { key: 'status', label: 'Status', type: 'badge', badgeMap: { 'PaymentPending': 'warning', 'Placed': 'info', 'OnHold': 'warning', 'Processing': 'primary', 'ReadyForDispatch': 'success', 'InTransit': 'info', 'Delivered': 'success', 'Cancelled': 'danger' } },
-    { key: 'placedAt', label: 'Date', type: 'date', sortable: true },
-    { key: 'actions', label: 'Actions', type: 'actions-menu' },
-  ];
+  get tableColumns(): DataTableColumn[] {
+    const cols: DataTableColumn[] = [
+      { key: 'orderNumber', label: 'Order #', type: 'text', sortable: true },
+      { key: 'dealerName', label: 'Dealer', type: 'text' },
+      { key: 'totalAmount', label: 'Total', type: 'currency-inr', sortable: true },
+      { key: 'paymentMode', label: 'Payment', type: 'badge', badgeMap: { 'Credit': 'info', 'COD': 'warning', 'Prepaid': 'success' } },
+      { key: 'status', label: 'Status', type: 'badge', badgeMap: { 'PaymentPending': 'warning', 'Placed': 'info', 'OnHold': 'warning', 'Processing': 'primary', 'ReadyForDispatch': 'success', 'InTransit': 'info', 'Delivered': 'success', 'Cancelled': 'danger' } }
+    ];
+
+    if (this.activeTab === OrderStatus.OnHold || this.activeTab === 'All') {
+      cols.push({ key: 'paymentStatus', label: 'Pay Status', type: 'badge', badgeMap: { 'Paid': 'success', 'Pending': 'warning', 'Failed': 'danger' } });
+    }
+
+    cols.push({ key: 'placedAt', label: 'Date', type: 'date', sortable: true });
+    cols.push({ key: 'actions', label: 'Actions', type: 'actions-menu' });
+
+    return cols;
+  }
   tableActions: DataTableAction[] = [
     { key: 'view', label: 'View' },
     {
       key: 'approve',
       label: 'Approve',
       variant: 'primary',
-      condition: (row: OrderSummary) => row?.status === OrderStatus.OnHold || row?.status === OrderStatus.Placed
+      condition: (row: OrderSummary) => row?.status === OrderStatus.Placed || (row?.status === OrderStatus.OnHold && row?.paymentStatus === 'Paid')
     },
     {
       key: 'ready',

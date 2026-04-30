@@ -86,9 +86,9 @@ public static class NotificationSeeder
 
         EmailTemplate.Create(
             "OrderPlaced",
-            "Order Confirmation - {{ order_number }}",
+            "Payment Verified & Order Confirmed - {{ order_number }}",
             HulEmailLayout.Wrap(
-                title: "Order Confirmed",
+                title: "Payment Verified & Order Confirmed",
                 preheader: "Your order {{ order_number }} has been placed successfully.",
                 bodyHtml:
                     HulEmailLayout.Greeting("{{ dealer_name }}") +
@@ -116,6 +116,24 @@ public static class NotificationSeeder
                         "<strong>Order Number:</strong> {{ order_number }}<br/><strong>Dealer:</strong> {{ dealer_name }}<br/><strong>Amount:</strong> &#8377; {{ total_amount }}",
                         "warning") +
                     HulEmailLayout.Paragraph("Please review the order in the Admin Portal and approve or reject it.") +
+                    HulEmailLayout.Signoff()
+            )),
+
+        EmailTemplate.Create(
+            "QuotaExceededReview",
+            "Order Under Review - {{ order_number }}",
+            HulEmailLayout.Wrap(
+                title: "Payment Verified! Order Under Review",
+                preheader: "Your order {{ order_number }} is under review as it exceeds your limit.",
+                accentColor: HulEmailLayout.Warning,
+                bodyHtml:
+                    HulEmailLayout.Greeting("{{ dealer_name }}") +
+                    HulEmailLayout.Paragraph("Payment Verified! Your order is currently Under Review as it exceeds your Monthly Purchase Limit. Our Admin will update you shortly.") +
+                    HulEmailLayout.InfoBox(
+                        "Order Details",
+                        "<strong>Order Number:</strong> {{ order_number }}<br/><strong>Amount:</strong> &#8377; {{ total_amount }}",
+                        "warning") +
+                    HulEmailLayout.Button("View Order Status", "http://localhost:4200/dealer/orders", HulEmailLayout.Warning) +
                     HulEmailLayout.Signoff()
             )),
 
