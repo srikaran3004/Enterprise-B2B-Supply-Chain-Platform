@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SupplyChain.Payment.Application.Abstractions;
 using SupplyChain.Payment.Domain.Entities;
+using System.Text.Json;
 
 namespace SupplyChain.Payment.Application.Commands.ConfirmRazorpayPayment;
 
@@ -12,15 +13,18 @@ public class ConfirmRazorpayPaymentCommandHandler : IRequestHandler<ConfirmRazor
 {
     private readonly IConfiguration _configuration;
     private readonly IPaymentRecordRepository _paymentRecordRepository;
+    private readonly IOutboxRepository _outboxRepository;
     private readonly ILogger<ConfirmRazorpayPaymentCommandHandler> _logger;
 
     public ConfirmRazorpayPaymentCommandHandler(
         IConfiguration configuration,
         IPaymentRecordRepository paymentRecordRepository,
+        IOutboxRepository outboxRepository,
         ILogger<ConfirmRazorpayPaymentCommandHandler> logger)
     {
         _configuration = configuration;
         _paymentRecordRepository = paymentRecordRepository;
+        _outboxRepository = outboxRepository;
         _logger = logger;
     }
 
@@ -62,6 +66,15 @@ public class ConfirmRazorpayPaymentCommandHandler : IRequestHandler<ConfirmRazor
                 }
 
                 paymentRecord.MarkPaid(command.RazorpayPaymentId);
+
+                var eventPayload = JsonSerializer.Serialize(new
+                {
+                    OrderId = command.OrderId.Value,
+                    DealerId = command.DealerId.Value,
+                    Amount = command.Amount.Value
+                });
+                var outboxMessage = OutboxMessage.Create("PaymentSuccessful", eventPayload);
+                await _outboxRepository.AddAsync(outboxMessage, ct);
 
                 await _paymentRecordRepository.SaveChangesAsync(ct);
             }

@@ -3,6 +3,7 @@ using MediatR;
 using SupplyChain.Order.Application.Abstractions;
 using SupplyChain.Order.Application.Services;
 using SupplyChain.Order.Domain.Entities;
+using SupplyChain.Order.Domain.Enums;
 using SupplyChain.Order.Domain.Exceptions;
 
 namespace SupplyChain.Order.Application.Commands.PlaceOrder;
@@ -74,6 +75,11 @@ public class PlaceOrderCommandHandler : IRequestHandler<PlaceOrderCommand, Place
             quantity:    l.Quantity
         )).ToList();
 
+        var initialStatus = (command.PaymentMode.Equals("Prepaid", StringComparison.OrdinalIgnoreCase) ||
+                             command.PaymentMode.Equals("Razorpay", StringComparison.OrdinalIgnoreCase))
+            ? OrderStatus.PaymentPending
+            : OrderStatus.Placed;
+
         // Create the Order aggregate (TotalAmount = subtotal + shippingFee)
         var order = Domain.Entities.Order.Create(
             orderId:     orderId,
@@ -89,24 +95,28 @@ public class PlaceOrderCommandHandler : IRequestHandler<PlaceOrderCommand, Place
             shippingState: shippingAddress?.State,
             shippingPinCode: shippingAddress?.PinCode,
             dealerName:  command.DealerName,
-            dealerEmail: command.DealerEmail
+            dealerEmail: command.DealerEmail,
+            initialStatus: initialStatus
         );
 
-        // If purchase limit check fails — put order on hold (no inventory committed in this path)
-        if (!creditCheck.Approved)
+        if (order.Status == OrderStatus.Placed)
         {
-            order.PlaceOnHold($"Purchase limit exceeded and waiting for admin approval. Remaining purchase limit: ₹{creditCheck.AvailableLimit:N2}");
-        }
-        else
-        {
-            // Within purchase limit: skip admin approval and move straight to fulfillment.
-            order.AutoApproveForPurchaseLimit();
+            // If purchase limit check fails — put order on hold (no inventory committed in this path)
+            if (!creditCheck.Approved)
+            {
+                order.PlaceOnHold($"Purchase limit exceeded and waiting for admin approval. Remaining purchase limit: ₹{creditCheck.AvailableLimit:N2}");
+            }
+            else
+            {
+                // Within purchase limit: skip admin approval and move straight to fulfillment.
+                order.AutoApproveForPurchaseLimit();
+            }
         }
 
         var creditReserved = false;
         try
         {
-            if (creditCheck.Approved)
+            if (command.PaymentMode.Equals("Credit", StringComparison.OrdinalIgnoreCase) && creditCheck.Approved)
             {
                 creditReserved = await _paymentClient.ReserveCreditAsync(order.OrderId, command.DealerId, totalWithShipping, ct);
                 if (!creditReserved)
@@ -115,23 +125,27 @@ public class PlaceOrderCommandHandler : IRequestHandler<PlaceOrderCommand, Place
 
             await _orderRepository.AddAsync(order, ct);
 
-            // Write Outbox event in same logical save — both persist together
-            var eventPayload = JsonSerializer.Serialize(new
+            if (order.Status != OrderStatus.PaymentPending)
             {
-                OrderId     = order.OrderId,
-                OrderNumber = order.OrderNumber,
-                DealerId    = order.DealerId,
-                dealerEmail = command.DealerEmail,
-                TotalAmount = order.TotalAmount,
-                ShippingFee = shippingFee,
-                Status      = order.Status.ToString(),
-                PlacedAt    = order.PlacedAt
-            });
+                // Write Outbox event in same logical save — both persist together
+                var eventPayload = JsonSerializer.Serialize(new
+                {
+                    OrderId     = order.OrderId,
+                    OrderNumber = order.OrderNumber,
+                    DealerId    = order.DealerId,
+                    dealerEmail = command.DealerEmail,
+                    TotalAmount = order.TotalAmount,
+                    ShippingFee = shippingFee,
+                    Status      = order.Status.ToString(),
+                    PlacedAt    = order.PlacedAt
+                });
 
-            var eventType = creditCheck.Approved ? "OrderPlaced" : "AdminApprovalRequired";
-            var outbox    = OutboxMessage.Create(eventType, eventPayload);
+                var isCreditAutoApproved = command.PaymentMode.Equals("Credit", StringComparison.OrdinalIgnoreCase) && creditCheck.Approved;
+                var eventType = isCreditAutoApproved ? "OrderPlaced" : "AdminApprovalRequired";
+                var outbox    = OutboxMessage.Create(eventType, eventPayload);
 
-            await _outboxRepository.AddAsync(outbox, ct);
+                await _outboxRepository.AddAsync(outbox, ct);
+            }
             await _orderRepository.SaveChangesAsync(ct);
         }
         catch

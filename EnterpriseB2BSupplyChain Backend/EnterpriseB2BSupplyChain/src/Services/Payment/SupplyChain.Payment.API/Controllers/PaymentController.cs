@@ -88,7 +88,7 @@ public class PaymentController : ControllerBase
         if (!account.CanAccommodate(request.Amount))
             return BadRequest(new { error = "Insufficient remaining purchase limit.", availableLimit = account.AvailableCredit });
 
-        account.AddOutstanding(request.Amount);
+        account.ReserveAmount(request.Amount);
 
         var paymentRecord = PaymentRecord.Create(
             orderId: orderId,
@@ -116,7 +116,14 @@ public class PaymentController : ControllerBase
         if (account is null)
             return Ok(new { message = "No purchase account found. Nothing to release." });
 
-        account.ReduceOutstanding(request.Amount);
+        if (account.ReservedAmount >= request.Amount)
+        {
+            account.ReleaseReserve(request.Amount);
+        }
+        else
+        {
+            account.ReduceOutstanding(request.Amount);
+        }
         await _paymentRecordRepository.SaveChangesAsync(ct);
 
         return Ok(new { message = "Purchase limit released.", availableLimit = account.AvailableCredit });

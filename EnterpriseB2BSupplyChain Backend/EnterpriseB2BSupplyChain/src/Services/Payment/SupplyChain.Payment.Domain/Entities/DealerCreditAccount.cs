@@ -21,11 +21,14 @@ public class DealerCreditAccount
     /// <summary>Total amount currently utilized (sum of unpaid invoices + reserved orders).</summary>
     public decimal CurrentOutstanding { get; private set; }
 
+    /// <summary>Amount reserved for orders that are placed but not yet confirmed or approved.</summary>
+    public decimal ReservedAmount     { get; private set; }
+
     /// <summary>Month-start UTC timestamp for the latest monthly reset cycle.</summary>
     public DateTime LastMonthlyResetAt { get; private set; }
 
     /// <summary>Remaining purchase limit the dealer can use for new orders.</summary>
-    public decimal AvailableCredit    => CreditLimit - CurrentOutstanding;
+    public decimal AvailableCredit    => CreditLimit - CurrentOutstanding - ReservedAmount;
     public DateTime? LastUpdatedAt   { get; private set; }
 
     private DealerCreditAccount() { }
@@ -56,7 +59,38 @@ public class DealerCreditAccount
         LastUpdatedAt = DateTime.UtcNow;
     }
 
-    /// <summary>Reserve/utilize a portion of the purchase limit for a new order.</summary>
+    /// <summary>Reserve a portion of the purchase limit for a new order.</summary>
+    public void ReserveAmount(decimal amount)
+    {
+        if (amount <= 0)
+            throw new DomainException("INVALID_AMOUNT", "Amount must be positive.");
+
+        ReservedAmount += amount;
+        LastUpdatedAt   = DateTime.UtcNow;
+    }
+
+    /// <summary>Finalize reserved amount by moving it to CurrentOutstanding.</summary>
+    public void FinalizeReserve(decimal amount)
+    {
+        if (amount <= 0)
+            throw new DomainException("INVALID_AMOUNT", "Amount must be positive.");
+
+        ReservedAmount = Math.Max(0, ReservedAmount - amount);
+        CurrentOutstanding += amount;
+        LastUpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>Release reserved amount without moving it to CurrentOutstanding (e.g. order cancelled).</summary>
+    public void ReleaseReserve(decimal amount)
+    {
+        if (amount <= 0)
+            throw new DomainException("INVALID_AMOUNT", "Amount must be positive.");
+
+        ReservedAmount = Math.Max(0, ReservedAmount - amount);
+        LastUpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>Directly add outstanding amount (if bypassing reserve).</summary>
     public void AddOutstanding(decimal amount)
     {
         if (amount <= 0)
@@ -84,6 +118,7 @@ public class DealerCreditAccount
             return false;
 
         CurrentOutstanding = 0;
+        ReservedAmount = 0;
         LastMonthlyResetAt = cycleStart;
         LastUpdatedAt = utcNow;
         return true;

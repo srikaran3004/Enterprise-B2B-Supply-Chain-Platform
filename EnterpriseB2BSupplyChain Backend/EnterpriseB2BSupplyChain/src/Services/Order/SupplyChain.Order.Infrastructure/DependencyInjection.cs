@@ -1,4 +1,4 @@
-﻿using Hangfire;
+using Hangfire;
 using Hangfire.SqlServer;
 using System.Net.Http.Headers;
 using Microsoft.EntityFrameworkCore;
@@ -93,6 +93,8 @@ public static class DependencyInjection
         services.AddHangfireServer();
         services.AddScoped<OutboxCleanupJob>();
         services.AddScoped<OutboxPollerJob>();
+
+        services.AddHostedService<PaymentSuccessfulConsumer>();
 
         return services;
     }

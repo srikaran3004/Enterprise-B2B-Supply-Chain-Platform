@@ -90,6 +90,7 @@ export class AdminOrdersComponent implements OnInit {
 
   readonly tabDefs: { label: string; value: string }[] = [
     { label: 'All',               value: 'All' },
+    { label: 'Pending Payment',   value: OrderStatus.PaymentPending },
     { label: 'Placed',            value: OrderStatus.Placed },
     { label: 'On Hold',           value: OrderStatus.OnHold },
     { label: 'Processing',        value: OrderStatus.Processing },
@@ -108,7 +109,7 @@ export class AdminOrdersComponent implements OnInit {
     { key: 'dealerName', label: 'Dealer', type: 'text' },
     { key: 'totalAmount', label: 'Total', type: 'currency-inr', sortable: true },
     { key: 'paymentMode', label: 'Payment', type: 'badge', badgeMap: { 'Credit': 'info', 'COD': 'warning', 'Prepaid': 'success' } },
-    { key: 'status', label: 'Status', type: 'badge', badgeMap: { 'Placed': 'info', 'OnHold': 'warning', 'Processing': 'primary', 'ReadyForDispatch': 'success', 'InTransit': 'info', 'Delivered': 'success', 'Cancelled': 'danger' } },
+    { key: 'status', label: 'Status', type: 'badge', badgeMap: { 'PaymentPending': 'warning', 'Placed': 'info', 'OnHold': 'warning', 'Processing': 'primary', 'ReadyForDispatch': 'success', 'InTransit': 'info', 'Delivered': 'success', 'Cancelled': 'danger' } },
     { key: 'placedAt', label: 'Date', type: 'date', sortable: true },
     { key: 'actions', label: 'Actions', type: 'actions-menu' },
   ];
@@ -150,7 +151,7 @@ export class AdminOrdersComponent implements OnInit {
     this.tabsWithCounts = this.tabDefs.map(tab => ({
       ...tab,
       count: tab.value === 'All'
-        ? this.orders.length
+        ? this.orders.filter(o => o.status !== OrderStatus.PaymentPending).length
         : this.orders.filter(o => o.status === tab.value).length
     }));
   }
@@ -160,9 +161,10 @@ export class AdminOrdersComponent implements OnInit {
     const onHold  = this.orders.filter(o => o.status === OrderStatus.OnHold).length;
     const delivered = this.orders.filter(o => o.status === OrderStatus.Delivered).length;
     const inTransit = this.orders.filter(o => o.status === OrderStatus.InTransit).length;
+    const validOrders = this.orders.filter(o => o.status !== OrderStatus.PaymentPending).length;
 
     this.summaryStats = [
-      { label: 'Total Orders', value: String(this.orders.length) },
+      { label: 'Total Orders', value: String(validOrders) },
       { label: 'Total Value',  value: '₹' + total.toLocaleString('en-IN') },
       { label: 'On Hold',   value: String(onHold),   color: onHold  > 0 ? 'var(--hul-warning)' : undefined },
       { label: 'In Transit',value: String(inTransit), color: inTransit > 0 ? 'var(--hul-primary)' : undefined },
@@ -182,7 +184,12 @@ export class AdminOrdersComponent implements OnInit {
 
   applyFilters(): void {
     let r = [...this.orders];
-    if (this.activeTab !== 'All') r = r.filter(o => o.status === this.activeTab);
+    if (this.activeTab === 'All') {
+      r = r.filter(o => o.status !== OrderStatus.PaymentPending);
+    } else {
+      r = r.filter(o => o.status === this.activeTab);
+    }
+    
     if (this.searchTerm) {
       const s = this.searchTerm.toLowerCase();
       r = r.filter(o => o.orderNumber?.toLowerCase().includes(s) || o.dealerName?.toLowerCase().includes(s));

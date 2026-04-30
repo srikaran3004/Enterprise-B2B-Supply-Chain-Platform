@@ -47,6 +47,14 @@ import { TimelineEvent } from '../../../../shared/ui/timeline/hul-timeline.compo
             <span class="info-value"><span class="badge-pill">{{ order.paymentMode }}</span></span>
           </div>
           <div class="info-row">
+            <span class="info-label">Payment Status</span>
+            <span class="info-value">
+              <span class="badge-pill" [ngClass]="getPaymentStatusClass(order.paymentStatus)">
+                {{ order.paymentStatus || 'Pending' }}
+              </span>
+            </span>
+          </div>
+          <div class="info-row">
             <span class="info-label">Total Amount</span>
             <span class="info-value amount">&#8377;{{ order.totalAmount?.toLocaleString('en-IN') }}</span>
           </div>
@@ -310,6 +318,9 @@ import { TimelineEvent } from '../../../../shared/ui/timeline/hul-timeline.compo
       padding: 3px 10px; border-radius: 9999px; font-size: 12px; font-weight: 600;
       background: var(--bg-muted); color: var(--text-secondary);
     }
+    .badge-pill--paid { background: #d1fae5; color: #065f46; }
+    .badge-pill--pending { background: #ffedd5; color: #c2410c; }
+    .badge-pill--failed { background: #fee2e2; color: #991b1b; }
 
     /* Address */
     .address-block { padding: 20px; }
@@ -413,6 +424,12 @@ export class AdminOrderDetailComponent implements OnInit {
       Failed: 'Failed',
     };
     return map[status] || status;
+  }
+
+  getPaymentStatusClass(status: string): string {
+    if (status === 'Paid') return 'badge-pill--paid';
+    if (status === 'Failed') return 'badge-pill--failed';
+    return 'badge-pill--pending';
   }
 
   getShipmentStatusClass(status: string): string {

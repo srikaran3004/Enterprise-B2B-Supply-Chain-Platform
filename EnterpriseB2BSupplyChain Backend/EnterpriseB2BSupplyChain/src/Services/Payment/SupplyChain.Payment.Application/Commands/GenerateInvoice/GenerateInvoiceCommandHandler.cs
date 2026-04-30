@@ -63,10 +63,16 @@ public class GenerateInvoiceCommandHandler : IRequestHandler<GenerateInvoiceComm
             && string.Equals(existingPaymentRecord.PaymentMode, "Credit", StringComparison.OrdinalIgnoreCase);
 
         if (account is not null &&
-            string.Equals(command.PaymentMode, "Credit", StringComparison.OrdinalIgnoreCase) &&
-            !hasReservedCredit)
+            string.Equals(command.PaymentMode, "Credit", StringComparison.OrdinalIgnoreCase))
         {
-            account.AddOutstanding(command.TotalAmount);
+            if (hasReservedCredit)
+            {
+                account.FinalizeReserve(command.TotalAmount);
+            }
+            else
+            {
+                account.AddOutstanding(command.TotalAmount);
+            }
         }
 
         await _invoiceRepository.SaveChangesAsync(ct);

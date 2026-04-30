@@ -91,6 +91,17 @@ public class Order
 
     // ── Status Transitions ────────────────────────────────────────
 
+    public void ConfirmPayment()
+    {
+        if (Status != OrderStatus.PaymentPending)
+            throw new DomainException("INVALID_TRANSITION", "Only PaymentPending orders can have their payment confirmed.");
+
+        RecordTransition(Status, OrderStatus.Placed, null, "Payment successfully confirmed");
+        Status = OrderStatus.Placed;
+        PaymentStatus = PaymentStatus.Paid;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
     public void PlaceOnHold(string reason)
     {
         if (Status != OrderStatus.Placed)

@@ -11,6 +11,7 @@
  */
 
 export enum OrderStatus {
+  PaymentPending    = 'PaymentPending',
   Placed            = 'Placed',
   OnHold            = 'OnHold',
   Processing        = 'Processing',
@@ -32,6 +33,7 @@ export enum ShipmentStatus {
 export enum PaymentStatus {
   Pending   = 'Pending',
   Paid      = 'Paid',
+  Failed    = 'Failed',
   Overdue   = 'Overdue',
   Waived    = 'Waived',
   Refunded  = 'Refunded',
@@ -52,6 +54,7 @@ export enum ProductStatus {
 /** Helper: returns true if an order is in an active (non-terminal) state */
 export function isActiveOrder(status: string): boolean {
   return [
+    OrderStatus.PaymentPending,
     OrderStatus.Placed,
     OrderStatus.OnHold,
     OrderStatus.Processing,
