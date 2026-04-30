@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -186,7 +186,7 @@ public sealed class GlobalExceptionHandlingMiddleware
 
             default:
                 var serverMessage = _environment.IsDevelopment()
-                    ? (exception.Message ?? "An unexpected error occurred.")
+                    ? (exception?.Message ?? "An unexpected error occurred.")
                     : "An unexpected error occurred. Please try again later.";
 
                 return (

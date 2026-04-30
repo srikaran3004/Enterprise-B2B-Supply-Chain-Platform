@@ -192,7 +192,7 @@ export class AdminOrdersComponent implements OnInit {
     const toDate = this.dateTo ? new Date(`${this.dateTo}T23:59:59.999`) : null;
     if (fromDate || toDate) {
       r = r.filter(o => {
-        const raw = o.placedAt || o.createdAt || o.updatedAt;
+        const raw = o.placedAt || o.updatedAt;
         if (!raw) return false;
         const dt = new Date(raw);
         if (Number.isNaN(dt.getTime())) return false;

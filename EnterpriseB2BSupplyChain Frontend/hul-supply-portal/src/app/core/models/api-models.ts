@@ -68,6 +68,7 @@ export interface StatusHistoryDto {
 export interface OrderSummary {
   orderId: string;
   orderNumber: string;
+  dealerId: string;
   status: string;
   totalAmount: number;
   paymentMode: string;
@@ -126,6 +127,7 @@ export interface DealerListItem {
   createdAt: string;        // ISO date string
   approvedAt: string | null;
   approvedByAdminId: string | null;
+  creditLimit?: number;
   // Computed on frontend — not from backend
   serial?: number;
   totalSpent?: number;

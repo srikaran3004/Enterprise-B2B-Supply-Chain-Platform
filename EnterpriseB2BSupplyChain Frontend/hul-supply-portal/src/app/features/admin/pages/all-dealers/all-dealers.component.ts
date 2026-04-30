@@ -110,10 +110,10 @@ import { UserStatus, OrderStatus, isTerminalOrder } from '../../../../core/model
                 <tr *ngFor="let order of dealerOrders">
                   <td><strong>{{ order.orderNumber }}</strong></td>
                   <td>{{ order.placedAt | date:'medium' }}</td>
-                  <td>{{ order.items?.length || 0 }} items</td>
+                  <td>{{ order.totalItems || 0 }} items</td>
                   <td><strong>₹{{ formatNum(order.totalAmount) }}</strong></td>
                   <td><hul-status-badge [status]="order.status"></hul-status-badge></td>
-                  <td><span class="pill">{{ order.paymentMethod || 'Credit' }}</span></td>
+                  <td><span class="pill">{{ order.paymentMode || 'Credit' }}</span></td>
                 </tr>
               </tbody>
             </table>
@@ -149,18 +149,18 @@ import { UserStatus, OrderStatus, isTerminalOrder } from '../../../../core/model
           <!-- Purchase Limit Tab -->
           <div *ngIf="activeTab === 'credit' && !loadingDetails" class="tab-content">
             <!-- Suspended banner -->
-            <div *ngIf="viewingDealer?.status === 'Suspended'" class="suspended-banner">
+            <div *ngIf="viewingDealer.status === 'Suspended'" class="suspended-banner">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
               <div class="suspended-banner__text">
                 <strong>Account Suspended</strong>
                 <span>Purchase limit management is disabled for suspended dealers. Reactivate this dealer to manage limits.</span>
               </div>
             </div>
-            <div class="credit-overview" *ngIf="dealerCredit" [class.credit-overview--disabled]="viewingDealer?.status === 'Suspended'">
+            <div class="credit-overview" *ngIf="dealerCredit" [class.credit-overview--disabled]="viewingDealer.status === 'Suspended'">
               <div class="credit-card">
                 <div class="credit-header">
                   <h3 class="section-title">Purchase Limit Account</h3>
-                  <button class="btn btn--sm btn--primary" (click)="editCreditLimit(viewingDealer)" [disabled]="viewingDealer?.status === 'Suspended'">Edit Limit</button>
+                  <button class="btn btn--sm btn--primary" (click)="editCreditLimit(viewingDealer)" [disabled]="viewingDealer.status === 'Suspended'">Edit Limit</button>
                 </div>
                 <div class="credit-stats">
                   <div class="credit-stat"><label class="detail-label">Monthly Purchase Limit</label><span class="detail-value">₹{{ formatNum(dealerCredit.creditLimit) }}</span></div>
@@ -296,7 +296,7 @@ import { UserStatus, OrderStatus, isTerminalOrder } from '../../../../core/model
       <hul-modal *ngIf="showCreditModal" [open]="showCreditModal" title="Update Monthly Purchase Limit" size="sm" (close)="showCreditModal = false">
         <div class="action-form" *ngIf="editingCreditDealer">
           <div class="dealer-info">
-            <div class="dealer-avatar">{{ editingCreditDealer.fullName?.charAt(0)?.toUpperCase() }}</div>
+            <div class="dealer-avatar">{{ editingCreditDealer.fullName.charAt(0).toUpperCase() }}</div>
             <div>
               <div class="dealer-name">{{ editingCreditDealer.fullName }}</div>
               <div class="dealer-biz">{{ editingCreditDealer.businessName }}</div>

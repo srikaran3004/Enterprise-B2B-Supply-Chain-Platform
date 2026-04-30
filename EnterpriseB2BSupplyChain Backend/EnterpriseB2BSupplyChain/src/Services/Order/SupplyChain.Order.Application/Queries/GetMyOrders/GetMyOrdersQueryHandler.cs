@@ -24,6 +24,7 @@ public class GetMyOrdersQueryHandler : IRequestHandler<GetMyOrdersQuery, PagedRe
             .Select(o => new OrderSummaryDto(
                 OrderId:     o.OrderId,
                 OrderNumber: o.OrderNumber,
+                DealerId:    o.DealerId,
                 Status:      o.Status.ToString(),
                 TotalAmount: o.TotalAmount,
                 PaymentMode: o.PaymentMode,

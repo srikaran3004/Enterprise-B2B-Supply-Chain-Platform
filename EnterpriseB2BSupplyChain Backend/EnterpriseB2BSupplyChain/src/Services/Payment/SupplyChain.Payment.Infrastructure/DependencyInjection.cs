@@ -27,6 +27,22 @@ public static class DependencyInjection
                 configuration.GetConnectionString("DefaultConnection")!,
                 sql => sql.EnableRetryOnFailure(3)));
 
+        // RabbitMQ connection (singleton — one connection, many channels)
+        var rabbitHost = configuration["RabbitMQ:Host"] ?? "localhost";
+        var rabbitUser = configuration["RabbitMQ:Username"] ?? "guest";
+        var rabbitPass = configuration["RabbitMQ:Password"] ?? "guest";
+
+        services.AddSingleton<RabbitMQ.Client.IConnection>(_ =>
+        {
+            var factory = new RabbitMQ.Client.ConnectionFactory
+            {
+                HostName = rabbitHost,
+                UserName = rabbitUser,
+                Password = rabbitPass
+            };
+            return factory.CreateConnectionAsync().GetAwaiter().GetResult();
+        });
+
         services.AddScoped<IInvoiceRepository, InvoiceRepository>();
         services.AddScoped<ICreditAccountRepository, CreditAccountRepository>();
         services.AddScoped<IPurchaseLimitHistoryRepository, PurchaseLimitHistoryRepository>();

@@ -3,6 +3,7 @@ namespace SupplyChain.Order.Application.DTOs;
 public record OrderSummaryDto(
     Guid     OrderId,
     string   OrderNumber,
+    Guid     DealerId,
     string   Status,
     decimal  TotalAmount,
     string   PaymentMode,
