@@ -95,6 +95,7 @@ public static class DependencyInjection
         services.AddScoped<OutboxPollerJob>();
 
         services.AddHostedService<PaymentSuccessfulConsumer>();
+        services.AddHostedService<PaymentTimeoutBackgroundService>();
 
         return services;
     }

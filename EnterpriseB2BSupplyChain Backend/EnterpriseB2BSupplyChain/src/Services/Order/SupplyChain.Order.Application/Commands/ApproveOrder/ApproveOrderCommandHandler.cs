@@ -26,6 +26,8 @@ public class ApproveOrderCommandHandler : IRequestHandler<ApproveOrderCommand>
         if (order.Status != OrderStatus.Placed && order.Status != OrderStatus.OnHold)
             throw new DomainException("INVALID_TRANSITION", "Only Placed or OnHold orders can be approved.");
 
+        var wasOnHold = order.Status == OrderStatus.OnHold;
+
         var approved = await _orderRepository.TryApproveOrderAsync(
             command.OrderId,
             command.AdminId,
@@ -44,6 +46,24 @@ public class ApproveOrderCommandHandler : IRequestHandler<ApproveOrderCommand>
         }));
 
         await _outboxRepository.AddAsync(outbox, ct);
+
+        // Notify Dealer if their held payment is finally approved
+        if (wasOnHold && order.PaymentStatus == PaymentStatus.Paid)
+        {
+            var placedOutbox = OutboxMessage.Create("OrderPlaced", JsonSerializer.Serialize(new
+            {
+                order.OrderId,
+                order.OrderNumber,
+                order.DealerId,
+                order.DealerName,
+                order.DealerEmail,
+                TotalAmount = order.TotalAmount,
+                PaymentMode = order.PaymentMode.ToString(),
+                PaymentStatus = order.PaymentStatus.ToString()
+            }));
+            await _outboxRepository.AddAsync(placedOutbox, ct);
+        }
+
         await _orderRepository.SaveChangesAsync(ct);
     }
 }
