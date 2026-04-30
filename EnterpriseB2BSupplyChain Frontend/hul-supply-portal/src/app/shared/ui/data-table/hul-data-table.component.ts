@@ -2,7 +2,7 @@ import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angu
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
-export type ColumnType = 'text' | 'badge' | 'date' | 'currency-inr' | 'boolean' | 'actions-menu';
+export type ColumnType = 'text' | 'badge' | 'date' | 'currency-inr' | 'boolean' | 'actions-menu' | 'custom';
 export type BadgeVariant = 'primary' | 'success' | 'danger' | 'warning' | 'info' | 'default';
 
 export interface DataTableColumn {
@@ -13,6 +13,7 @@ export interface DataTableColumn {
   width?: string;
   align?: 'left' | 'center' | 'right';
   badgeMap?: Record<string, BadgeVariant>;
+  renderHtml?: (value: any, row: any) => string;
 }
 
 export interface DataTableAction {
@@ -87,6 +88,8 @@ export interface DataTableAction {
                 <span *ngIf="col.type === 'currency-inr'" class="dt-currency">₹{{ formatNumber(row[col.key]) }}</span>
                 <!-- Boolean -->
                 <span *ngIf="col.type === 'boolean'" class="dt-bool-badge dt-bool-badge--{{ row[col.key] ? 'true' : 'false' }}">{{ getBooleanLabel(col, row) }}</span>
+                <!-- Custom (HTML via renderHtml callback) -->
+                <span *ngIf="col.type === 'custom'" [innerHTML]="col.renderHtml ? col.renderHtml(row[col.key], row) : (row[col.key] || '')"></span>
                 <!-- Actions menu -->
                 <div *ngIf="col.type === 'actions-menu'" class="dt-actions">
                   <ng-container *ngFor="let action of getRowActions(row)">

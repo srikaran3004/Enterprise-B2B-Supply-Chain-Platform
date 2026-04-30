@@ -6,5 +6,6 @@ public record RaiseReturnCommand(
     Guid    OrderId,
     Guid    DealerId,
     string  Reason,
-    string? PhotoUrl = null
+    string? PhotoUrl = null,
+    string? ThumbUrl = null
 ) : IRequest;

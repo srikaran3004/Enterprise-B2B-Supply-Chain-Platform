@@ -51,7 +51,7 @@ public class RaiseReturnCommandHandler : IRequestHandler<RaiseReturnCommand>
             if (elapsedSinceDelivery > ReturnWindow)
                 throw new InvalidOperationException("Return request window has expired. Returns must be raised within 48 hours of delivery.");
 
-            order.RaiseReturnRequest(command.DealerId, command.Reason, command.PhotoUrl);
+            order.RaiseReturnRequest(command.DealerId, command.Reason, command.PhotoUrl, command.ThumbUrl);
 
             var outbox = OutboxMessage.Create("ReturnRequested", JsonSerializer.Serialize(new
             {

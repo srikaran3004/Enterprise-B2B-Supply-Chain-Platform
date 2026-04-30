@@ -304,22 +304,24 @@ export class ReturnsComponent implements OnInit {
 
     try {
       let photoUrl = '';
+      let thumbUrl = '';
       if (this.selectedFile) {
         const formData = new FormData();
         formData.append('file', this.selectedFile);
 
-        const uploadResponse = await this.http.post<{ url: string }>(
+        const uploadResponse = await this.http.post<{ url: string; thumbUrl: string }>(
           API_ENDPOINTS.orders.uploadReturnImage(),
           formData,
           { headers: { 'X-Skip-Error-Toast': '1' } }
         ).toPromise();
 
         photoUrl = uploadResponse?.url || '';
+        thumbUrl = uploadResponse?.thumbUrl || '';
       }
 
       // Submit return request
       await this.returnsService
-        .raiseReturn(this.selectedOrder.orderId, this.returnReason, photoUrl)
+        .raiseReturn(this.selectedOrder.orderId, this.returnReason, photoUrl, thumbUrl)
         .toPromise();
 
       this.toast.success('Return request submitted successfully');

@@ -154,6 +154,10 @@ export class AdminReturnsComponent implements OnInit {
     { key: 'orderNumber', label: 'Order #', type: 'text' },
     { key: 'reason', label: 'Reason', type: 'text' },
     { key: 'status', label: 'Status', type: 'badge', badgeMap: { 'Pending': 'warning', 'Approved': 'success', 'Rejected': 'danger' } },
+    { key: 'thumbUrl', label: 'Image', type: 'custom',
+      renderHtml: (url: string) => url
+        ? `<img src="${url}" width="40" height="40" style="border-radius:4px;object-fit:cover;display:block" alt="thumb" />`
+        : `<span style="color:var(--text-tertiary);font-size:12px">—</span>` },
     { key: 'requestedAt', label: 'Requested', type: 'date' },
     { key: 'actions', label: 'Actions', type: 'actions-menu' },
   ];

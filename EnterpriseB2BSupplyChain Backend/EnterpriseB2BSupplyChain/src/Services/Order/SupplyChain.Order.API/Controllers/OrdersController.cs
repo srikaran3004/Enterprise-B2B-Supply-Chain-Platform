@@ -1,6 +1,9 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Webp;
+using SixLabors.ImageSharp.Processing;
 using System.Security.Claims;
 using SupplyChain.Order.Application.Commands.ApproveOrder;
 using SupplyChain.Order.Application.Commands.CancelOrder;
@@ -196,7 +199,7 @@ public class OrdersController : ControllerBase
         CancellationToken ct)
     {
         var dealerId = GetDealerId();
-        await _mediator.Send(new RaiseReturnCommand(orderId, dealerId, request.Reason, request.PhotoUrl), ct);
+        await _mediator.Send(new RaiseReturnCommand(orderId, dealerId, request.Reason, request.PhotoUrl, request.ThumbUrl), ct);
         return Ok(new { Message = "Return request raised. Warehouse team will review." });
     }
 
@@ -239,14 +242,34 @@ public class OrdersController : ControllerBase
         var uploadsDir   = Path.Combine(webRootPath, "uploads", "returns");
         Directory.CreateDirectory(uploadsDir);
 
-        var fileName  = $"{Guid.NewGuid()}{extension}";
+        var guid      = Guid.NewGuid().ToString();
+        var fileName  = $"{guid}{extension}";
         var filePath  = Path.Combine(uploadsDir, fileName);
 
-        await using var stream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None);
-        await file.CopyToAsync(stream, ct);
+        await using (var stream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None))
+            await file.CopyToAsync(stream, ct);
 
-        var relativeUrl = $"/uploads/returns/{fileName}";
-        return Ok(new { Url = relativeUrl });
+        // Generate 150px-max-width WebP thumbnail
+        var thumbName = $"{guid}_thumb.webp";
+        var thumbPath = Path.Combine(uploadsDir, thumbName);
+
+        using (var imgStream = file.OpenReadStream())
+        using (var image = await Image.LoadAsync(imgStream, ct))
+        {
+            if (image.Width > 150)
+                image.Mutate(x => x.Resize(new ResizeOptions
+                {
+                    Mode   = ResizeMode.Max,
+                    Size   = new Size(150, 0)
+                }));
+            await image.SaveAsWebpAsync(thumbPath, cancellationToken: ct);
+        }
+
+        return Ok(new
+        {
+            Url      = $"/uploads/returns/{fileName}",
+            ThumbUrl = $"/uploads/returns/{thumbName}"
+        });
     }
 
     // ── Helpers ──────────────────────────────────────────────────
@@ -271,4 +294,4 @@ public class OrdersController : ControllerBase
 }
 
 public record CancelRequest(string Reason);
-public record RaiseReturnRequest(string Reason, string? PhotoUrl = null);
+public record RaiseReturnRequest(string Reason, string? PhotoUrl = null, string? ThumbUrl = null);

@@ -14,6 +14,7 @@ export interface ReturnRequest {
   adminNotes?: string;
   orderNumber?: string;
   photoUrl?: string;
+  thumbUrl?: string;
 }
 
 @Injectable({
@@ -22,10 +23,10 @@ export interface ReturnRequest {
 export class ReturnsService {
   private http = inject(HttpClient);
 
-  raiseReturn(orderId: string, reason: string, photoUrl?: string): Observable<{ returnId: string }> {
+  raiseReturn(orderId: string, reason: string, photoUrl?: string, thumbUrl?: string): Observable<{ returnId: string }> {
     return this.http.post<{ returnId: string }>(
       API_ENDPOINTS.returns.raiseReturn(orderId),
-      { reason, photoUrl },
+      { reason, photoUrl, thumbUrl },
       { headers: { 'X-Skip-Error-Toast': '1' } }
     );
   }
@@ -90,6 +91,7 @@ export class ReturnsService {
       adminNotes: raw.adminNotes ?? raw.AdminNotes,
       orderNumber: raw.orderNumber ?? raw.OrderNumber,
       photoUrl: raw.photoUrl ?? raw.PhotoUrl,
+      thumbUrl: raw.thumbUrl ?? raw.ThumbUrl,
     };
   }
 }

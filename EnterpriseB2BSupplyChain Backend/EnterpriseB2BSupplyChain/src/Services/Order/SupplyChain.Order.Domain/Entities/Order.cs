@@ -196,7 +196,7 @@ public class Order
         UpdatedAt = DateTime.UtcNow;
     }
 
-    public void RaiseReturnRequest(Guid dealerId, string reason, string? photoUrl = null)
+    public void RaiseReturnRequest(Guid dealerId, string reason, string? photoUrl = null, string? thumbUrl = null)
     {
         if (Status != OrderStatus.Delivered)
             throw new DomainException("INVALID_RETURN", "Returns can only be raised on Delivered orders.");
@@ -204,7 +204,7 @@ public class Order
         if (ReturnRequest is not null)
             throw new DomainException("DUPLICATE_RETURN", "A return request already exists for this order.");
 
-        ReturnRequest = ReturnRequest.Create(OrderId, dealerId, reason, photoUrl);
+        ReturnRequest = ReturnRequest.Create(OrderId, dealerId, reason, photoUrl, thumbUrl);
 
         RecordTransition(Status, OrderStatus.ReturnRequested, dealerId, reason);
         Status    = OrderStatus.ReturnRequested;

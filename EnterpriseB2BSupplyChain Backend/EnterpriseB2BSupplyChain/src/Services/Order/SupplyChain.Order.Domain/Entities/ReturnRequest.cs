@@ -9,6 +9,7 @@ public class ReturnRequest
     public Guid         DealerId    { get; private set; }
     public string       Reason      { get; private set; } = string.Empty;
     public string?      PhotoUrl    { get; private set; }
+    public string?      ThumbUrl    { get; private set; }
     public ReturnStatus Status      { get; private set; }
     public string?      AdminNotes  { get; private set; }
     public DateTime     RequestedAt { get; private set; }
@@ -22,7 +23,8 @@ public class ReturnRequest
         Guid    orderId,
         Guid    dealerId,
         string  reason,
-        string? photoUrl = null)
+        string? photoUrl = null,
+        string? thumbUrl = null)
         => new()
         {
             ReturnId    = Guid.NewGuid(),
@@ -30,6 +32,7 @@ public class ReturnRequest
             DealerId    = dealerId,
             Reason      = reason,
             PhotoUrl    = photoUrl,
+            ThumbUrl    = thumbUrl,
             Status      = ReturnStatus.Pending,
             RequestedAt = DateTime.UtcNow
         };
