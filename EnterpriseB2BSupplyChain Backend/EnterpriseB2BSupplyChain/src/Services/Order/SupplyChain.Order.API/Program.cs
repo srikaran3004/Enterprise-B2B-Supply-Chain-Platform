@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -97,6 +97,7 @@ if (app.Environment.IsDevelopment())
 app.UseSharedInfrastructure();
 app.UseCors("AllowAngular");
 app.UseSerilogRequestLogging();
+app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -107,7 +108,7 @@ if (app.Environment.IsDevelopment())
 app.MapControllers();
 app.MapHealthChecks("/health");
 
-// Register Outbox Poller â€” runs every 5 seconds
+// Register Outbox Poller — runs every 5 seconds
 RecurringJob.AddOrUpdate<OutboxPollerJob>(
     "outbox-poller",
     job => job.ExecuteAsync(),
@@ -119,5 +120,3 @@ RecurringJob.AddOrUpdate<OutboxCleanupJob>(
     "0 2 * * *"); // Daily at 02:00
 
 app.Run();
-
-

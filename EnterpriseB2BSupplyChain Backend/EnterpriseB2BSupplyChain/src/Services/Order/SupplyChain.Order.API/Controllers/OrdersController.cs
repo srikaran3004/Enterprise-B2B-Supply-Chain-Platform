@@ -24,10 +24,12 @@ namespace SupplyChain.Order.API.Controllers;
 public class OrdersController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly IWebHostEnvironment _env;
 
-    public OrdersController(IMediator mediator)
+    public OrdersController(IMediator mediator, IWebHostEnvironment env)
     {
         _mediator = mediator;
+        _env = env;
     }
 
     /// <summary>Place a new bulk order. Dealer only.</summary>
@@ -232,14 +234,19 @@ public class OrdersController : ControllerBase
         if (!allowedExtensions.Contains(extension))
             return BadRequest(new { Message = "Invalid image extension. Use JPG, PNG, or WEBP." });
 
-        await using var stream = new MemoryStream();
-        await file.CopyToAsync(stream, ct);
-        var bytes = stream.ToArray();
-        var base64 = Convert.ToBase64String(bytes);
-        var dataUri = $"data:{file.ContentType};base64,{base64}";
+        // Save to wwwroot/uploads/returns/<guid><ext>
+        var webRootPath  = _env.WebRootPath ?? Path.Combine(_env.ContentRootPath, "wwwroot");
+        var uploadsDir   = Path.Combine(webRootPath, "uploads", "returns");
+        Directory.CreateDirectory(uploadsDir);
 
-        // The caller stores this data URI in ReturnRequests.PhotoUrl (database-backed only).
-        return Ok(new { Url = dataUri });
+        var fileName  = $"{Guid.NewGuid()}{extension}";
+        var filePath  = Path.Combine(uploadsDir, fileName);
+
+        await using var stream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None);
+        await file.CopyToAsync(stream, ct);
+
+        var relativeUrl = $"/uploads/returns/{fileName}";
+        return Ok(new { Url = relativeUrl });
     }
 
     // ── Helpers ──────────────────────────────────────────────────

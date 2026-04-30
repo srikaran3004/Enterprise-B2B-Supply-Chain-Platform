@@ -1,6 +1,23 @@
 {
   "Routes": [
     {
+      "DownstreamPathTemplate": "/uploads/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5006
+        }
+      ],
+      "UpstreamPathTemplate": "/uploads/{everything}",
+      "UpstreamHttpMethod": [ "GET" ],
+      "QoSOptions": {
+        "ExceptionsAllowedBeforeBreaking": 5,
+        "DurationOfBreak": 30,
+        "TimeoutValue": 10000
+      }
+    },
+    {
       "DownstreamPathTemplate": "/api/auth/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
