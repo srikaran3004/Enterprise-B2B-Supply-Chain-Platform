@@ -27,13 +27,9 @@ import { HulTimelineComponent } from './ui/timeline/hul-timeline.component';
 import { HulAvatarComponent } from './ui/avatar/hul-avatar.component';
 import { HulSearchInputComponent } from './ui/search-input/hul-search-input.component';
 
-// AI Assistant
-import { AiAssistantComponent } from './ui/ai-assistant/ai-assistant.component';
-
 // Pipes
 import { InrCurrencyPipe } from './pipes/inr-currency.pipe';
 import { RelativeTimePipe } from './pipes/relative-time.pipe';
-import { SafeHtmlPipe } from './pipes/safe-html.pipe';
 import { NotificationBellComponent } from './ui/notification-bell/notification-bell.component';
 
 const COMPONENTS = [
@@ -60,15 +56,13 @@ const COMPONENTS = [
   HulAvatarComponent,
   HulSearchInputComponent,
   NotificationBellComponent,
-  // Phase 3 — AI
-  AiAssistantComponent,
 ];
 
-const PIPES = [InrCurrencyPipe, RelativeTimePipe, SafeHtmlPipe];
+const PIPES = [InrCurrencyPipe, RelativeTimePipe];
 
 @NgModule({
   declarations: [...COMPONENTS, ...PIPES],
   imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
   exports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, ...COMPONENTS, ...PIPES],
 })
-export class SharedModule {}
+export class SharedModule { }

@@ -8,7 +8,7 @@ import { ThemeService } from './core/services/theme.service';
   styleUrl: './app.scss'
 })
 export class App implements OnInit {
-  constructor(private themeService: ThemeService) {}
+  constructor(private themeService: ThemeService) { }
 
   ngOnInit(): void {
     // Initialize theme from localStorage on app load

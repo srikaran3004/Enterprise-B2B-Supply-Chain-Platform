@@ -117,11 +117,5 @@ export const API_ENDPOINTS = {
     // The admin inventory view reads from GET /api/products directly.
     products: () => `${getBaseUrl(environment.catalogServiceUrl)}/api/products`,
   },
-  ai: {
-    // POST /api/chat  — Ocelot forwards to the Python FastAPI service on :8000
-    // Auth is intentionally disabled on this Ocelot route for dev convenience.
-    chat: () => `${getBaseUrl(environment.aiServiceUrl)}/api/chat`,
-    // GET /api/ai/health — liveness probe for the Python service
-    health: () => `${getBaseUrl(environment.aiServiceUrl)}/api/ai/health`,
-  },
+
 };

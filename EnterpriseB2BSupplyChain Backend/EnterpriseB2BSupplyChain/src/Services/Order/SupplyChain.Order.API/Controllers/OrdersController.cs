@@ -116,6 +116,7 @@ public class OrdersController : ControllerBase
         }
     }
 
+
     /// <summary>Get single order detail.</summary>
     [HttpGet("{orderId:guid}")]
     public async Task<IActionResult> GetOrder(Guid orderId, CancellationToken ct)

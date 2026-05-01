@@ -96,9 +96,26 @@ public class ConfirmOrderPaymentCommandHandler : IRequestHandler<ConfirmOrderPay
         }
         else
         {
+            var systemActorId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            var transitioned = await _orderRepository.TryTransitionStatusAsync(
+                order.OrderId,
+                systemActorId,
+                OrderStatus.Placed,
+                OrderStatus.Processing,
+                "Auto-approved: within monthly purchase limit",
+                cancellationToken);
+
+            if (!transitioned)
+            {
+                order = await _orderRepository.GetByIdAsync(order.OrderId, cancellationToken);
+                if (order?.Status != OrderStatus.Processing)
+                    throw new InvalidOperationException("Order auto-approval failed due to concurrent update. Please retry.");
+            }
+
+            finalStatus = OrderStatus.Processing;
             eventType = "OrderPlaced";
             _logger.LogInformation(
-                "OrderId={OrderId} approved. Credit check passed. Available: {AvailableLimit}, Used: {TotalAmount}",
+                "OrderId={OrderId} auto-approved to Processing. Credit check passed. Available: {AvailableLimit}, Used: {TotalAmount}",
                 request.OrderId, creditCheck.AvailableLimit, order.TotalAmount);
         }
 
