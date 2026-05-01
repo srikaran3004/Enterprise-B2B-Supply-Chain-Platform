@@ -36,4 +36,11 @@ public class PaymentRecord
         ReferenceNo = referenceNo;
         PaidAt      = DateTime.UtcNow;
     }
+
+    public void MarkFailed(string? referenceNo = null)
+    {
+        Status = "Failed";
+        ReferenceNo = string.IsNullOrWhiteSpace(referenceNo) ? ReferenceNo : referenceNo;
+        PaidAt = null;
+    }
 }

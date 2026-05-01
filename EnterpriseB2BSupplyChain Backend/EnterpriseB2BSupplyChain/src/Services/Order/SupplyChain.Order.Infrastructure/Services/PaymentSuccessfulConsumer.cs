@@ -51,7 +51,7 @@ public class PaymentSuccessfulConsumer : BackgroundService
         var password = _configuration["RabbitMQ:Password"] ?? "guest";
         _exchange = _configuration["RabbitMQ:Exchange"] ?? "supplychain.domain.events";
         _queue = _configuration["RabbitMQ:PaymentQueue"] ?? "order.payment.queue";
-        _routingKey = "PaymentSuccessful";
+        _routingKey = "payment.paymentsuccessful";
         _deadLetterExchange = _configuration["RabbitMQ:DeadLetterExchange"] ?? $"{_exchange}.dead";
         _deadLetterQueue = _configuration["RabbitMQ:PaymentDeadLetterQueue"] ?? $"{_queue}.dead";
         _deadLetterRoutingKey = _configuration["RabbitMQ:PaymentDeadLetterRoutingKey"] ?? $"{_queue}.dead";
@@ -129,7 +129,8 @@ public class PaymentSuccessfulConsumer : BackgroundService
         var (parsedEventType, correlationId, envelopeEventId, payloadRoot) = ParseEnvelope(rawBody, eventType);
         var messageId = ResolveMessageId(args, envelopeEventId, rawBody, parsedEventType);
 
-        if (!parsedEventType.Equals("PaymentSuccessful", StringComparison.OrdinalIgnoreCase))
+        if (!parsedEventType.Equals("PaymentSuccessful", StringComparison.OrdinalIgnoreCase) &&
+            !parsedEventType.Equals("payment.paymentsuccessful", StringComparison.OrdinalIgnoreCase))
         {
             await _channel.BasicAckAsync(args.DeliveryTag, false, ct);
             return;
@@ -141,26 +142,50 @@ public class PaymentSuccessfulConsumer : BackgroundService
             var db = scope.ServiceProvider.GetRequiredService<OrderDbContext>();
             var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
 
-            var orderIdStr = payloadRoot.GetProperty("OrderId").GetString();
-            var dealerIdStr = payloadRoot.GetProperty("DealerId").GetString();
-            var amount = payloadRoot.GetProperty("Amount").GetDecimal();
+            var orderId = TryReadGuid(payloadRoot, "OrderId", "orderId");
+            var dealerId = TryReadGuid(payloadRoot, "DealerId", "dealerId");
+            var amount = TryReadDecimal(payloadRoot, "Amount", "amount");
 
-            if (Guid.TryParse(orderIdStr, out var orderId) && Guid.TryParse(dealerIdStr, out var dealerId))
+            if (orderId.HasValue && dealerId.HasValue && amount.HasValue)
             {
-                await mediator.Send(new ConfirmOrderPaymentCommand(orderId, dealerId, amount), ct);
+                _logger.LogInformation(
+                    "Processing PaymentSuccessful event: OrderId={OrderId}, DealerId={DealerId}, Amount={Amount}, MessageId={MessageId}",
+                    orderId.Value, dealerId.Value, amount.Value, messageId);
+
+                await mediator.Send(new ConfirmOrderPaymentCommand(orderId.Value, dealerId.Value, amount.Value), ct);
+
+                _logger.LogInformation(
+                    "Successfully processed PaymentSuccessful event for OrderId={OrderId}",
+                    orderId.Value);
+            }
+            else
+            {
+                _logger.LogError(
+                    "Failed to parse PaymentSuccessful event payload. HasOrderId={HasOrderId}, HasDealerId={HasDealerId}, HasAmount={HasAmount}, Payload={Payload}",
+                    orderId.HasValue, dealerId.HasValue, amount.HasValue, payloadRoot.GetRawText());
             }
 
             await _channel.BasicAckAsync(args.DeliveryTag, false, ct);
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex,
+                "Error processing PaymentSuccessful event. MessageId={MessageId}, EventType={EventType}, RetryCount={RetryCount}",
+                messageId, parsedEventType, GetRetryCount(args.BasicProperties?.Headers));
+
             var nextRetry = GetRetryCount(args.BasicProperties?.Headers) + 1;
             if (nextRetry > _maxRetries)
             {
+                _logger.LogError(
+                    "Max retries exceeded for PaymentSuccessful event. Moving to dead letter queue. MessageId={MessageId}, Retries={Retries}",
+                    messageId, nextRetry);
                 await PublishDeadLetterAsync(args, parsedEventType, messageId, nextRetry, ex.Message, ct);
             }
             else
             {
+                _logger.LogWarning(
+                    "Retrying PaymentSuccessful event. MessageId={MessageId}, Retry={Retry}/{MaxRetries}",
+                    messageId, nextRetry, _maxRetries);
                 await PublishRetryAsync(args, parsedEventType, messageId, nextRetry, ex.Message, ct);
             }
             await _channel.BasicAckAsync(args.DeliveryTag, false, ct);
@@ -186,11 +211,13 @@ public class PaymentSuccessfulConsumer : BackgroundService
         {
             using var doc = JsonDocument.Parse(rawBody);
             var root = doc.RootElement;
-            if (root.ValueKind == JsonValueKind.Object && root.TryGetProperty("payload", out var payloadElement) && payloadElement.ValueKind == JsonValueKind.Object)
+            if (root.ValueKind == JsonValueKind.Object &&
+                TryGetProperty(root, "payload", out var payloadElement) &&
+                payloadElement.ValueKind == JsonValueKind.Object)
             {
-                var eventType = root.TryGetProperty("eventType", out var evt) ? evt.GetString() ?? fallbackEventType : fallbackEventType;
-                string? correlationId = root.TryGetProperty("correlationId", out var cid) && cid.ValueKind == JsonValueKind.String ? cid.GetString() : null;
-                Guid? eventId = root.TryGetProperty("eventId", out var idElement) && idElement.ValueKind == JsonValueKind.String && Guid.TryParse(idElement.GetString(), out var parsedId) ? parsedId : null;
+                var eventType = TryGetProperty(root, "eventType", out var evt) ? evt.GetString() ?? fallbackEventType : fallbackEventType;
+                string? correlationId = TryGetProperty(root, "correlationId", out var cid) && cid.ValueKind == JsonValueKind.String ? cid.GetString() : null;
+                Guid? eventId = TryGetProperty(root, "eventId", out var idElement) && idElement.ValueKind == JsonValueKind.String && Guid.TryParse(idElement.GetString(), out var parsedId) ? parsedId : null;
                 return (eventType, correlationId, eventId, payloadElement.Clone());
             }
             return (fallbackEventType, null, null, root.Clone());
@@ -199,6 +226,55 @@ public class PaymentSuccessfulConsumer : BackgroundService
         {
             return (fallbackEventType, null, null, JsonSerializer.SerializeToElement(new { rawPayload = rawBody }));
         }
+    }
+
+    private static bool TryGetProperty(JsonElement element, string propertyName, out JsonElement value)
+    {
+        if (element.ValueKind == JsonValueKind.Object)
+        {
+            foreach (var property in element.EnumerateObject())
+            {
+                if (property.Name.Equals(propertyName, StringComparison.OrdinalIgnoreCase))
+                {
+                    value = property.Value;
+                    return true;
+                }
+            }
+        }
+
+        value = default;
+        return false;
+    }
+
+    private static Guid? TryReadGuid(JsonElement element, params string[] propertyNames)
+    {
+        foreach (var propertyName in propertyNames)
+        {
+            if (!TryGetProperty(element, propertyName, out var value))
+                continue;
+
+            if (value.ValueKind == JsonValueKind.String && Guid.TryParse(value.GetString(), out var parsed))
+                return parsed;
+        }
+
+        return null;
+    }
+
+    private static decimal? TryReadDecimal(JsonElement element, params string[] propertyNames)
+    {
+        foreach (var propertyName in propertyNames)
+        {
+            if (!TryGetProperty(element, propertyName, out var value))
+                continue;
+
+            if (value.ValueKind == JsonValueKind.Number && value.TryGetDecimal(out var numeric))
+                return numeric;
+
+            if (value.ValueKind == JsonValueKind.String && decimal.TryParse(value.GetString(), out var parsed))
+                return parsed;
+        }
+
+        return null;
     }
 
     private static string ResolveMessageId(BasicDeliverEventArgs args, Guid? envelopeEventId, string rawBody, string eventType)

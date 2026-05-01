@@ -56,4 +56,9 @@ public class DealerProfile
         ApprovedAt = DateTime.UtcNow;
         ApprovedByAdminId = adminId;
     }
+
+    public void AnonymizeForDeletedUser(Guid userId)
+    {
+        GstNumber = $"DEL{userId:N}"[..20];
+    }
 }

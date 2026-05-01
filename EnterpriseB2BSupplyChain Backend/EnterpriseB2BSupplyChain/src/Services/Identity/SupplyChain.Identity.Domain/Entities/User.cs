@@ -146,6 +146,8 @@ public class User
     /// </summary>
     public void SoftDelete()
     {
+        Email = $"deleted-{UserId:N}@deleted.local";
+        DealerProfile?.AnonymizeForDeletedUser(UserId);
         IsDeleted = true;
         DeletedAt = DateTime.UtcNow;
         Status    = UserStatus.Suspended; // Belt-and-suspenders: block auth even if filter is bypassed

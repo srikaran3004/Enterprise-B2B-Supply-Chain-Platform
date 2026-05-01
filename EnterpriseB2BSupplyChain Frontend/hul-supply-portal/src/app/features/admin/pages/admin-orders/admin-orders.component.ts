@@ -110,7 +110,7 @@ export class AdminOrdersComponent implements OnInit {
       { key: 'dealerName', label: 'Dealer', type: 'text' },
       { key: 'totalAmount', label: 'Total', type: 'currency-inr', sortable: true },
       { key: 'paymentMode', label: 'Payment', type: 'badge', badgeMap: { 'Credit': 'info', 'COD': 'warning', 'Prepaid': 'success' } },
-      { key: 'status', label: 'Status', type: 'badge', badgeMap: { 'PaymentPending': 'warning', 'Placed': 'info', 'OnHold': 'warning', 'Processing': 'primary', 'ReadyForDispatch': 'success', 'InTransit': 'info', 'Delivered': 'success', 'Cancelled': 'danger' } }
+      { key: 'status', label: 'Status', type: 'badge', badgeMap: { 'PaymentPending': 'warning', 'PaymentFailed': 'danger', 'Placed': 'info', 'OnHold': 'warning', 'Processing': 'primary', 'ReadyForDispatch': 'success', 'InTransit': 'info', 'Delivered': 'success', 'Cancelled': 'danger' } }
     ];
 
     if (this.activeTab === OrderStatus.OnHold || this.activeTab === 'All') {

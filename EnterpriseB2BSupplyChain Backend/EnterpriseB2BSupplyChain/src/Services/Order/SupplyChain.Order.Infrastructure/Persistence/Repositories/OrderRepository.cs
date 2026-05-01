@@ -105,6 +105,67 @@ public class OrderRepository : IOrderRepository
         return (orders, totalCount);
     }
 
+    public async Task<bool> TryConfirmPaymentAsync(Guid orderId, CancellationToken ct = default)
+    {
+        var now = DateTime.UtcNow;
+        var paid = (int)PaymentStatus.Paid;
+        var pending = (int)PaymentStatus.Pending;
+        var affected = await _context.Database.ExecuteSqlInterpolatedAsync($@"
+            UPDATE Orders
+            SET Status = {OrderStatus.Placed.ToString()},
+                PaymentStatus = {paid},
+                UpdatedAt = {now}
+            WHERE OrderId = {orderId}
+              AND Status = {OrderStatus.PaymentPending.ToString()}
+              AND PaymentStatus = {pending}", ct);
+
+        if (affected == 0)
+            return false;
+
+        _context.ChangeTracker.Clear();
+
+        var history = OrderStatusHistory.Create(
+            orderId: orderId,
+            fromStatus: OrderStatus.PaymentPending.ToString(),
+            toStatus: OrderStatus.Placed.ToString(),
+            changedByUserId: null,
+            notes: "Payment successfully confirmed");
+
+        await _context.StatusHistories.AddAsync(history, ct);
+        return true;
+    }
+
+    public async Task<bool> TryMarkPaymentFailedAsync(Guid orderId, string reason, CancellationToken ct = default)
+    {
+        var now = DateTime.UtcNow;
+        var trimmedReason = string.IsNullOrWhiteSpace(reason) ? "Payment failed" : reason.Trim();
+        var failed = (int)PaymentStatus.Failed;
+        var pending = (int)PaymentStatus.Pending;
+        var affected = await _context.Database.ExecuteSqlInterpolatedAsync($@"
+            UPDATE Orders
+            SET Status = {OrderStatus.PaymentFailed.ToString()},
+                PaymentStatus = {failed},
+                UpdatedAt = {now}
+            WHERE OrderId = {orderId}
+              AND Status = {OrderStatus.PaymentPending.ToString()}
+              AND PaymentStatus = {pending}", ct);
+
+        if (affected == 0)
+            return false;
+
+        _context.ChangeTracker.Clear();
+
+        var history = OrderStatusHistory.Create(
+            orderId: orderId,
+            fromStatus: OrderStatus.PaymentPending.ToString(),
+            toStatus: OrderStatus.PaymentFailed.ToString(),
+            changedByUserId: null,
+            notes: trimmedReason);
+
+        await _context.StatusHistories.AddAsync(history, ct);
+        return true;
+    }
+
     public async Task<bool> TryApproveOrderAsync(Guid orderId, Guid adminId, string fromStatus, CancellationToken ct = default)
     {
         var now = DateTime.UtcNow;

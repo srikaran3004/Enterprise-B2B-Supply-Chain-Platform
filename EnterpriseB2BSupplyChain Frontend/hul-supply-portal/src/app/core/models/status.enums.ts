@@ -12,6 +12,7 @@
 
 export enum OrderStatus {
   PaymentPending    = 'PaymentPending',
+  PaymentFailed     = 'PaymentFailed',
   Placed            = 'Placed',
   OnHold            = 'OnHold',
   Processing        = 'Processing',
@@ -55,6 +56,7 @@ export enum ProductStatus {
 export function isActiveOrder(status: string): boolean {
   return [
     OrderStatus.PaymentPending,
+    OrderStatus.PaymentFailed,
     OrderStatus.Placed,
     OrderStatus.OnHold,
     OrderStatus.Processing,

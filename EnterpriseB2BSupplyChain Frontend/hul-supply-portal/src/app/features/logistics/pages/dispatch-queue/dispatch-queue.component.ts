@@ -447,15 +447,10 @@ export class DispatchQueueComponent implements OnInit {
     this.http.get<any>(API_ENDPOINTS.orders.base() + '?pageSize=200').subscribe({
       next: response => {
         const items = response.items || response || [];
-        // Exclude orders that are past dispatch stage OR already have a Logistics shipment.
-        // This is the definitive fix: an order that's ReadyForDispatch but already has an
-        // active shipment must NOT reappear in the dispatch queue after refresh.
-        const excludedStatuses = [
-          'Delivered', 'Cancelled', 'Closed', 'ReturnRequested',
-          'InTransit', 'AgentAssigned', 'PickedUp', 'OutForDelivery'
-        ];
+        const dispatchableStatuses = ['Placed', 'OnHold', 'Processing', 'ReadyForDispatch'];
         this.allOrders = items.filter((o: any) =>
-          !excludedStatuses.includes(o.status) &&
+          dispatchableStatuses.includes(o.status) &&
+          o.paymentStatus === 'Paid' &&
           !this.activeShipmentOrderIds.has(o.orderId)
         );
         this.applySearch();

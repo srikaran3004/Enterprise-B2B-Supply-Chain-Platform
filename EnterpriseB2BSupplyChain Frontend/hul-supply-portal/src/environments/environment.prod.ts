@@ -7,5 +7,6 @@ export const environment = {
   logisticsServiceUrl:'https://api.hulsupply.in',
   paymentServiceUrl:  'https://api.hulsupply.in',
   notificationServiceUrl: 'https://api.hulsupply.in',
+  aiServiceUrl:           'https://api.hulsupply.in',  // Ocelot gateway → Python AI service
   useDirect: false
 };

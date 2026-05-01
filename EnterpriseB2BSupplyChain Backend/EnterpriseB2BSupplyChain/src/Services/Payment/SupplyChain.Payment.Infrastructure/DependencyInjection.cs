@@ -61,6 +61,16 @@ public static class DependencyInjection
             .AddHttpMessageHandler<CorrelationIdDelegatingHandler>()
             .AddStandardResiliencePolicies();
 
+        services.AddHttpClient<IOrderPaymentConfirmationClient, OrderPaymentConfirmationClient>((sp, client) =>
+        {
+            client.BaseAddress = new Uri(orderServiceUrl);
+            var tokenProvider = sp.GetRequiredService<IInternalServiceTokenProvider>();
+            var token = tokenProvider.CreateToken("order");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        })
+            .AddHttpMessageHandler<CorrelationIdDelegatingHandler>()
+            .AddStandardResiliencePolicies();
+
         services.AddHostedService<OrderDeliveredConsumer>();
 
         var connString = configuration.GetConnectionString("DefaultConnection")!;

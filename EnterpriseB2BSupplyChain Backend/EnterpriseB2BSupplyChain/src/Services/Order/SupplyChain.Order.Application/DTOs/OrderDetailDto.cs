@@ -14,6 +14,7 @@ public record OrderDetailDto(
     string?                 DealerName,
     string?                 DealerEmail,
     string                  Status,
+    string                  PaymentStatus,
     decimal                 TotalAmount,
     string                  PaymentMode,
     string?                 Notes,

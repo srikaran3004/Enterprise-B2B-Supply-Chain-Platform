@@ -85,6 +85,7 @@ export const API_ENDPOINTS = {
     purchaseLimitHistoryByDealer: (dealerId: string) => `${getBaseUrl(environment.paymentServiceUrl)}/api/payment/dealers/${dealerId}/purchase-limit-history`,
     razorpayCreateOrder: () => `${getBaseUrl(environment.paymentServiceUrl)}/api/payment/razorpay/create-order`,
     razorpayConfirm: () => `${getBaseUrl(environment.paymentServiceUrl)}/api/payment/razorpay/confirm`,
+    razorpayFailed: () => `${getBaseUrl(environment.paymentServiceUrl)}/api/payment/razorpay/failed`,
     razorpaySimulateCapture: () => `${getBaseUrl(environment.paymentServiceUrl)}/api/payment/razorpay/simulate-capture`,
     salesExport: () => `${getBaseUrl(environment.paymentServiceUrl)}/api/payment/admin/sales/export`,
   },
@@ -115,5 +116,12 @@ export const API_ENDPOINTS = {
     // NOTE: /api/inventory/snapshot does not exist on the backend.
     // The admin inventory view reads from GET /api/products directly.
     products: () => `${getBaseUrl(environment.catalogServiceUrl)}/api/products`,
+  },
+  ai: {
+    // POST /api/chat  — Ocelot forwards to the Python FastAPI service on :8000
+    // Auth is intentionally disabled on this Ocelot route for dev convenience.
+    chat: () => `${getBaseUrl(environment.aiServiceUrl)}/api/chat`,
+    // GET /api/ai/health — liveness probe for the Python service
+    health: () => `${getBaseUrl(environment.aiServiceUrl)}/api/ai/health`,
   },
 };

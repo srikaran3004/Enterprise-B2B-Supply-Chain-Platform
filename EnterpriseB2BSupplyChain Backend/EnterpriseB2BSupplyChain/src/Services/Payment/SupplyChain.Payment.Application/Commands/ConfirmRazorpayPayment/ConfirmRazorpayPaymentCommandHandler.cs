@@ -15,6 +15,7 @@ public class ConfirmRazorpayPaymentCommandHandler : IRequestHandler<ConfirmRazor
     private readonly IPaymentRecordRepository _paymentRecordRepository;
     private readonly IOutboxRepository _outboxRepository;
     private readonly ICreditAccountRepository _creditAccountRepository;
+    private readonly IOrderPaymentConfirmationClient _orderPaymentConfirmationClient;
     private readonly ILogger<ConfirmRazorpayPaymentCommandHandler> _logger;
 
     public ConfirmRazorpayPaymentCommandHandler(
@@ -22,12 +23,14 @@ public class ConfirmRazorpayPaymentCommandHandler : IRequestHandler<ConfirmRazor
         IPaymentRecordRepository paymentRecordRepository,
         IOutboxRepository outboxRepository,
         ICreditAccountRepository creditAccountRepository,
+        IOrderPaymentConfirmationClient orderPaymentConfirmationClient,
         ILogger<ConfirmRazorpayPaymentCommandHandler> logger)
     {
         _configuration = configuration;
         _paymentRecordRepository = paymentRecordRepository;
         _outboxRepository = outboxRepository;
         _creditAccountRepository = creditAccountRepository;
+        _orderPaymentConfirmationClient = orderPaymentConfirmationClient;
         _logger = logger;
     }
 
@@ -55,48 +58,109 @@ public class ConfirmRazorpayPaymentCommandHandler : IRequestHandler<ConfirmRazor
             try
             {
                 var orderId = command.OrderId.Value;
+                var dealerId = command.DealerId.Value;
+                var amount = command.Amount.Value;
+
+                _logger.LogInformation(
+                    "Payment signature verified. Processing payment record for OrderId={OrderId}, DealerId={DealerId}, Amount={Amount}, RazorpayPaymentId={RazorpayPaymentId}",
+                    orderId, dealerId, amount, command.RazorpayPaymentId);
+
                 var paymentRecord = await _paymentRecordRepository.GetByOrderIdAsync(orderId, ct);
+                var wasAlreadyPaid = paymentRecord?.Status.Equals("Paid", StringComparison.OrdinalIgnoreCase) == true;
 
                 if (paymentRecord is null)
                 {
+                    _logger.LogInformation(
+                        "Creating new payment record for OrderId={OrderId}",
+                        orderId);
+
                     paymentRecord = PaymentRecord.Create(
                         orderId: orderId,
-                        dealerId: command.DealerId.Value,
-                        amount: command.Amount.Value,
+                        dealerId: dealerId,
+                        amount: amount,
                         paymentMode: "Prepaid");
 
                     await _paymentRecordRepository.AddAsync(paymentRecord, ct);
                 }
+                else
+                {
+                    _logger.LogInformation(
+                        "Payment record already exists for OrderId={OrderId}. Updating status.",
+                        orderId);
+                }
 
                 paymentRecord.MarkPaid(command.RazorpayPaymentId);
 
-                // Ensure the DealerCreditAccount is updated with the AddOutstanding amount
-                var account = await _creditAccountRepository.GetByDealerIdAsync(command.DealerId.Value, ct);
-                if (account is null)
-                {
-                    account = DealerCreditAccount.Create(command.DealerId.Value);
-                    await _creditAccountRepository.AddAsync(account, ct);
-                }
-                account.EnsureMonthlyReset(DateTime.UtcNow);
-                account.AddOutstanding(command.Amount.Value);
-
                 var eventPayload = JsonSerializer.Serialize(new
                 {
-                    OrderId = command.OrderId.Value,
-                    DealerId = command.DealerId.Value,
-                    Amount = command.Amount.Value
+                    OrderId = orderId,
+                    DealerId = dealerId,
+                    Amount = amount
                 });
                 var outboxMessage = OutboxMessage.Create("PaymentSuccessful", eventPayload);
                 await _outboxRepository.AddAsync(outboxMessage, ct);
 
                 await _paymentRecordRepository.SaveChangesAsync(ct);
+
+                _logger.LogInformation(
+                    "Payment record saved. Confirming order payment synchronously for OrderId={OrderId}",
+                    orderId);
+
+                await _orderPaymentConfirmationClient.ConfirmPaymentAsync(orderId, dealerId, amount, ct);
+
+                _logger.LogInformation(
+                    "Order payment confirmed synchronously for OrderId={OrderId}",
+                    orderId);
+
+                if (!wasAlreadyPaid)
+                {
+                    // Update utilized purchase limit after Order service has checked the limit.
+                    var account = await _creditAccountRepository.GetByDealerIdAsync(dealerId, ct);
+                    if (account is null)
+                    {
+                        _logger.LogInformation(
+                            "Creating new credit account for DealerId={DealerId}",
+                            dealerId);
+                        account = DealerCreditAccount.Create(dealerId);
+                        await _creditAccountRepository.AddAsync(account, ct);
+                    }
+                    account.EnsureMonthlyReset(DateTime.UtcNow);
+                    account.AddOutstanding(amount);
+                }
+
+                _logger.LogInformation(
+                    "PaymentSuccessful event queued in outbox. MessageId={MessageId}, OrderId={OrderId}",
+                    outboxMessage.MessageId, orderId);
+
+                await _paymentRecordRepository.SaveChangesAsync(ct);
+
+                _logger.LogInformation(
+                    "Payment confirmation completed for OrderId={OrderId}. PaymentSuccessful event remains available as fallback.",
+                    orderId);
             }
             catch (Exception ex)
             {
                 _logger.LogError(
                     ex,
-                    "Razorpay signature verified but PaymentRecord persistence failed for OrderId={OrderId}",
-                    command.OrderId);
+                    "Razorpay signature verified but PaymentRecord persistence failed for OrderId={OrderId}, DealerId={DealerId}. Payment may need manual reconciliation.",
+                    command.OrderId, command.DealerId);
+                // Re-throw to ensure the caller knows the operation failed
+                throw;
+            }
+        }
+        else
+        {
+            if (!isValid)
+            {
+                _logger.LogWarning(
+                    "Invalid Razorpay signature. OrderId={OrderId}, RazorpayOrderId={RazorpayOrderId}",
+                    command.OrderId, command.RazorpayOrderId);
+            }
+            else
+            {
+                _logger.LogWarning(
+                    "Payment verification succeeded but missing required data. OrderId={OrderId}, DealerId={DealerId}, Amount={Amount}",
+                    command.OrderId, command.DealerId, command.Amount);
             }
         }
 

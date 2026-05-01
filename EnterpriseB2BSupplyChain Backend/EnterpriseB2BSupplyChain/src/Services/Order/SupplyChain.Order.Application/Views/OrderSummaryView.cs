@@ -6,6 +6,7 @@ public record OrderSummaryView(
     Guid OrderId,
     string OrderNumber,
     string Status,
+    string PaymentStatus,
     decimal TotalAmount,
     string PaymentMode,
     int TotalItems,
@@ -25,6 +26,7 @@ public record OrderSummaryView(
             dto.OrderId,
             dto.OrderNumber,
             dto.Status,
+            dto.PaymentStatus,
             dto.TotalAmount,
             dto.PaymentMode,
             dto.TotalItems,
@@ -39,4 +41,3 @@ public record OrderSummaryView(
             dto.ShippingState
         );
 }
-

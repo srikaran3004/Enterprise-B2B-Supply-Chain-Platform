@@ -112,7 +112,7 @@ app.MapHealthChecks("/health");
 RecurringJob.AddOrUpdate<OutboxPollerJob>(
     "catalog-outbox-poller",
     job => job.ExecuteAsync(),
-    "*/5 * * * * *"); // Every 5 seconds
+    "* * * * *"); // Every 1 minute
 
 RecurringJob.AddOrUpdate<OutboxCleanupJob>(
     "catalog-outbox-cleanup",

@@ -1,4 +1,6 @@
 export type OrderStatus =
+  | 'PaymentPending'
+  | 'PaymentFailed'
   | 'Placed'
   | 'OnHold'
   | 'Processing'
@@ -18,6 +20,8 @@ export const ORDER_STATUS_CONFIG: Record<string, { label: string; color: string;
   Active: { label: 'Active', color: '#059669', bgColor: '#ecfdf5', icon: 'check-circle-2', variant: 'success' },
   Inactive: { label: 'Inactive', color: '#64748b', bgColor: '#f8fafc', icon: 'minus-circle', variant: 'neutral' },
   Pending: { label: 'Pending', color: '#d97706', bgColor: '#fffbeb', icon: 'clock-3', variant: 'warning' },
+  PaymentPending: { label: 'Payment Pending', color: '#d97706', bgColor: '#fffbeb', icon: 'clock-3', variant: 'warning' },
+  PaymentFailed: { label: 'Payment Failed', color: '#ef4444', bgColor: '#fef2f2', icon: 'x-circle', variant: 'danger' },
   Suspended: { label: 'Suspended', color: '#ef4444', bgColor: '#fef2f2', icon: 'pause-circle', variant: 'danger' },
   Placed: { label: 'Placed', color: '#3b82f6', bgColor: '#eff6ff', icon: 'package', variant: 'info' },
   OnHold: { label: 'On Hold', color: '#f59e0b', bgColor: '#fffbeb', icon: 'pause-circle', variant: 'warning' },

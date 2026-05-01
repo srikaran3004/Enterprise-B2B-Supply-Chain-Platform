@@ -22,6 +22,7 @@ public class GetAllOrdersQueryHandler : IRequestHandler<GetAllOrdersQuery, Paged
         var items = orders
             .Select(o => new OrderSummaryDto(
                 o.OrderId, o.OrderNumber, o.DealerId, o.Status.ToString(),
+                o.PaymentStatus.ToString(),
                 o.TotalAmount, o.PaymentMode,
                 o.Lines.Sum(l => l.Quantity),
                 o.PlacedAt, o.UpdatedAt,

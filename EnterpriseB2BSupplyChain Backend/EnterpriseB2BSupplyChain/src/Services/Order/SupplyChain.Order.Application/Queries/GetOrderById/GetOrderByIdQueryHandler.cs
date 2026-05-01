@@ -23,6 +23,7 @@ public class GetOrderByIdQueryHandler : IRequestHandler<GetOrderByIdQuery, Order
             DealerName:    order.DealerName,
             DealerEmail:   order.DealerEmail,
             Status:        order.Status.ToString(),
+            PaymentStatus: order.PaymentStatus.ToString(),
             TotalAmount:   order.TotalAmount,
             PaymentMode:   order.PaymentMode,
             Notes:         order.Notes,

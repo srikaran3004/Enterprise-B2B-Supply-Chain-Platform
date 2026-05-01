@@ -30,6 +30,8 @@ public class OutboxPollerJob
 
         if (!messages.Any()) return;
 
+        _logger.LogInformation("Processing {Count} pending outbox messages", messages.Count());
+
         await using var channel = await _rabbitConnection.CreateChannelAsync();
 
         await channel.ExchangeDeclareAsync(
@@ -81,12 +83,14 @@ public class OutboxPollerJob
             catch (Exception ex)
             {
                 message.MarkFailed(ex.Message);
-                _logger.LogWarning(ex,
-                    "Failed to publish payment outbox message {MessageId}", message.MessageId);
+                _logger.LogError(ex,
+                    "Failed to publish payment outbox message {MessageId} — {EventType}. Error: {ErrorMessage}",
+                    message.MessageId, message.EventType, ex.Message);
             }
         }
 
         await _outboxRepository.SaveChangesAsync();
+        _logger.LogInformation("Outbox polling completed. Processed {Count} messages", messages.Count());
     }
 
     private static JsonElement DeserializePayload(string payload)

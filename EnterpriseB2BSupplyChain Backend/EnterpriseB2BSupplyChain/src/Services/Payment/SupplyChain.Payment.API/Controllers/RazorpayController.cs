@@ -1,9 +1,11 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SupplyChain.Payment.Application.Abstractions;
 using SupplyChain.Payment.Application.Commands.CreateRazorpayOrder;
 using SupplyChain.Payment.Application.Commands.ConfirmRazorpayPayment;
 using SupplyChain.Payment.Application.Commands.SimulatePayment;
+using SupplyChain.Payment.Domain.Entities;
 
 namespace SupplyChain.Payment.API.Controllers;
 
@@ -13,8 +15,18 @@ namespace SupplyChain.Payment.API.Controllers;
 public class RazorpayController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly IPaymentRecordRepository _paymentRecordRepository;
+    private readonly IOrderPaymentConfirmationClient _orderPaymentConfirmationClient;
 
-    public RazorpayController(IMediator mediator) => _mediator = mediator;
+    public RazorpayController(
+        IMediator mediator,
+        IPaymentRecordRepository paymentRecordRepository,
+        IOrderPaymentConfirmationClient orderPaymentConfirmationClient)
+    {
+        _mediator = mediator;
+        _paymentRecordRepository = paymentRecordRepository;
+        _orderPaymentConfirmationClient = orderPaymentConfirmationClient;
+    }
 
     [HttpPost("create-order")]
     public async Task<IActionResult> CreateOrder([FromBody] CreateRazorpayOrderRequest request, CancellationToken ct)
@@ -26,19 +38,56 @@ public class RazorpayController : ControllerBase
     [HttpPost("confirm")]
     public async Task<IActionResult> ConfirmPayment([FromBody] ConfirmRazorpayPaymentRequest request, CancellationToken ct)
     {
+        var dealerId = GetDealerIdOrNull();
+        if (!request.OrderId.HasValue || !request.Amount.HasValue || request.Amount.Value <= 0 || !dealerId.HasValue)
+        {
+            return BadRequest(new { Message = "OrderId, Amount, and dealer identity are required to confirm payment." });
+        }
+
         var result = await _mediator.Send(new ConfirmRazorpayPaymentCommand(
             request.RazorpayOrderId,
             request.RazorpayPaymentId,
             request.RazorpaySignature,
             request.OrderId,
             request.Amount,
-            GetDealerIdOrNull()
+            dealerId
         ), ct);
 
         if (!result.Verified)
             return BadRequest("Invalid Razorpay signature.");
 
         return Ok(new { Message = "Payment verified successfully." });
+    }
+
+    [HttpPost("failed")]
+    public async Task<IActionResult> MarkPaymentFailed([FromBody] RazorpayPaymentFailedRequest request, CancellationToken ct)
+    {
+        var dealerId = GetDealerIdOrNull();
+        if (!request.OrderId.HasValue || !request.Amount.HasValue || request.Amount.Value <= 0 || !dealerId.HasValue)
+        {
+            return BadRequest(new { Message = "OrderId, Amount, and dealer identity are required to mark payment failed." });
+        }
+
+        var paymentRecord = await _paymentRecordRepository.GetByOrderIdAsync(request.OrderId.Value, ct);
+        if (paymentRecord is null)
+        {
+            paymentRecord = PaymentRecord.Create(
+                request.OrderId.Value,
+                dealerId.Value,
+                request.Amount.Value,
+                "Prepaid");
+            await _paymentRecordRepository.AddAsync(paymentRecord, ct);
+        }
+
+        paymentRecord.MarkFailed(request.RazorpayPaymentId);
+        await _paymentRecordRepository.SaveChangesAsync(ct);
+
+        await _orderPaymentConfirmationClient.MarkPaymentFailedAsync(
+            request.OrderId.Value,
+            request.ErrorDescription ?? request.ErrorReason ?? "Razorpay payment failed",
+            ct);
+
+        return Ok(new { Message = "Payment failure recorded." });
     }
 
     /// <summary>
@@ -48,6 +97,12 @@ public class RazorpayController : ControllerBase
     [HttpPost("simulate-capture")]
     public async Task<IActionResult> SimulateCapture([FromBody] SimulateCaptureRequest request, CancellationToken ct)
     {
+        var dealerId = GetDealerIdOrNull();
+        if (!request.OrderId.HasValue || !request.Amount.HasValue || request.Amount.Value <= 0 || !dealerId.HasValue)
+        {
+            return BadRequest(new { Message = "OrderId, Amount, and dealer identity are required to confirm payment." });
+        }
+
         var result = await _mediator.Send(new SimulatePaymentCommand(request.RazorpayOrderId), ct);
 
         // Immediately confirm the simulated payment
@@ -57,7 +112,7 @@ public class RazorpayController : ControllerBase
             result.RazorpaySignature,
             request.OrderId,
             request.Amount,
-            GetDealerIdOrNull()
+            dealerId
         ), ct);
 
         if (!confirmation.Verified)
@@ -86,6 +141,14 @@ public record ConfirmRazorpayPaymentRequest(
     string RazorpaySignature,
     Guid? OrderId = null,
     decimal? Amount = null
+);
+public record RazorpayPaymentFailedRequest(
+    Guid? OrderId = null,
+    decimal? Amount = null,
+    string? RazorpayPaymentId = null,
+    string? ErrorCode = null,
+    string? ErrorDescription = null,
+    string? ErrorReason = null
 );
 public record SimulateCaptureRequest(
     string RazorpayOrderId,

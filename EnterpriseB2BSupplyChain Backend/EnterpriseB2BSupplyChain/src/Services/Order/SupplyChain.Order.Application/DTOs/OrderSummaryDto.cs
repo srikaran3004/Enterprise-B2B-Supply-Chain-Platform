@@ -5,6 +5,7 @@ public record OrderSummaryDto(
     string   OrderNumber,
     Guid     DealerId,
     string   Status,
+    string   PaymentStatus,
     decimal  TotalAmount,
     string   PaymentMode,
     int      TotalItems,

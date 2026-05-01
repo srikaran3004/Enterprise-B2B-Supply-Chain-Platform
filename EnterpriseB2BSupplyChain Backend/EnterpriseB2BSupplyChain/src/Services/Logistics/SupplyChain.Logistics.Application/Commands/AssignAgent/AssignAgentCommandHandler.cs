@@ -28,8 +28,13 @@ public class AssignAgentCommandHandler : IRequestHandler<AssignAgentCommand, Ass
 
     public async Task<AssignAgentResult> Handle(AssignAgentCommand command, CancellationToken ct)
     {
-        // Auto-advance the order to ReadyForDispatch if still in early status.
-        await _orderServiceClient.AdvanceToReadyForDispatchAsync(command.OrderId, ct);
+        // Auto-advance the order to ReadyForDispatch if payment has been confirmed.
+        var orderAdvanced = await _orderServiceClient.AdvanceToReadyForDispatchAsync(command.OrderId, ct);
+        if (!orderAdvanced)
+        {
+            throw new InvalidOperationException(
+                "Cannot assign a delivery agent until the order payment is confirmed and the order is ready for dispatch.");
+        }
 
         // Resolve agent and vehicle for human-readable response + notification payload.
         // These reads are AsNoTracking-safe because the actual UPDATEs happen in

@@ -111,7 +111,7 @@ RecurringJob.AddOrUpdate<SlaMonitorJob>(
 RecurringJob.AddOrUpdate<OutboxPollerJob>(
     "logistics-outbox-poller",
     job => job.ExecuteAsync(),
-    "*/5 * * * * *"); // Every 5 seconds (seconds syntax)
+    "* * * * *"); // Every 1 minute
 
 RecurringJob.AddOrUpdate<OutboxCleanupJob>(
     "logistics-outbox-cleanup",

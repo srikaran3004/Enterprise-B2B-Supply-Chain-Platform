@@ -20,6 +20,8 @@ public interface IOrderRepository
         int page,
         int pageSize,
         CancellationToken ct = default);
+    Task<bool> TryConfirmPaymentAsync(Guid orderId, CancellationToken ct = default);
+    Task<bool> TryMarkPaymentFailedAsync(Guid orderId, string reason, CancellationToken ct = default);
     Task<bool> TryApproveOrderAsync(Guid orderId, Guid adminId, string fromStatus, CancellationToken ct = default);
     Task<bool> TryTransitionStatusAsync(
         Guid orderId,

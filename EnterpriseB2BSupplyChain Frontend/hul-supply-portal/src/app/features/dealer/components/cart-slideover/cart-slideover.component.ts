@@ -805,10 +805,31 @@ export class CartSlideoverComponent implements OnInit, OnDestroy {
             this.router.navigate(['/dealer/orders/', orderId]);
           },
         },
+        paymentFailedHandler: async (response: any) => {
+        try {
+          await firstValueFrom(
+            this.razorpayService.markPaymentFailed({
+              orderId,
+              amount,
+              razorpayPaymentId: response?.error?.metadata?.payment_id,
+              errorCode: response?.error?.code,
+              errorDescription: response?.error?.description,
+              errorReason: response?.error?.reason,
+            })
+          );
+        } catch (e) {
+          console.error('Failed to record Razorpay payment failure', e);
+        }
+
+        this.toast.error('Payment failed. Please try again.');
+        this.placing = false;
+        this.store.dispatch(CartActions.clearCart());
+        this.closeCart();
+        this.router.navigate(['/dealer/orders/', orderId]);
+        },
       };
 
       this.razorpayService.openRazorpay(options);
-
     } catch (e) {
       this.initializingPayment = false;
       this.toast.error('Failed to initialize Razorpay. Please try again.');
