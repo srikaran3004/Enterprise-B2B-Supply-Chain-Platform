@@ -31,6 +31,11 @@ public class GetMyOrdersQueryHandler : IRequestHandler<GetMyOrdersQuery, PagedRe
                 PaymentMode: o.PaymentMode,
                 TotalItems:  o.Lines.Sum(l => l.Quantity),
                 PlacedAt:    o.PlacedAt,
+                DeliveredAt: o.StatusHistory
+                    .Where(h => string.Equals(h.ToStatus, "Delivered", StringComparison.OrdinalIgnoreCase))
+                    .OrderByDescending(h => h.ChangedAt)
+                    .Select(h => (DateTime?)h.ChangedAt)
+                    .FirstOrDefault(),
                 UpdatedAt:   o.UpdatedAt,
                 ShippingAddressLine: o.ShippingAddressLine,
                 ShippingCity:        o.ShippingCity,

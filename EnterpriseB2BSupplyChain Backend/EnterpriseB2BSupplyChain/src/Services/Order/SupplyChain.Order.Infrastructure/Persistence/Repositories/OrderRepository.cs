@@ -70,6 +70,7 @@ public class OrderRepository : IOrderRepository
             .Skip((safePage - 1) * safePageSize)
             .Take(safePageSize)
             .Include(o => o.Lines)
+            .Include(o => o.StatusHistory)
             .AsSplitQuery()
             .ToListAsync(ct);
 
@@ -99,6 +100,7 @@ public class OrderRepository : IOrderRepository
             .Skip((safePage - 1) * safePageSize)
             .Take(safePageSize)
             .Include(o => o.Lines)
+            .Include(o => o.StatusHistory)
             .AsSplitQuery()
             .ToListAsync(ct);
 
@@ -339,7 +341,10 @@ public class OrderRepository : IOrderRepository
 
     public async Task<ReturnRequest?> GetReturnByIdAsync(Guid returnId, CancellationToken ct = default)
     {
-        return await _context.ReturnRequests.Include(r => r.Order).FirstOrDefaultAsync(r => r.ReturnId == returnId, ct);
+        return await _context.ReturnRequests
+            .Include(r => r.Order)
+                .ThenInclude(o => o.Lines)
+            .FirstOrDefaultAsync(r => r.ReturnId == returnId, ct);
     }  
     public async Task SaveChangesAsync(CancellationToken ct = default)
     {

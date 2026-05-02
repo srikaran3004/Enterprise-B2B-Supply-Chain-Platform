@@ -188,6 +188,7 @@ import { API_ENDPOINTS } from '../../../../shared/constants/api-endpoints';
   `]
 })
 export class ReturnsComponent implements OnInit {
+  private static readonly RETURN_WINDOW_MS = 48 * 60 * 60 * 1000;
   private returnsService = inject(ReturnsService);
   private http = inject(ZoneHttpService);
   private toast = inject(ToastService);
@@ -240,9 +241,10 @@ export class ReturnsComponent implements OnInit {
           return;
         }
 
-        // Eligibility is based on order-service truth so UI and backend rules stay consistent.
+        const now = Date.now();
         this.myOrders = allOrders.filter((order: any) =>
           order?.status === 'Delivered' &&
+          this.isWithinReturnWindow(order?.deliveredAt, now) &&
           !this.returns.some(r => r.orderId === order.orderId)
         );
         this.loadingOrders = false;
@@ -369,6 +371,19 @@ export class ReturnsComponent implements OnInit {
 
   openImage(url: string) {
     window.open(url, '_blank');
+  }
+
+  private isWithinReturnWindow(deliveredAt: unknown, now = Date.now()): boolean {
+    if (typeof deliveredAt !== 'string' || !deliveredAt.trim()) {
+      return false;
+    }
+
+    const deliveredMs = new Date(deliveredAt).getTime();
+    if (!Number.isFinite(deliveredMs) || deliveredMs > now) {
+      return false;
+    }
+
+    return (now - deliveredMs) <= ReturnsComponent.RETURN_WINDOW_MS;
   }
 
 

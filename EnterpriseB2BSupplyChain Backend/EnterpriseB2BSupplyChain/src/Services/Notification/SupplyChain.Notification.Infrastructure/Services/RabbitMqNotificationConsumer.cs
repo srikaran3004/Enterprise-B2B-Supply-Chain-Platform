@@ -599,6 +599,10 @@ public class RabbitMqNotificationConsumer : BackgroundService
         CopyAlias(data, "DealerName", "dealer_name");
         CopyAlias(data, "DealerEmail", "dealer_email");
         CopyAlias(data, "Status", "status");
+        CopyAlias(data, "TotalAmount", "total_amount");
+        CopyAlias(data, "RefundAmount", "refund_amount");
+        CopyAlias(data, "GrandTotal", "grand_total");
+        CopyAlias(data, "Amount", "amount");
         CopyAlias(data, "AgentName", "agent_name");
         CopyAlias(data, "AgentPhone", "agent_phone");
         CopyAlias(data, "VehicleNo", "vehicle_no");

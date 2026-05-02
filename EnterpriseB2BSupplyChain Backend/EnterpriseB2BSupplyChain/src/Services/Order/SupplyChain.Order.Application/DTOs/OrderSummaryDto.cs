@@ -10,6 +10,7 @@ public record OrderSummaryDto(
     string   PaymentMode,
     int      TotalItems,
     DateTime PlacedAt,
+    DateTime? DeliveredAt,
     DateTime? UpdatedAt,
     string?  ShippingAddressLine = null,
     string?  ShippingCity        = null,

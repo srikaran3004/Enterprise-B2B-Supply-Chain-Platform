@@ -25,7 +25,13 @@ public class GetAllOrdersQueryHandler : IRequestHandler<GetAllOrdersQuery, Paged
                 o.PaymentStatus.ToString(),
                 o.TotalAmount, o.PaymentMode,
                 o.Lines.Sum(l => l.Quantity),
-                o.PlacedAt, o.UpdatedAt,
+                o.PlacedAt,
+                o.StatusHistory
+                    .Where(h => string.Equals(h.ToStatus, "Delivered", StringComparison.OrdinalIgnoreCase))
+                    .OrderByDescending(h => h.ChangedAt)
+                    .Select(h => (DateTime?)h.ChangedAt)
+                    .FirstOrDefault(),
+                o.UpdatedAt,
                 o.ShippingAddressLine, o.ShippingCity, o.ShippingPinCode,
                 o.Lines.Select(l => new OrderLineDto(
                     l.OrderLineId,
