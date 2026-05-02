@@ -102,7 +102,7 @@ flowchart LR
         Sys([Message Broker])
     end
 
-    subgraph Platform Services
+    subgraph PlatformServices [Platform Services]
         UC1(Authenticate & Get Token)
         UC2(Manage B2B Catalog)
         UC3(Place Order & Reserve Stock)
