@@ -256,6 +256,59 @@ public class OrderRepository : IOrderRepository
         return $"ORD-{year}-{(count + 1):D5}";
     }
 
+    public async Task<bool> TryRaiseReturnAsync(
+        Guid orderId,
+        Guid dealerId,
+        string reason,
+        string? photoUrl,
+        string? thumbUrl,
+        CancellationToken ct = default)
+    {
+        var strategy = _context.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync(async () =>
+        {
+            var now = DateTime.UtcNow;
+            await using var transaction = await _context.Database.BeginTransactionAsync(ct);
+
+            try
+            {
+                var affected = await _context.Database.ExecuteSqlInterpolatedAsync($@"
+                    UPDATE Orders
+                    SET Status = {OrderStatus.ReturnRequested.ToString()},
+                        UpdatedAt = {now}
+                    WHERE OrderId = {orderId}
+                      AND Status = {OrderStatus.Delivered.ToString()}", ct);
+
+                if (affected == 0)
+                {
+                    await transaction.RollbackAsync(ct);
+                    _context.ChangeTracker.Clear();
+                    return false;
+                }
+
+                var request = ReturnRequest.Create(orderId, dealerId, reason, photoUrl, thumbUrl);
+                var history = OrderStatusHistory.Create(
+                    orderId,
+                    OrderStatus.Delivered.ToString(),
+                    OrderStatus.ReturnRequested.ToString(),
+                    dealerId,
+                    reason);
+
+                await _context.ReturnRequests.AddAsync(request, ct);
+                await _context.StatusHistories.AddAsync(history, ct);
+                await _context.SaveChangesAsync(ct);
+                await transaction.CommitAsync(ct);
+                return true;
+            }
+            catch (DbUpdateException)
+            {
+                await transaction.RollbackAsync(ct);
+                _context.ChangeTracker.Clear();
+                return false;
+            }
+        });
+    }
+
     public async Task AddAsync(Domain.Entities.Order order, CancellationToken ct = default)
         => await _context.Orders.AddAsync(order, ct);
 

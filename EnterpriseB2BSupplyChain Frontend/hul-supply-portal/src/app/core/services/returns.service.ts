@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { API_ENDPOINTS } from '../../shared/constants/api-endpoints';
+import { environment } from '../../../environments/environment';
 
 export interface ReturnRequest {
   returnId: string;
@@ -22,6 +23,7 @@ export interface ReturnRequest {
 })
 export class ReturnsService {
   private http = inject(HttpClient);
+  private readonly mediaBaseUrl = environment.orderServiceUrl.replace(/\/+$/, '');
 
   raiseReturn(orderId: string, reason: string, photoUrl?: string, thumbUrl?: string): Observable<{ returnId: string }> {
     return this.http.post<{ returnId: string }>(
@@ -90,8 +92,20 @@ export class ReturnsService {
       resolvedAt: raw.resolvedAt ?? raw.ResolvedAt ?? null,
       adminNotes: raw.adminNotes ?? raw.AdminNotes,
       orderNumber: raw.orderNumber ?? raw.OrderNumber,
-      photoUrl: raw.photoUrl ?? raw.PhotoUrl,
-      thumbUrl: raw.thumbUrl ?? raw.ThumbUrl,
+      photoUrl: this.toAbsoluteMediaUrl(raw.photoUrl ?? raw.PhotoUrl),
+      thumbUrl: this.toAbsoluteMediaUrl(raw.thumbUrl ?? raw.ThumbUrl),
     };
+  }
+
+  private toAbsoluteMediaUrl(url: unknown): string | undefined {
+    if (typeof url !== 'string' || !url.trim()) {
+      return undefined;
+    }
+
+    if (/^https?:\/\//i.test(url)) {
+      return url;
+    }
+
+    return `${this.mediaBaseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
   }
 }

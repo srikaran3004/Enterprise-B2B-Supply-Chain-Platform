@@ -287,7 +287,7 @@ public static class NotificationSeeder
                         "Refund Details",
                         "<strong>Approved Amount:</strong> &#8377; {{ refund_amount }}<br/>" +
                         "<strong>Mode:</strong> {{ refund_mode }}<br/>" +
-                        "<strong>Expected Timeline:</strong> 3-5 business days",
+                        "<strong>Expected Timeline:</strong> 2-3 working days",
                         "success") +
                     HulEmailLayout.Signoff()
             )),

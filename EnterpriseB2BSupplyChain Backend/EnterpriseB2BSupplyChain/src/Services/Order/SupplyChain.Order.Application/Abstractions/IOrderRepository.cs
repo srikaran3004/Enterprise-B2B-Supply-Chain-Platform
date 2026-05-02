@@ -37,6 +37,13 @@ public interface IOrderRepository
         string reason,
         CancellationToken ct = default);
     Task<string> GenerateOrderNumberAsync(CancellationToken ct = default);
+    Task<bool> TryRaiseReturnAsync(
+        Guid orderId,
+        Guid dealerId,
+        string reason,
+        string? photoUrl,
+        string? thumbUrl,
+        CancellationToken ct = default);
     Task AddReturnAsync(ReturnRequest request, CancellationToken ct = default);
     Task<List<ReturnRequest>> GetReturnsByDealerIdAsync(Guid dealerId, string? status, CancellationToken ct = default);
     Task<List<ReturnRequest>> GetAllReturnsAsync(string? status, CancellationToken ct = default);

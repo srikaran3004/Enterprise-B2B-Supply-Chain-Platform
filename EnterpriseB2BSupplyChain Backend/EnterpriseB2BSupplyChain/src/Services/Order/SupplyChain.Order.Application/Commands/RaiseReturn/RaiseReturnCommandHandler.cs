@@ -20,73 +20,64 @@ public class RaiseReturnCommandHandler : IRequestHandler<RaiseReturnCommand>
 
     public async Task Handle(RaiseReturnCommand command, CancellationToken ct)
     {
-        const int maxAttempts = 3;
-        for (var attempt = 1; attempt <= maxAttempts; attempt++)
+        var order = await _orderRepository.GetByIdAsync(command.OrderId, ct)
+            ?? throw new KeyNotFoundException($"Order {command.OrderId} not found.");
+
+        if (order.DealerId != command.DealerId)
+            throw new UnauthorizedAccessException("You can only raise returns for your own orders.");
+
+        if (order.ReturnRequest is not null)
+            return;
+
+        if (order.Status == Domain.Enums.OrderStatus.ReturnRequested)
+            return;
+
+        if (order.Status != Domain.Enums.OrderStatus.Delivered)
+            throw new InvalidOperationException($"Returns can only be raised on delivered orders. Current status: {order.Status}.");
+
+        var deliveredAt = order.StatusHistory
+            .Where(h => string.Equals(h.ToStatus, Domain.Enums.OrderStatus.Delivered.ToString(), StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(h => h.ChangedAt)
+            .Select(h => (DateTime?)h.ChangedAt)
+            .FirstOrDefault();
+
+        if (!deliveredAt.HasValue)
+            throw new InvalidOperationException("Return cannot be raised because delivery timestamp was not found.");
+
+        var elapsedSinceDelivery = DateTime.UtcNow - deliveredAt.Value;
+        if (elapsedSinceDelivery > ReturnWindow)
+            throw new InvalidOperationException("Return request window has expired. Returns must be raised within 48 hours of delivery.");
+
+        var outbox = OutboxMessage.Create("ReturnRequested", JsonSerializer.Serialize(new
         {
-            var order = await _orderRepository.GetByIdAsync(command.OrderId, ct)
-                ?? throw new KeyNotFoundException($"Order {command.OrderId} not found.");
+            order.OrderId,
+            order.OrderNumber,
+            order.DealerId,
+            Reason = command.Reason,
+            PhotoUrl = command.PhotoUrl,
+            ThumbUrl = command.ThumbUrl
+        }));
 
-            if (order.DealerId != command.DealerId)
-                throw new UnauthorizedAccessException("You can only raise returns for your own orders.");
+        await _outboxRepository.AddAsync(outbox, ct);
 
-            if (order.ReturnRequest is not null)
-                return;
+        var raised = await _orderRepository.TryRaiseReturnAsync(
+            command.OrderId,
+            command.DealerId,
+            command.Reason,
+            command.PhotoUrl,
+            command.ThumbUrl,
+            ct);
 
-            if (order.Status == Domain.Enums.OrderStatus.ReturnRequested)
-                return;
+        if (raised)
+            return;
 
-            if (order.Status != Domain.Enums.OrderStatus.Delivered)
-                throw new InvalidOperationException($"Returns can only be raised on delivered orders. Current status: {order.Status}.");
+        var latestOrder = await _orderRepository.GetByIdAsync(command.OrderId, ct);
+        if (latestOrder?.ReturnRequest is not null || latestOrder?.Status == Domain.Enums.OrderStatus.ReturnRequested)
+            return;
 
-            var deliveredAt = order.StatusHistory
-                .Where(h => string.Equals(h.ToStatus, Domain.Enums.OrderStatus.Delivered.ToString(), StringComparison.OrdinalIgnoreCase))
-                .OrderByDescending(h => h.ChangedAt)
-                .Select(h => (DateTime?)h.ChangedAt)
-                .FirstOrDefault();
+        if (latestOrder is not null && latestOrder.Status != Domain.Enums.OrderStatus.Delivered)
+            throw new InvalidOperationException($"Returns can only be raised on delivered orders. Current status: {latestOrder.Status}.");
 
-            if (!deliveredAt.HasValue)
-                throw new InvalidOperationException("Return cannot be raised because delivery timestamp was not found.");
-
-            var elapsedSinceDelivery = DateTime.UtcNow - deliveredAt.Value;
-            if (elapsedSinceDelivery > ReturnWindow)
-                throw new InvalidOperationException("Return request window has expired. Returns must be raised within 48 hours of delivery.");
-
-            order.RaiseReturnRequest(command.DealerId, command.Reason, command.PhotoUrl, command.ThumbUrl);
-
-            var outbox = OutboxMessage.Create("ReturnRequested", JsonSerializer.Serialize(new
-            {
-                order.OrderId,
-                order.OrderNumber,
-                order.DealerId,
-                Reason = command.Reason
-            }));
-
-            await _outboxRepository.AddAsync(outbox, ct);
-
-            try
-            {
-                await _orderRepository.SaveChangesAsync(ct);
-                return;
-            }
-            catch (Exception ex) when (IsDbConcurrencyException(ex) && attempt < maxAttempts)
-            {
-                // The order was updated concurrently. Reload and retry once.
-            }
-            catch (Exception ex) when (IsDbConcurrencyException(ex))
-            {
-                // One last read to make the command idempotent even if another in-flight request already raised the return.
-                var latestOrder = await _orderRepository.GetByIdAsync(command.OrderId, ct);
-                if (latestOrder?.ReturnRequest is not null || latestOrder?.Status == Domain.Enums.OrderStatus.ReturnRequested)
-                    return;
-
-                if (latestOrder is not null && latestOrder.Status != Domain.Enums.OrderStatus.Delivered)
-                    throw new InvalidOperationException($"Returns can only be raised on delivered orders. Current status: {latestOrder.Status}.");
-
-                throw new InvalidOperationException("Order was updated by another operation. Please refresh and try return request again.");
-            }
-        }
+        throw new InvalidOperationException("Order was updated by another operation. Please refresh and try return request again.");
     }
-
-    private static bool IsDbConcurrencyException(Exception exception)
-        => exception.GetType().FullName == "Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException";
 }
