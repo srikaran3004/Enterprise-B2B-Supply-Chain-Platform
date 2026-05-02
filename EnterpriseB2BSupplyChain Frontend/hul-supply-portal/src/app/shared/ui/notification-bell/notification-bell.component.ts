@@ -78,9 +78,14 @@ import { UserRole } from '../../../core/models/user.model';
     .notif-bell-btn:hover { color: var(--text-primary); background: var(--bg-muted); }
     .bell-icon { width: 24px; height: 24px; }
     
-    .notif-badge { position: absolute; top: 2px; right: 2px; display: flex; width: 16px; height: 16px; align-items: center; justify-content: center; }
-    .badge-ping { position: absolute; width: 100%; height: 100%; border-radius: 50%; background-color: var(--hul-error); opacity: 0.75; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite; }
-    .badge-text { position: relative; width: 16px; height: 16px; background-color: var(--hul-error); color: white; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 2px solid white; font-size: 9px; font-weight: 700; }
+    .notif-badge { position: absolute; top: 1px; right: 1px; display: flex; width: 18px; height: 18px; align-items: center; justify-content: center; }
+    .badge-ping { position: absolute; width: 100%; height: 100%; border-radius: 50%; background-color: var(--hul-danger); opacity: 0.45; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite; }
+    .badge-text {
+      position: relative; width: 18px; height: 18px; background-color: var(--hul-danger); color: #ffffff;
+      display: flex; align-items: center; justify-content: center; border-radius: 50%;
+      border: 2px solid var(--bg-card); font-size: 9px; font-weight: 800; line-height: 1;
+      box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.08);
+    }
     @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
 
     .notif-dropdown { position: absolute; right: 0; top: calc(100% + 8px); z-index: 50; width: 340px; background: var(--bg-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-modal); border: 1px solid var(--border-default); overflow: hidden; transform-origin: top right; animation: slideDown var(--duration-fast) ease-out; }

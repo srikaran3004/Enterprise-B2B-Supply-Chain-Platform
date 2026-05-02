@@ -658,7 +658,7 @@ export class AllDealersComponent implements OnInit {
           totalOrders:      this.dealerOrders.length,
           totalSpent:       this.dealerOrders.reduce((s, o) => s + (o.totalAmount || 0), 0),
           pendingOrders:    this.dealerOrders.filter(o => !isTerminalOrder(o.status)).length,
-          completedOrders:  this.dealerOrders.filter(o => o.status === OrderStatus.Delivered).length,
+          completedOrders:  this.dealerOrders.filter(o => o.status === OrderStatus.Delivered || o.status === OrderStatus.Closed).length,
           cancelledOrders:  this.dealerOrders.filter(o => o.status === OrderStatus.Cancelled).length,
           avgOrderValue:    this.dealerOrders.length
             ? this.dealerOrders.reduce((s, o) => s + (o.totalAmount || 0), 0) / this.dealerOrders.length

@@ -19,6 +19,8 @@ export enum OrderStatus {
   ReadyForDispatch  = 'ReadyForDispatch',
   InTransit         = 'InTransit',
   Delivered         = 'Delivered',
+  ReturnRequested   = 'ReturnRequested',
+  Closed            = 'Closed',
   Cancelled         = 'Cancelled',
 }
 
@@ -67,5 +69,5 @@ export function isActiveOrder(status: string): boolean {
 
 /** Helper: returns true if an order is in a terminal state */
 export function isTerminalOrder(status: string): boolean {
-  return status === OrderStatus.Delivered || status === OrderStatus.Cancelled;
+  return status === OrderStatus.Delivered || status === OrderStatus.Closed || status === OrderStatus.Cancelled;
 }

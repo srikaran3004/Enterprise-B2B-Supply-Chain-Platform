@@ -211,6 +211,27 @@ public class Order
         UpdatedAt = DateTime.UtcNow;
     }
 
+    public void ApproveReturn(Guid actorId, string? notes = null)
+    {
+        if (Status != OrderStatus.ReturnRequested)
+            throw new DomainException("INVALID_RETURN", "Only return-requested orders can be approved.");
+
+        RecordTransition(Status, OrderStatus.Closed, actorId, notes ?? "Return approved");
+        Status = OrderStatus.Closed;
+        ClosedAt = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void RejectReturn(Guid actorId, string? notes = null)
+    {
+        if (Status != OrderStatus.ReturnRequested)
+            throw new DomainException("INVALID_RETURN", "Only return-requested orders can be rejected.");
+
+        RecordTransition(Status, OrderStatus.Delivered, actorId, notes ?? "Return rejected");
+        Status = OrderStatus.Delivered;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
     private void RecordTransition(
         OrderStatus fromStatus,
         OrderStatus toStatus,

@@ -46,6 +46,7 @@ public class ApproveReturnCommandHandler : IRequestHandler<ApproveReturnCommand>
             return;
 
         ret.Approve(request.AdminNotes);
+        ret.Order.ApproveReturn(request.AdminId, request.AdminNotes);
 
         var order = ret.Order;
         var restoreSucceeded = await _inventoryServiceClient.RestoreOrderInventoryAsync(
@@ -132,6 +133,7 @@ public class RejectReturnCommandHandler : IRequestHandler<RejectReturnCommand>
             return;
 
         ret.Reject(request.AdminNotes);
+        ret.Order.RejectReturn(request.AdminId, request.AdminNotes);
 
         var order = ret.Order;
         var dealerContact = await _identityServiceClient.GetDealerContactAsync(order.DealerId, ct);
