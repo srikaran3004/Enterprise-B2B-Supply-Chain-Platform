@@ -11,11 +11,16 @@ public class RaiseReturnCommandHandler : IRequestHandler<RaiseReturnCommand>
 
     private readonly IOrderRepository  _orderRepository;
     private readonly IOutboxRepository _outboxRepository;
+    private readonly IIdentityServiceClient _identityServiceClient;
 
-    public RaiseReturnCommandHandler(IOrderRepository orderRepository, IOutboxRepository outboxRepository)
+    public RaiseReturnCommandHandler(
+        IOrderRepository orderRepository,
+        IOutboxRepository outboxRepository,
+        IIdentityServiceClient identityServiceClient)
     {
         _orderRepository  = orderRepository;
         _outboxRepository = outboxRepository;
+        _identityServiceClient = identityServiceClient;
     }
 
     public async Task Handle(RaiseReturnCommand command, CancellationToken ct)
@@ -48,11 +53,17 @@ public class RaiseReturnCommandHandler : IRequestHandler<RaiseReturnCommand>
         if (elapsedSinceDelivery > ReturnWindow)
             throw new InvalidOperationException("Return request window has expired. Returns must be raised within 48 hours of delivery.");
 
+        var dealerContact = await _identityServiceClient.GetDealerContactAsync(order.DealerId, ct);
+        var dealerEmail = string.IsNullOrWhiteSpace(order.DealerEmail) ? dealerContact?.Email : order.DealerEmail;
+        var dealerName = string.IsNullOrWhiteSpace(order.DealerName) ? dealerContact?.FullName : order.DealerName;
+
         var outbox = OutboxMessage.Create("ReturnRequested", JsonSerializer.Serialize(new
         {
             order.OrderId,
             order.OrderNumber,
             order.DealerId,
+            dealerEmail,
+            dealerName,
             Reason = command.Reason,
             PhotoUrl = command.PhotoUrl,
             ThumbUrl = command.ThumbUrl

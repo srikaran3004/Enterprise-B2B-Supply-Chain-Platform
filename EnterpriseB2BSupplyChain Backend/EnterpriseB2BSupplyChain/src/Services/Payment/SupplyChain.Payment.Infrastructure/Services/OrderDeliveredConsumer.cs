@@ -174,6 +174,8 @@ public class OrderDeliveredConsumer : BackgroundService
             var command = new GenerateInvoiceCommand(
                 OrderId: invoiceDetails.OrderId,
                 DealerId: invoiceDetails.DealerId,
+                DealerEmail: invoiceDetails.DealerEmail,
+                DealerName: invoiceDetails.DealerName,
                 TotalAmount: invoiceDetails.TotalAmount,
                 PaymentMode: string.IsNullOrWhiteSpace(invoiceDetails.PaymentMode) ? "Credit" : invoiceDetails.PaymentMode,
                 IsInterstate: isInterstate,

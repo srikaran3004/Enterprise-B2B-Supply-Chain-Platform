@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using MediatR;
 using SupplyChain.Payment.Application.Abstractions;
 using SupplyChain.Payment.Domain.Entities;
@@ -12,17 +13,20 @@ public class GenerateInvoiceCommandHandler : IRequestHandler<GenerateInvoiceComm
     private readonly ICreditAccountRepository _creditRepository;
     private readonly IPaymentRecordRepository _paymentRecordRepository;
     private readonly IInvoicePdfService      _pdfService;
+    private readonly IOutboxRepository _outboxRepository;
 
     public GenerateInvoiceCommandHandler(
         IInvoiceRepository       invoiceRepository,
         ICreditAccountRepository creditRepository,
         IPaymentRecordRepository paymentRecordRepository,
-        IInvoicePdfService       pdfService)
+        IInvoicePdfService       pdfService,
+        IOutboxRepository        outboxRepository)
     {
         _invoiceRepository = invoiceRepository;
         _creditRepository  = creditRepository;
         _paymentRecordRepository = paymentRecordRepository;
         _pdfService        = pdfService;
+        _outboxRepository  = outboxRepository;
     }
 
     public async Task<Guid> Handle(GenerateInvoiceCommand command, CancellationToken ct)
@@ -74,6 +78,20 @@ public class GenerateInvoiceCommandHandler : IRequestHandler<GenerateInvoiceComm
                 account.AddOutstanding(command.TotalAmount);
             }
         }
+
+        var invoiceGenerated = OutboxMessage.Create("InvoiceGenerated", JsonSerializer.Serialize(new
+        {
+            invoice.InvoiceId,
+            invoice.InvoiceNumber,
+            invoice.OrderId,
+            invoice.DealerId,
+            command.DealerEmail,
+            command.DealerName,
+            invoice.GrandTotal,
+            invoice.PaymentMode
+        }));
+
+        await _outboxRepository.AddAsync(invoiceGenerated, ct);
 
         await _invoiceRepository.SaveChangesAsync(ct);
 

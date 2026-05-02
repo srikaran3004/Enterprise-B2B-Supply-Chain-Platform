@@ -8,6 +8,7 @@ export interface ReturnRequest {
   returnId: string;
   orderId: string;
   dealerId: string;
+  dealerName?: string;
   reason: string;
   status: string;
   requestedAt: string;
@@ -86,6 +87,7 @@ export class ReturnsService {
       returnId,
       orderId,
       dealerId,
+      dealerName: raw.dealerName ?? raw.DealerName,
       reason,
       status,
       requestedAt,

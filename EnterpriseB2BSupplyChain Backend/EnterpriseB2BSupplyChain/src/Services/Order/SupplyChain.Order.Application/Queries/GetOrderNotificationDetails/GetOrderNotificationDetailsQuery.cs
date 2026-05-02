@@ -37,7 +37,8 @@ public class GetOrderNotificationDetailsQueryHandler
             ShippingAddressLine: order.ShippingAddressLine ?? string.Empty,
             ShippingCity:        order.ShippingCity        ?? string.Empty,
             ShippingState:       order.ShippingState       ?? string.Empty,
-            ShippingPinCode:     order.ShippingPinCode     ?? string.Empty
+            ShippingPinCode:     order.ShippingPinCode     ?? string.Empty,
+            DealerName:          order.DealerName
         );
     }
 }

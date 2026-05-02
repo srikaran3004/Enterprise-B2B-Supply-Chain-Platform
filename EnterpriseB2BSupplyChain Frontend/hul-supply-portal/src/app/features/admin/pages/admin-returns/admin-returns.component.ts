@@ -68,6 +68,10 @@ import { ToastService } from '../../../../shared/ui/toast/toast.service';
               <span class="mono">{{ selectedReturn.orderId }}</span>
             </div>
             <div class="detail-row">
+              <label>Dealer Name</label>
+              <span>{{ selectedReturn.dealerName || 'Dealer' }}</span>
+            </div>
+            <div class="detail-row">
               <label>Dealer ID</label>
               <span class="mono">{{ selectedReturn.dealerId }}</span>
             </div>
@@ -150,8 +154,9 @@ export class AdminReturnsComponent implements OnInit {
   rejectionNotes = '';
 
   columns: any[] = [
-    { key: 'returnId', label: 'Return ID', type: 'text', formatter: (val: string) => val?.substring(0, 8).toUpperCase() },
-    { key: 'orderNumber', label: 'Order #', type: 'text' },
+    { key: 'dealerName', label: 'Dealer Name', type: 'text' },
+    { key: 'orderId', label: 'Order Id', type: 'custom',
+      renderHtml: (_: string, row: ReturnRequest) => row.orderNumber || `<span class="mono">${row.orderId.substring(0, 8).toUpperCase()}</span>` },
     { key: 'reason', label: 'Reason', type: 'text' },
     { key: 'status', label: 'Status', type: 'badge', badgeMap: { 'Pending': 'warning', 'Approved': 'success', 'Rejected': 'danger' } },
     { key: 'thumbUrl', label: 'Image', type: 'custom',

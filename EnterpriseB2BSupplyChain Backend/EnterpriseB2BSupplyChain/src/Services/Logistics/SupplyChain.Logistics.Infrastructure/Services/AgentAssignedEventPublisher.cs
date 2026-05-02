@@ -26,6 +26,7 @@ public class AgentAssignedEventPublisher : IAgentAssignedEventPublisher
             @event.OrderNumber,
             @event.DealerId,
             @event.DealerEmail,
+            @event.DealerName,
             @event.AgentId,
             @event.AgentUserId,
             @event.AgentName,

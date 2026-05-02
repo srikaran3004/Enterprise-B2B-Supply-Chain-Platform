@@ -3,7 +3,6 @@ import { InventoryViewService } from '../../../../core/services/inventory-view.s
 import { ZoneHttpService } from '../../../../core/services/zone-http.service';
 import { API_ENDPOINTS } from '../../../../shared/constants/api-endpoints';
 import { ToastService } from '../../../../shared/ui/toast/toast.service';
-import { DataTableColumn, DataTableAction } from '../../../../shared/ui/data-table/hul-data-table.component';
 
 @Component({
   selector: 'app-inventory', standalone: false,
@@ -63,7 +62,7 @@ import { DataTableColumn, DataTableAction } from '../../../../shared/ui/data-tab
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let p of products; trackBy: trackByProductId"
+            <tr *ngFor="let p of pagedProducts; trackBy: trackByProductId"
                 [class.row--out]="(p.availableStock || 0) <= 0"
                 [class.row--low]="(p.availableStock || 0) > 0 && (p.availableStock || 0) < 50"
                 [class.row--ok]="(p.availableStock || 0) >= 50">
@@ -97,6 +96,21 @@ import { DataTableColumn, DataTableAction } from '../../../../shared/ui/data-tab
             </tr>
           </tbody>
         </table>
+        <div *ngIf="!loading && products.length > pageSize" class="inv-pagination">
+          <span class="inv-pagination__info">
+            Showing {{ (currentPage - 1) * pageSize + 1 }}-{{ min(currentPage * pageSize, products.length) }} of {{ products.length }}
+          </span>
+          <div class="inv-pagination__controls">
+            <button class="inv-page-btn" [disabled]="currentPage <= 1" (click)="goToPage(currentPage - 1)">←</button>
+            <button *ngFor="let page of visiblePages"
+                    class="inv-page-btn"
+                    [class.inv-page-btn--active]="page === currentPage"
+                    (click)="goToPage(page)">
+              {{ page }}
+            </button>
+            <button class="inv-page-btn" [disabled]="currentPage >= totalPages" (click)="goToPage(currentPage + 1)">→</button>
+          </div>
+        </div>
         <div *ngIf="loading" class="inv-loading">
           <div *ngFor="let i of [1,2,3,4,5,6,7,8]" class="skeleton" style="height:40px;border-radius:var(--radius-sm);margin-bottom:4px"></div>
         </div>
@@ -212,6 +226,17 @@ import { DataTableColumn, DataTableAction } from '../../../../shared/ui/data-tab
     .inv-btn--primary:hover { background: var(--hul-primary-hover); }
 
     .inv-loading { padding: 16px; }
+    .inv-pagination { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-top: 1px solid var(--border-default); background: var(--bg-card); }
+    .inv-pagination__info { font-size: 13px; color: var(--text-tertiary); }
+    .inv-pagination__controls { display: flex; gap: 4px; flex-wrap: wrap; }
+    .inv-page-btn {
+      width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--border-default); border-radius: var(--radius-md); background: var(--bg-card);
+      color: var(--text-secondary); cursor: pointer; font-size: 13px; font-weight: 500; transition: all var(--duration-fast);
+    }
+    .inv-page-btn:hover:not(:disabled) { background: var(--bg-muted); color: var(--text-primary); }
+    .inv-page-btn:disabled { opacity: .4; cursor: not-allowed; }
+    .inv-page-btn--active { background: var(--hul-primary); color: white; border-color: var(--hul-primary); }
 
     /* Modal */
     .inventory-modal { display: flex; flex-direction: column; gap: 16px; min-height: 280px; }
@@ -234,6 +259,8 @@ export class InventoryComponent implements OnInit {
   loading = true;
   products: any[] = [];
   allProducts: any[] = [];
+  pageSize = 10;
+  currentPage = 1;
   criticalCount = 0;
   inStockCount = 0;
   outOfStockCount = 0;
@@ -256,6 +283,30 @@ export class InventoryComponent implements OnInit {
   editProduct: any = null;
   editStockValue: number | null = null;
   editStockNotes = '';
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.products.length / this.pageSize));
+  }
+
+  get pagedProducts(): any[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.products.slice(start, start + this.pageSize);
+  }
+
+  get visiblePages(): number[] {
+    const pages: number[] = [];
+    let start = Math.max(1, this.currentPage - 2);
+    let end = Math.min(this.totalPages, start + 4);
+    if (end - start < 4) {
+      start = Math.max(1, end - 4);
+    }
+
+    for (let page = start; page <= end; page++) {
+      pages.push(page);
+    }
+
+    return pages;
+  }
 
   constructor(private http: ZoneHttpService, private inventoryView: InventoryViewService, private toast: ToastService) {}
 
@@ -300,6 +351,7 @@ export class InventoryComponent implements OnInit {
     else if (this.stockFilter === 'low') result = result.filter(p => (p.availableStock || 0) > 0 && (p.availableStock || 0) < 50);
     else if (this.stockFilter === 'out') result = result.filter(p => (p.availableStock || 0) <= 0);
     this.products = result;
+    this.currentPage = 1;
   }
 
   onSearch(term: string): void {
@@ -308,6 +360,8 @@ export class InventoryComponent implements OnInit {
   }
 
   trackByProductId(_: number, item: any): string { return item.productId; }
+  goToPage(page: number): void { if (page >= 1 && page <= this.totalPages) this.currentPage = page; }
+  min(a: number, b: number): number { return Math.min(a, b); }
 
   // ========== Restock ==========
 

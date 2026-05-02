@@ -13,17 +13,20 @@ public class ConfirmOrderPaymentCommandHandler : IRequestHandler<ConfirmOrderPay
     private readonly IOrderRepository _orderRepository;
     private readonly IOutboxRepository _outboxRepository;
     private readonly IPaymentServiceClient _paymentServiceClient;
+    private readonly IIdentityServiceClient _identityServiceClient;
     private readonly ILogger<ConfirmOrderPaymentCommandHandler> _logger;
 
     public ConfirmOrderPaymentCommandHandler(
         IOrderRepository orderRepository,
         IOutboxRepository outboxRepository,
         IPaymentServiceClient paymentServiceClient,
+        IIdentityServiceClient identityServiceClient,
         ILogger<ConfirmOrderPaymentCommandHandler> logger)
     {
         _orderRepository = orderRepository;
         _outboxRepository = outboxRepository;
         _paymentServiceClient = paymentServiceClient;
+        _identityServiceClient = identityServiceClient;
         _logger = logger;
     }
 
@@ -119,12 +122,17 @@ public class ConfirmOrderPaymentCommandHandler : IRequestHandler<ConfirmOrderPay
                 request.OrderId, creditCheck.AvailableLimit, order.TotalAmount);
         }
 
+        var dealerContact = await _identityServiceClient.GetDealerContactAsync(order.DealerId, cancellationToken);
+        var dealerEmail = string.IsNullOrWhiteSpace(order.DealerEmail) ? dealerContact?.Email : order.DealerEmail;
+        var dealerName = string.IsNullOrWhiteSpace(order.DealerName) ? dealerContact?.FullName : order.DealerName;
+
         var eventPayload = JsonSerializer.Serialize(new
         {
             OrderId = order.OrderId,
             OrderNumber = order.OrderNumber,
             DealerId = order.DealerId,
-            dealerEmail = order.DealerEmail,
+            dealerEmail,
+            dealerName,
             TotalAmount = order.TotalAmount,
             ShippingFee = order.ShippingFee,
             Status = finalStatus.ToString(),

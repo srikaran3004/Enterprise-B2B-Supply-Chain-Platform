@@ -14,6 +14,8 @@ public record OrderInvoiceLineDto(
 public record OrderInvoiceDetailsDto(
     Guid OrderId,
     Guid DealerId,
+    string? DealerEmail,
+    string? DealerName,
     decimal TotalAmount,
     string PaymentMode,
     string? ShippingState,
@@ -38,6 +40,8 @@ public class GetOrderInvoiceDetailsQueryHandler
         return new OrderInvoiceDetailsDto(
             OrderId: order.OrderId,
             DealerId: order.DealerId,
+            DealerEmail: order.DealerEmail,
+            DealerName: order.DealerName,
             TotalAmount: order.TotalAmount,
             PaymentMode: order.PaymentMode,
             ShippingState: order.ShippingState,

@@ -6,6 +6,7 @@ public record AgentAssigned(
     string OrderNumber,
     Guid DealerId,
     string DealerEmail,
+    string DealerName,
     Guid AgentId,
     Guid AgentUserId,
     string AgentName,

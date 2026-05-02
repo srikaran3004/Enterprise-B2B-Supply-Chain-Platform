@@ -80,6 +80,7 @@ public class AssignAgentCommandHandler : IRequestHandler<AssignAgentCommand, Ass
             OrderNumber:         orderDetails?.OrderNumber ?? command.OrderId.ToString(),
             DealerId:            orderDetails?.DealerId ?? Guid.Empty,
             DealerEmail:         dealerContact?.Email ?? string.Empty,
+            DealerName:          orderDetails?.DealerName ?? dealerContact?.FullName ?? "Dealer",
             AgentId:             agent.AgentId,
             AgentUserId:         agent.UserId,
             AgentName:           agent.FullName,

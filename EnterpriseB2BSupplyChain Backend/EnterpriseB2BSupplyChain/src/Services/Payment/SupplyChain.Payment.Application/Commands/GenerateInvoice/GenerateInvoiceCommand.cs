@@ -13,6 +13,8 @@ public record InvoiceLineRequest(
 public record GenerateInvoiceCommand(
     Guid                     OrderId,
     Guid                     DealerId,
+    string?                  DealerEmail,
+    string?                  DealerName,
     decimal                  TotalAmount,
     string                   PaymentMode,
     bool                     IsInterstate,

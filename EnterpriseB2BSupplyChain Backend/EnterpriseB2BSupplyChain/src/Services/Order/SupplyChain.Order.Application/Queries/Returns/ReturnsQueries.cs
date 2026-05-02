@@ -9,6 +9,7 @@ public record ReturnDto(
     Guid OrderId,
     string OrderNumber,
     Guid DealerId,
+    string? DealerName,
     string Reason,
     string? PhotoUrl,
     string? ThumbUrl,
@@ -30,7 +31,7 @@ public class GetMyReturnsQueryHandler : IRequestHandler<GetMyReturnsQuery, List<
     {
         var returns = await _repository.GetReturnsByDealerIdAsync(request.DealerId, request.Status, ct);
         return returns.Select(r => new ReturnDto(
-            r.ReturnId, r.OrderId, r.Order.OrderNumber, r.DealerId,
+            r.ReturnId, r.OrderId, r.Order.OrderNumber, r.DealerId, r.Order.DealerName,
             r.Reason, r.PhotoUrl, r.ThumbUrl, r.Status.ToString(), r.AdminNotes,
             r.RequestedAt, r.ResolvedAt
         )).ToList();
@@ -49,7 +50,7 @@ public class GetAllReturnsQueryHandler : IRequestHandler<GetAllReturnsQuery, Lis
     {
         var returns = await _repository.GetAllReturnsAsync(request.Status, ct);
         return returns.Select(r => new ReturnDto(
-            r.ReturnId, r.OrderId, r.Order.OrderNumber, r.DealerId,
+            r.ReturnId, r.OrderId, r.Order.OrderNumber, r.DealerId, r.Order.DealerName,
             r.Reason, r.PhotoUrl, r.ThumbUrl, r.Status.ToString(), r.AdminNotes,
             r.RequestedAt, r.ResolvedAt
         )).ToList();

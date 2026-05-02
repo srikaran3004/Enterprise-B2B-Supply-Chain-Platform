@@ -598,11 +598,14 @@ public class RabbitMqNotificationConsumer : BackgroundService
         CopyAlias(data, "OrderNumber", "order_number");
         CopyAlias(data, "DealerName", "dealer_name");
         CopyAlias(data, "DealerEmail", "dealer_email");
+        CopyAlias(data, "DealerEmail", "recipientEmail");
         CopyAlias(data, "Status", "status");
         CopyAlias(data, "TotalAmount", "total_amount");
         CopyAlias(data, "RefundAmount", "refund_amount");
+        CopyAlias(data, "RefundMode", "refund_mode");
         CopyAlias(data, "GrandTotal", "grand_total");
         CopyAlias(data, "Amount", "amount");
+        CopyAlias(data, "InvoiceNumber", "invoice_number");
         CopyAlias(data, "AgentName", "agent_name");
         CopyAlias(data, "AgentPhone", "agent_phone");
         CopyAlias(data, "VehicleNo", "vehicle_no");
@@ -610,6 +613,7 @@ public class RabbitMqNotificationConsumer : BackgroundService
         CopyAlias(data, "VehicleType", "vehicle_type");
         CopyAlias(data, "Place", "place");
         CopyAlias(data, "Notes", "notes");
+        CopyAlias(data, "AdminNotes", "admin_notes");
         CopyAlias(data, "UpdatedAt", "updated_at");
         CopyAlias(data, "RecordedAt", "updated_at");
         CopyAlias(data, "ShippingAddressLine", "shipping_address");

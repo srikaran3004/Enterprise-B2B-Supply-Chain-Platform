@@ -18,6 +18,8 @@ public sealed record OrderInvoiceLineDto(
 public sealed record OrderInvoiceDetailsDto(
     Guid OrderId,
     Guid DealerId,
+    string? DealerEmail,
+    string? DealerName,
     decimal TotalAmount,
     string PaymentMode,
     string? ShippingState,
