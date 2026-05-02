@@ -109,12 +109,12 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    subgraph API Gateway
+    subgraph APIGW [API Gateway]
         Routing[Path Routing]
         AuthZ[Token Validation]
     end
 
-    subgraph Service Structure (Typical)
+    subgraph ServiceStructure [Service Structure Typical]
         API[API Endpoints]
         App[Application Layer / CQRS]
         Dom[Domain Entities]
