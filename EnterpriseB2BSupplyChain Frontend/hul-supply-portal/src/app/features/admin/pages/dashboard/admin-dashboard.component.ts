@@ -198,6 +198,23 @@ export class AdminDashboardComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+
+    // Load invoices for count
+    this.http.get<any[]>(API_ENDPOINTS.payment.invoices()).subscribe({
+      next: invoices => {
+        const invoicesArr = Array.isArray(invoices) ? invoices : [];
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        
+        this.stats.invoicesMonth = invoicesArr.filter((inv: any) => {
+          const genDate = new Date(inv.generatedAt || inv.createdAt);
+          return genDate >= startOfMonth;
+        }).length;
+        
+        this.cdr.detectChanges();
+      },
+      error: () => {}
+    });
   }
 
 
