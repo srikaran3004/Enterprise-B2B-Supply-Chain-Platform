@@ -1,5 +1,6 @@
 using System.Text.Json;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using SupplyChain.Order.Application.Abstractions;
 using SupplyChain.Order.Domain.Entities;
 using SupplyChain.Order.Domain.Enums;
@@ -99,7 +100,27 @@ public class ApproveReturnCommandHandler : IRequestHandler<ApproveReturnCommand>
         }));
 
         await _outboxRepository.AddAsync(outbox, ct);
-        await _repository.SaveChangesAsync(ct);
+
+        try
+        {
+            await _repository.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            var latest = await _repository.GetReturnByIdAsync(request.ReturnId, ct);
+
+            if (latest is null)
+            {
+                throw;
+            }
+
+            if (latest.Status == ReturnStatus.Approved)
+            {
+                return;
+            }
+
+            throw new InvalidOperationException("This return request was updated by another action. Please refresh and try again.");
+        }
     }
 }
 
@@ -157,6 +178,26 @@ public class RejectReturnCommandHandler : IRequestHandler<RejectReturnCommand>
         }));
 
         await _outboxRepository.AddAsync(outbox, ct);
-        await _repository.SaveChangesAsync(ct);
+
+        try
+        {
+            await _repository.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            var latest = await _repository.GetReturnByIdAsync(request.ReturnId, ct);
+
+            if (latest is null)
+            {
+                throw;
+            }
+
+            if (latest.Status == ReturnStatus.Rejected)
+            {
+                return;
+            }
+
+            throw new InvalidOperationException("This return request was updated by another action. Please refresh and try again.");
+        }
     }
 }

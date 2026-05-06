@@ -28,8 +28,8 @@ import { ToastService } from '../../../../shared/ui/toast/toast.service';
             <textarea [(ngModel)]="resolutionNotes" rows="2" placeholder="e.g., Return verified and approved"></textarea>
           </div>
           <div class="form-actions">
-            <button class="btn btn--ghost" (click)="showApproveModal = false">Cancel</button>
-            <button class="btn btn--primary" (click)="confirmApprove()">Approve Return</button>
+            <button class="btn btn--ghost" [disabled]="submitting" (click)="showApproveModal = false">Cancel</button>
+            <button class="btn btn--primary" [disabled]="submitting" (click)="confirmApprove()">{{ submitting ? 'Approving...' : 'Approve Return' }}</button>
           </div>
         </div>
       </hul-modal>
@@ -49,8 +49,8 @@ import { ToastService } from '../../../../shared/ui/toast/toast.service';
             <textarea [(ngModel)]="rejectionNotes" rows="3" placeholder="e.g., Return period expired, Item shows signs of usage"></textarea>
           </div>
           <div class="form-actions">
-            <button class="btn btn--ghost" (click)="showRejectModal = false">Cancel</button>
-            <button class="btn btn--danger" [disabled]="!rejectionNotes.trim()" (click)="confirmReject()">Reject Return</button>
+            <button class="btn btn--ghost" [disabled]="submitting" (click)="showRejectModal = false">Cancel</button>
+            <button class="btn btn--danger" [disabled]="submitting || !rejectionNotes.trim()" (click)="confirmReject()">{{ submitting ? 'Submitting...' : 'Reject Return' }}</button>
           </div>
         </div>
       </hul-modal>
@@ -152,6 +152,7 @@ export class AdminReturnsComponent implements OnInit {
   selectedReturn: ReturnRequest | null = null;
   resolutionNotes = '';
   rejectionNotes = '';
+  submitting = false;
 
   columns: any[] = [
     { key: 'dealerName', label: 'Dealer Name', type: 'text' },
@@ -207,7 +208,9 @@ export class AdminReturnsComponent implements OnInit {
   }
 
   confirmApprove() {
-    if (!this.selectedReturn) return;
+    if (!this.selectedReturn || this.submitting) return;
+
+    this.submitting = true;
 
     this.returnsService.approveReturn(
       this.selectedReturn.returnId,
@@ -216,16 +219,20 @@ export class AdminReturnsComponent implements OnInit {
       next: () => {
         this.toastService.success('Return approved successfully');
         this.showApproveModal = false;
+        this.submitting = false;
         this.loadReturns();
       },
       error: () => {
+        this.submitting = false;
         this.toastService.error('Failed to approve return');
       }
     });
   }
 
   confirmReject() {
-    if (!this.selectedReturn || !this.rejectionNotes.trim()) return;
+    if (!this.selectedReturn || this.submitting || !this.rejectionNotes.trim()) return;
+
+    this.submitting = true;
 
     this.returnsService.rejectReturn(
       this.selectedReturn.returnId,
@@ -234,9 +241,11 @@ export class AdminReturnsComponent implements OnInit {
       next: () => {
         this.toastService.success('Return rejected');
         this.showRejectModal = false;
+        this.submitting = false;
         this.loadReturns();
       },
       error: () => {
+        this.submitting = false;
         this.toastService.error('Failed to reject return');
       }
     });
