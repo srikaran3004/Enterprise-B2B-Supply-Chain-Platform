@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
@@ -131,7 +131,7 @@ import { ToastService } from '../../../../shared/ui/toast/toast.service';
     }
   `]
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   loginForm: FormGroup;
   loading = false;
   serverError = '';
@@ -147,6 +147,12 @@ export class LoginComponent {
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
     });
+  }
+
+  ngOnInit(): void {
+    // If the user intentionally opens the login screen, clear any stale refresh-cookie
+    // session first so we do not bounce them back in as the previously signed-in user.
+    this.authService.logout({ redirect: false });
   }
 
   getFieldError(field: string): string {

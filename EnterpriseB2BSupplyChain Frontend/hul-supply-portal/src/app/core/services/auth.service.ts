@@ -80,13 +80,15 @@ export class AuthService {
     return this.refreshInFlight$;
   }
 
-  logout(): void {
+  logout(options?: { redirect?: boolean }): void {
+    const shouldRedirect = options?.redirect ?? true;
+
     this.http.post(API_ENDPOINTS.auth.logout(), {}, { withCredentials: true }).subscribe({
       next: () => { },
       error: () => { }
     });
 
-    this.clearSession();
+    this.clearSession(shouldRedirect);
   }
 
   logoutAll(): Observable<unknown> {
@@ -95,11 +97,14 @@ export class AuthService {
       .pipe(tap(() => this.clearSession()));
   }
 
-  private clearSession(): void {
+  private clearSession(redirect = true): void {
     this.accessToken = null;
     this.currentRole = null;
     this.currentUserName = null;
-    this.router.navigate(['/auth/login']);
+
+    if (redirect) {
+      this.router.navigate(['/auth/login']);
+    }
   }
 
   getAccessToken(): string | null {
